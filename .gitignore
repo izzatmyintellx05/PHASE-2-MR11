@@ -1,0 +1,19 @@
+# Installed packages and build caches
+node_modules/
+
+# Settings with secrets stay on each computer; only the examples are shared
+.env
+.env.*
+!.env.example
+
+# Data saved by a locally running ShellFlow site
+shellflow-web/data/
+
+# Logs and packaged copies of what is already in this repository
+*.log
+*.zip
+
+# Local tool settings and design-review captures
+.claude/
+shellflow-web/.impeccable/review/
+shellflow-web/.impeccable/mocks/

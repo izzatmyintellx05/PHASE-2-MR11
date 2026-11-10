@@ -1,0 +1,1890 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8"><!--@if hosted-->
+  <script src="/config.js"></script><!--@endif-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShellFlow — MFE MR11 Phase 2 Operations<!--@if single--> Prototype<!--@endif--></title>
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+  <script><!--@include scripts/tailwind.config.js--></script>
+  <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <style><!--@include styles/base.css--></style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Toast Notification Banner -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+  <!-- Reason / Value Modal (admin release, rejections, MR11 cell edits) -->
+  <div id="reason-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2 text-amber-600 font-bold text-sm">
+          <i data-lucide="shield-alert" class="w-5 h-5"></i>
+          <span id="reason-title">Admin Release</span>
+        </div>
+        <button onclick="closeReasonModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <p id="reason-desc" class="text-xs text-slate-600 leading-relaxed"></p>
+      <div>
+        <label id="reason-label" class="block text-xs font-semibold text-slate-700 mb-1">Written reason</label>
+        <textarea id="reason-input" rows="3" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 outline-none"></textarea>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeReasonModal()" class="px-3 py-2 rounded-lg border border-slate-300 text-xs font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+        <button onclick="submitReasonModal()" id="reason-confirm" class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sign-In Screen (shown after Sign Out). Prototype accounts only; never pre-filled. -->
+  <div id="signin-screen" class="fixed inset-0 bg-slate-50 z-40 hidden items-center justify-center p-4">
+    <div class="max-w-sm w-full space-y-4">
+      <div class="text-center">
+        <span class="sf-mark sf-mark-lg mx-auto" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        <h1 class="mt-3 text-base font-extrabold tracking-wide text-slate-900">MR11 PROJECT TRACKING &amp; MASTER LEDGER</h1>
+      </div>
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-3 text-xs">
+        <h2 class="text-sm font-bold text-slate-900">Sign in to workspace</h2>
+        <p class="text-slate-500">Enter corporate credentials to access authorized departments.</p>
+        <div>
+          <label for="signin-email" class="block font-semibold text-slate-700 mb-1">Corporate Email</label>
+          <input type="email" id="signin-email" autocomplete="off" placeholder="name@mfeformwork.com" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+        </div>
+        <div>
+          <label for="signin-password" class="block font-semibold text-slate-700 mb-1">Password</label>
+          <input type="password" id="signin-password" autocomplete="off" onkeydown="if (event.key === 'Enter') performLogin()" class="w-full px-3 py-2 border border-slate-300 rounded-lg">
+        </div>
+        <p id="signin-error" class="min-h-[16px] font-semibold text-rose-600" role="alert"></p>
+        <button onclick="performLogin()" class="w-full py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-bold">Sign In</button><!--@if single-->
+        <p class="text-[11px] text-slate-500 pt-1 border-t border-slate-100">Prototype only: use any email on the Admin Permissions tab with the password demo1234. Passwords stay in this page's memory.</p><!--@endif-->
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Password Modal -->
+  <div id="password-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-sm w-full p-6 space-y-3 text-xs">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <span class="font-bold text-sm text-slate-900">Change Password</span>
+        <button onclick="closePasswordModal()" class="text-slate-400 hover:text-slate-600" aria-label="Close"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <div><label for="pw-current" class="block font-semibold text-slate-700 mb-1">Current Password</label><input type="password" id="pw-current" autocomplete="off" class="w-full px-3 py-2 border border-slate-300 rounded-lg"></div>
+      <div><label for="pw-new" class="block font-semibold text-slate-700 mb-1">New Password (at least 8 characters)</label><input type="password" id="pw-new" autocomplete="off" class="w-full px-3 py-2 border border-slate-300 rounded-lg"></div>
+      <div><label for="pw-confirm" class="block font-semibold text-slate-700 mb-1">Confirm New Password</label><input type="password" id="pw-confirm" autocomplete="off" class="w-full px-3 py-2 border border-slate-300 rounded-lg"></div>
+      <p id="pw-error" class="min-h-[16px] font-semibold text-rose-600" role="alert"></p>
+      <div class="flex justify-end gap-2">
+        <button onclick="closePasswordModal()" class="px-3 py-2 rounded-lg border border-slate-300 font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+        <button onclick="submitPasswordChange()" class="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-bold">Change Password</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MR11 Row Comments Modal -->
+  <div id="comment-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-3">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <span id="comment-title" class="font-bold text-sm text-slate-900">Comments</span>
+        <button onclick="closeComments()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <div id="comment-list" class="space-y-2 text-xs max-h-64 overflow-y-auto custom-scrollbar"></div>
+      <div class="flex gap-2">
+        <input type="text" id="comment-input" placeholder="Write a comment on this row" class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-xs">
+        <button onclick="addComment()" class="px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold">Post</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOP NAVIGATION BAR -->
+  <header class="sf-header lg:sticky top-0 z-30">
+    <div class="sf-bar">
+      <div class="sf-wrap">
+        <a href="#" class="sf-brand" onclick="goHome(); return false;" aria-label="ShellFlow, go to your first page">
+          <span class="sf-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          <span class="sf-brand-name">ShellFlow</span>
+          <span class="sf-brand-tag"><span class="sf-tag-long">MR11 · Phase 2 </span><!--@if single-->prototype<!--@endif--></span>
+        </a>
+        <button type="button" id="sf-search-btn" class="sf-search" onclick="openCommand()" aria-haspopup="dialog" aria-keyshortcuts="Control+K Meta+K">
+          <i data-lucide="search" class="w-4 h-4"></i><span>Search pages, projects, NCAs, lorries</span><kbd>Ctrl K</kbd>
+        </button>
+        <div class="sf-actions">
+          <div class="sf-role">
+            <label for="role-select">Viewing as</label>
+            <select id="role-select" onchange="setRole(this.value)"></select>
+          </div>
+          <button type="button" onclick="switchTab(10)" id="header-alert-btn" class="sf-hbtn" title="Open alerts" aria-label="Open alerts">
+            <i data-lucide="bell" class="w-4 h-4"></i><span id="header-alert-count">0</span>
+          </button>
+          <span id="header-user" class="sf-user hidden 2xl:inline"></span>
+          <button type="button" onclick="openPasswordModal()" id="header-key-btn" class="sf-hbtn" title="Change password" aria-label="Change password"><i data-lucide="key-round" class="w-4 h-4"></i></button>
+          <button type="button" onclick="signOut()" class="sf-hbtn" title="Sign out" aria-label="Sign out"><i data-lucide="log-out" class="w-4 h-4"></i></button>
+          <div class="sf-chip hidden 2xl:flex"><span>Finance gate</span><strong id="header-finance-pill">CLEARED (20%)</strong></div>
+          <div id="header-capacity-badge" class="sf-load hidden lg:flex">
+            <span>Plant load <strong id="header-plant-load">75,050 / 110,000 m²</strong></span>
+            <span class="sf-loadbar" aria-hidden="true"><i id="header-load-fill" style="width: 68%"></i></span>
+          </div>
+          <button type="button" onclick="resetAllDemoData()" class="sf-hbtn" title="Reset the prototype to its sample data"><i data-lucide="rotate-ccw" class="w-4 h-4"></i><span class="hidden sm:inline">Reset</span></button>
+          <button type="button" onclick="exportMR11Workbook()" class="sf-hbtn sf-primary" title="Export the MR11 workbook (.xlsx)" aria-label="Export MR11 workbook"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i><span class="hidden 2xl:inline">Export MR11</span></button>
+          <button type="button" onclick="downloadStandaloneHTML()" class="sf-hbtn" title="Download this page as one HTML file" aria-label="Download standalone HTML"><i data-lucide="download" class="w-4 h-4"></i></button>
+        </div>
+      </div>
+    </div>
+<!--@if hosted-->    <div class="bg-amber-50 border-b border-amber-200 text-amber-900 text-[11px] font-semibold text-center px-4 py-1">Demonstration data: one live project and sample rows. Please do not enter real client data on this version.</div>
+
+<!--@endif-->    <!-- LIVE PROJECT RIBBON (filled from Step 1 BD) -->
+    <div class="sf-ribbon" id="sf-ribbon" role="region" aria-label="Live project scope">
+      <div class="sf-wrap">
+        <dl>
+          <div class="sf-kv"><dt>Project</dt><dd id="ctx-project">Skyline Tower Phase 2</dd></div>
+          <div class="sf-kv"><dt>Building</dt><dd id="ctx-building">Tower A - Podium &amp; Core</dd></div>
+          <div class="sf-kv"><dt>Country / PIC</dt><dd id="ctx-country-pic">Malaysia (MY) / Alex Tan</dd></div>
+          <div class="sf-kv"><dt>Streams</dt><dd id="ctx-streams">Stream 1, Stream 2, Stream 3</dd></div>
+          <div class="sf-kv"><dt>Blocks</dt><dd id="ctx-blocks">Block A, Block B, Central Core</dd></div>
+        </dl>
+        <div class="sf-tags">
+          <span class="sf-tag" id="ctx-formwork">MIVAN/MONOLITIC FORMWORK</span>
+          <span class="sf-tag" id="ctx-product">MFE New</span>
+          <span class="sf-figure" id="ctx-area">850.00 m²</span>
+          <span class="sf-money" id="ctx-contract">$149,795.50</span>
+        </div>
+        <button type="button" class="sf-more" onclick="toggleRibbon(this)" aria-expanded="false" aria-controls="sf-ribbon">Details</button>
+      </div>
+    </div>
+
+    <!-- PAGE MENU: the eight workflow steps, then the tools -->
+    <nav class="sf-nav" aria-label="Pages">
+      <div class="sf-wrap">
+        <div id="step-bar">
+          <div class="sf-steps">
+            <button type="button" onclick="switchTab(1)" id="tab-btn-1" class="sf-tab step-btn-active" aria-describedby="sf-tip-1"><span class="sf-tab-no">1</span><span>BD &amp; Commercial</span><span class="sf-ties" id="sf-ties-1" aria-hidden="true"></span><span class="sf-tip" role="tooltip" id="sf-tip-1"></span></button>
+            <button type="button" onclick="switchTab(2)" id="tab-btn-2" class="sf-tab step-btn-inactive" aria-describedby="sf-tip-2"><span class="sf-tab-no">2</span><span>Finance Gateway</span><span class="sf-ties" id="sf-ties-2" aria-hidden="true"></span><span class="sf-tip" role="tooltip" id="sf-tip-2"></span></button>
+            <button type="button" onclick="switchTab(3)" id="tab-btn-3" class="sf-tab step-btn-inactive" aria-describedby="sf-tip-3"><span class="sf-tab-no">3</span><span>Technical Design</span><span class="sf-ties" id="sf-ties-3" aria-hidden="true"></span><span class="sf-tip" role="tooltip" id="sf-tip-3"></span></button>
+            <button type="button" onclick="switchTab(4)" id="tab-btn-4" class="sf-tab step-btn-inactive" aria-describedby="sf-tip-4"><span class="sf-tab-no">4</span><span>Production &amp; Yard</span><span class="sf-ties" id="sf-ties-4" aria-hidden="true"></span><span class="sf-tip" role="tooltip" id="sf-tip-4"></span></button>
+            <button type="button" onclick="switchTab(6)" id="tab-btn-6" class="sf-tab step-btn-inactive" aria-describedby="sf-tip-6"><span class="sf-tab-no">5</span><span>Readiness Gate &amp; 4-Way</span><span class="sf-ties" id="sf-ties-6" aria-hidden="true"></span><span class="sf-tip" role="tooltip" id="sf-tip-6"></span></button>
+            <button type="button" onclick="switchTab(7)" id="tab-btn-7" class="sf-tab step-btn-inactive" aria-describedby="sf-tip-7"><span class="sf-tab-no">6</span><span>Logistics &amp; Shipping</span><span class="sf-ties" id="sf-ties-7" aria-hidden="true"></span><span class="sf-tip" role="tooltip" id="sf-tip-7"></span></button>
+            <button type="button" onclick="switchTab(8)" id="tab-btn-8" class="sf-tab step-btn-inactive" aria-describedby="sf-tip-8"><span class="sf-tab-no">7</span><span>Site Receiving</span><span class="sf-ties" id="sf-ties-8" aria-hidden="true"></span><span class="sf-tip" role="tooltip" id="sf-tip-8"></span></button>
+            <button type="button" onclick="switchTab(9)" id="tab-btn-9" class="sf-tab step-btn-inactive" aria-describedby="sf-tip-9"><span class="sf-tab-no">8</span><span>MR11 Master Schedule</span><span class="sf-ties" id="sf-ties-9" aria-hidden="true"></span><span class="sf-tip" role="tooltip" id="sf-tip-9"></span></button>
+          </div>
+          <div class="sf-tools">
+            <button type="button" onclick="switchTab(18)" id="tab-btn-18" class="sf-tool sf-new step-btn-inactive"><i data-lucide="inbox"></i><span>My Work</span><span class="sf-count" id="sf-mywork-count"></span></button>
+            <button type="button" onclick="switchTab(10)" id="tab-btn-10" class="sf-tool step-btn-inactive"><i data-lucide="bell-ring"></i><span>Alerts &amp; Reminders</span></button>
+            <button type="button" onclick="switchTab(11)" id="tab-btn-11" class="sf-tool step-btn-inactive"><i data-lucide="clipboard-check"></i><span>Approvals &amp; Log</span></button>
+            <button type="button" onclick="switchTab(12)" id="tab-btn-12" class="sf-tool step-btn-inactive"><i data-lucide="file-bar-chart"></i><span>Reports</span></button>
+            <button type="button" onclick="switchTab(19)" id="tab-btn-19" class="sf-tool sf-new step-btn-inactive"><i data-lucide="chart-gantt"></i><span>Timeline</span></button>
+            <button type="button" onclick="switchTab(13)" id="tab-btn-13" class="sf-tool step-btn-inactive"><i data-lucide="smartphone"></i><span>Mobile App</span></button>
+            <button type="button" onclick="switchTab(14)" id="tab-btn-14" class="sf-tool step-btn-inactive"><i data-lucide="sliders-horizontal"></i><span>Rules (Admin)</span></button>
+            <button type="button" onclick="switchTab(15)" id="tab-btn-15" class="sf-tool step-btn-inactive"><i data-lucide="line-chart"></i><span>CEO Executive Hub</span></button>
+            <button type="button" onclick="switchTab(16)" id="tab-btn-16" class="sf-tool step-btn-inactive"><i data-lucide="users"></i><span>Admin Permissions</span></button>
+            <button type="button" onclick="switchTab(17)" id="tab-btn-17" class="sf-tool step-btn-inactive"><i data-lucide="table"></i><span>Department Workbooks</span></button>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- MAIN WORKSPACE CONTAINER -->
+  <main class="sf-main w-full mx-auto py-6 flex-1 space-y-6">
+    <div id="sf-pagehead" class="sf-pagehead"></div>
+
+    <!-- ========================================================================= -->
+    <!-- STEP 1: BD & COMMERCIAL -->
+    <!-- ========================================================================= -->
+    <section id="step-panel-1" class="step-panel space-y-6">
+      <!-- Operational Guardrail Banner -->
+      <div class="bg-sky-50 border border-sky-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-start sm:items-center gap-3">
+          <div class="p-2 rounded-lg bg-sky-600 text-white shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="file-Spreadsheet" aria-hidden="true" class="lucide lucide-file-Spreadsheet w-5 h-5"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="M8 13h2"></path><path d="M14 13h2"></path><path d="M8 17h2"></path><path d="M14 17h2"></path></svg>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-slate-900">Online entry, NCA versions &amp; pricing engine</h2>
+            <p class="text-xs text-slate-600">Excel upload retired: every change is validated, logged and saved here, and MR11 rebuilds itself. Numeric inputs prevent <code class="bg-sky-100 px-1 rounded text-sky-900">#VALUE!</code> errors. Project, Building, Stream &amp; Block names flow downstream.</p>
+          </div>
+        </div>
+        <span id="bd-nca-pill" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 shrink-0 self-start sm:self-center">NCA v1 Active</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left 2 Columns: Commercial Inputs & Forecast -->
+        <div class="lg:col-span-2 space-y-6">
+          
+          <!-- Card 1: Project Identity, Streams, Blocks, Formwork & Product Type -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">1. Master Project Context &amp; Classification (Flows to Steps 2–7)</h3>
+                <p class="text-xs text-slate-500">Edit any field below to immediately propagate to Finance, Design, Production &amp; Yard, Logistics &amp; Site</p>
+              </div>
+              <span class="text-[11px] font-mono text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-200">Source of Truth</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Project Name</label>
+                <input type="text" id="bd-project-name" value="Skyline Tower Phase 2" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500 outline-none">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Building Name / Zone</label>
+                <input type="text" id="bd-building-name" value="Tower A - Podium &amp; Core" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500 outline-none">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Country / Market (MR11 Col C)</label>
+                <input type="text" id="bd-country-name" value="Malaysia (MY)" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500 outline-none">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Commercial PIC (MR11 Col D)</label>
+                <input type="text" id="bd-pic-name" value="Alex Tan" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500 outline-none">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Project No. (Stream fills in from it)</label>
+                <input type="text" id="bd-project-no" value="260011" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500 outline-none">
+                <p id="bd-project-no-hint" class="text-[11px] text-slate-500 mt-1"></p>
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Short Name</label>
+                <input type="text" id="bd-short-name" value="ST2" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500 outline-none">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Location</label>
+                <input type="text" id="bd-location" value="Kuala Lumpur" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500 outline-none">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Status</label>
+                <select id="bd-status" onchange="propagateBDData()" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none">
+                  <option value="Confirmed" selected>Confirmed</option>
+                  <option value="Contract Issued">Contract Issued</option>
+                  <option value="On Hold">On Hold</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block font-semibold text-slate-700 mb-1">PO No.</label>
+                  <input type="text" id="bd-po-no" value="PO-SKY-2026-01" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-slate-900 outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div>
+                  <label class="block font-semibold text-slate-700 mb-1">PO Date</label>
+                  <input type="date" id="bd-po-date" value="2026-10-12" onchange="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block font-semibold text-slate-700 mb-1">NCA No.</label>
+                  <input type="text" id="bd-nca-no" value="NCA-2026-001" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-slate-900 outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+                <div>
+                  <label class="block font-semibold text-slate-700 mb-1">NCA Date</label>
+                  <input type="date" id="bd-nca-date" value="2026-10-15" onchange="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 outline-none focus:ring-2 focus:ring-sky-500">
+                </div>
+              </div>
+
+              <!-- Stream & Block Configuration (Determined by BD) -->
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Stream Configuration (Comma-separated for downstream dropdowns)</label>
+                <input type="text" id="bd-streams-input" value="Stream 1, Stream 2, Stream 3" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none" placeholder="e.g. Stream 1, Stream 2, Stream 3">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Block Names (Comma-separated for downstream dropdowns)</label>
+                <input type="text" id="bd-blocks-input" value="Block A, Block B, Central Core" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none" placeholder="e.g. Block A, Block B, Central Core">
+              </div>
+
+              <!-- Formwork Type Dropdown -->
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Formwork Type</label>
+                <select id="bd-formwork-type" onchange="propagateBDData()" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none">
+                  <option value="QUICK DECK / LIGHTDECK">QUICK DECK / LIGHTDECK</option>
+                  <option value="MIVAN/MONOLITIC FORMWORK" selected="">MIVAN/MONOLITIC FORMWORK</option>
+                  <option value="PREMIUM FORMWORK">PREMIUM FORMWORK</option>
+                  <option value="ROBUST FORMWORK / ROBUSTFORM">ROBUST FORMWORK / ROBUSTFORM</option>
+                  <option value="ADAPTER FORMWORK / ADAPTERFORM">ADAPTER FORMWORK / ADAPTERFORM</option>
+                  <option value="ECO FORMWORK / ECOFORM">ECO FORMWORK / ECOFORM</option>
+                  <option value="VERTICAL FORMWORK / VERTIPRO">VERTICAL FORMWORK / VERTIPRO</option>
+                </select>
+              </div>
+
+              <!-- Product Type Dropdown -->
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Product Type</label>
+                <select id="bd-product-type" onchange="propagateBDData()" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none">
+                  <option value="MFE New" selected="">MFE New</option>
+                  <option value="MFE Used (Refurbished)">MFE Used (Refurbished)</option>
+                  <option value="Re-Design Only (Non-physical Despatch)">Re-Design Only (Non-physical Despatch)</option>
+                  <option value="Direct">Direct</option>
+                  <option value="Modification">Modification</option>
+                </select>
+              </div>
+            </div>
+            <p id="bd-colour-hint" class="text-[11px] text-slate-500 pt-1"></p>
+            <div id="bd-warnings" class="space-y-1 text-[11px]"></div>
+          </div>
+
+          <!-- Card 2: Dynamic Pricing & LME Formula Engine -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">2. Selling Price &amp; Dynamic LME Parameters</h3>
+                <p class="text-xs text-slate-500">Final Price (USD/m²) = Selling Price + LME Adjustment + Props/WPB/Waler/Acc + Aluminium Weight + Freight. LME Adjustment: <code class="font-mono">(LME_Today - LME_Rate) / 1000 * 21.5</code></p>
+              </div>
+              <select id="bd-incoterms" class="px-2.5 py-1 bg-slate-100 border border-slate-300 rounded text-xs font-semibold text-slate-800">
+                <option value="CIF">Incoterms: CIF</option>
+                <option value="FOB">Incoterms: FOB</option>
+                <option value="EXW">Incoterms: EXW</option>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">NCA Qty (m²): Latest Approved Version</label>
+                <input type="number" id="bd-nca-area" value="850" readonly class="w-full px-3 py-2 bg-slate-100 border border-slate-300 rounded-lg font-mono font-bold text-slate-900" title="Changes only through an approved NCA revision">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Selling Price (per m²) &amp; Currency</label>
+                <div class="flex gap-1.5">
+                  <input type="number" id="bd-base-price" value="145.00" step="0.5" oninput="recalculateCommercial()" class="w-2/3 px-3 py-2 border border-slate-300 rounded-lg font-mono font-bold text-slate-900 focus:ring-2 focus:ring-sky-500">
+                  <select id="bd-price-currency" onchange="recalculateCommercial()" class="w-1/3 px-1.5 py-2 bg-white border border-slate-300 rounded-lg font-semibold text-slate-800">
+                    <option value="USD" selected>USD</option>
+                    <option value="MYR">MYR</option>
+                    <option value="SGD">SGD</option>
+                    <option value="INR">INR</option>
+                  </select>
+                </div>
+                <p id="bd-price-usd-hint" class="text-[11px] text-slate-500 mt-1"></p>
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Props / WPB / Waler / Acc ($/m²)</label>
+                <input type="number" id="bd-props-acc" value="12.00" step="0.5" oninput="recalculateCommercial()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono font-bold text-slate-900 focus:ring-2 focus:ring-sky-500">
+              </div>
+
+              <div>
+                <label class="block text-slate-600 mb-1">Contract LME Rate ($/MT)</label>
+                <input type="number" id="bd-lme-base" value="2600" oninput="recalculateCommercial()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-slate-800">
+              </div>
+              <div>
+                <label class="block text-slate-600 mb-1">LME Cash Price Today ($/MT)</label>
+                <input type="number" id="bd-lme-today" value="3190" oninput="recalculateCommercial()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-slate-800">
+              </div>
+              <div>
+                <label class="block text-slate-600 mb-1">LME Type</label>
+                <select id="bd-lme-mode" onchange="recalculateCommercial()" class="w-full px-2 py-2 bg-white border border-slate-300 rounded-lg font-semibold text-slate-800">
+                  <option value="Variable" selected="">Variable</option>
+                  <option value="Fixed">Fixed ($0)</option>
+                  <option value="Freeze">Freeze</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-slate-600 mb-1">Aluminium Weight Adjusted ($/m²)</label>
+                <input type="number" id="bd-aluminium" value="0" step="0.5" oninput="recalculateCommercial()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-slate-800">
+              </div>
+              <div>
+                <label class="block text-slate-600 mb-1">Freight Adjusted ($/m²)</label>
+                <input type="number" id="bd-surcharge-m2" value="6.545" step="0.005" oninput="recalculateCommercial()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-slate-800">
+              </div>
+              <div id="bd-freeze-wrap" class="hidden">
+                <label class="block text-slate-600 mb-1">Freeze Adjustment ($/m², fixed on freeze date)</label>
+                <input type="number" id="bd-freeze-adj" value="2.15" step="0.01" oninput="recalculateCommercial()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-slate-800">
+              </div>
+            </div>
+          </div>
+
+          <!-- Card: Payment Terms (each contract sets its own advance %) -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">Payment Terms (Up to 3 Milestones)</h3>
+                <p class="text-xs text-slate-500">Each contract sets its own advance %, for example 10%, 20% or 100%. Terms must total 100%.</p>
+              </div>
+              <span id="bd-terms-total" class="text-xs font-mono font-bold text-emerald-700">100%</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div class="flex gap-1.5">
+                <input type="number" id="pt-pct-0" value="20" oninput="recalculateCommercial()" class="w-1/2 px-2.5 py-2 border border-slate-300 rounded-lg font-mono font-bold" aria-label="Milestone 1 percent">
+                <select id="pt-type-0" onchange="recalculateCommercial()" class="w-1/2 px-1.5 py-2 bg-white border border-slate-300 rounded-lg font-semibold"><option selected>Advance</option><option>CAD</option><option>LC</option><option>TT</option></select>
+              </div>
+              <div class="flex gap-1.5">
+                <input type="number" id="pt-pct-1" value="80" oninput="recalculateCommercial()" class="w-1/2 px-2.5 py-2 border border-slate-300 rounded-lg font-mono font-bold" aria-label="Milestone 2 percent">
+                <select id="pt-type-1" onchange="recalculateCommercial()" class="w-1/2 px-1.5 py-2 bg-white border border-slate-300 rounded-lg font-semibold"><option>Advance</option><option selected>CAD</option><option>LC</option><option>TT</option></select>
+              </div>
+              <div class="flex gap-1.5">
+                <input type="number" id="pt-pct-2" value="" placeholder="%" oninput="recalculateCommercial()" class="w-1/2 px-2.5 py-2 border border-slate-300 rounded-lg font-mono font-bold" aria-label="Milestone 3 percent">
+                <select id="pt-type-2" onchange="recalculateCommercial()" class="w-1/2 px-1.5 py-2 bg-white border border-slate-300 rounded-lg font-semibold"><option>Advance</option><option>CAD</option><option selected>LC</option><option>TT</option></select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card: NCA Versioning & Change Gate -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+            <div class="border-b border-slate-100 pb-3">
+              <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5"><i data-lucide="lock" class="w-4 h-4 text-amber-600"></i> NCA Versions &amp; Change Gate</h3>
+              <p class="text-xs text-slate-500">A revision counts only after an administrator approves it. Approval alerts Design, Planning, Production &amp; Dispatch for 14 days.</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs">
+              <input type="text" id="nca-ref" placeholder="Reference" class="px-2.5 py-2 border border-slate-300 rounded-lg font-mono">
+              <input type="date" id="nca-date" value="2026-11-18" class="px-2.5 py-2 border border-slate-300 rounded-lg">
+              <input type="number" id="nca-qty" placeholder="New qty (m²)" class="px-2.5 py-2 border border-slate-300 rounded-lg font-mono">
+              <input type="text" id="nca-reason" placeholder="Reason for change" class="px-2.5 py-2 border border-slate-300 rounded-lg">
+              <button onclick="submitNcaRevision()" class="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold transition">Submit Revision</button>
+            </div>
+            <div id="nca-history" class="overflow-x-auto"></div>
+          </div>
+
+          <!-- Card 3: Forecast Month Choice & Dynamic Monthly Placeholders -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="calendar-range" aria-hidden="true" class="lucide lucide-calendar-range w-4 h-4 text-sky-600"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M16 2v3"></path><path d="M3 9h18"></path><path d="M8 2v3"></path><path d="M17 13h-6"></path><path d="M13 17H7"></path><path d="M7 13h.01"></path><path d="M17 17h.01"></path></svg>
+                  3. Forecast Month Horizon &amp; Phased Delivery Placeholders
+                </h3>
+                <p class="text-xs text-slate-500">Select the number of forecast months (1–6) to dynamically generate monthly m² entry fields</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <label class="text-xs font-bold text-slate-700">Forecast Horizon:</label>
+                <select id="bd-forecast-months" onchange="renderForecastInputs()" class="px-3 py-1.5 bg-sky-50 border border-sky-300 rounded-lg text-xs font-bold text-sky-900 focus:ring-2 focus:ring-sky-500 outline-none">
+                  <option value="1">1 Month</option>
+                  <option value="2">2 Months</option>
+                  <option value="3" selected="">3 Months</option>
+                  <option value="4">4 Months</option>
+                  <option value="5">5 Months</option>
+                  <option value="6">6 Months</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Dynamic Month Placeholders Grid -->
+            <div id="bd-forecast-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <label class="block text-[11px] font-bold text-slate-600">Month 1 (Nov 2026) Forecast (m²)</label>
+            <input type="number" step="1" value="283.33" oninput="validateForecastSum()" class="fc-month-input w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg font-mono text-xs font-bold text-slate-900">
+          </div>
+        
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <label class="block text-[11px] font-bold text-slate-600">Month 2 (Dec 2026) Forecast (m²)</label>
+            <input type="number" step="1" value="283.33" oninput="validateForecastSum()" class="fc-month-input w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg font-mono text-xs font-bold text-slate-900">
+          </div>
+        
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+            <label class="block text-[11px] font-bold text-slate-600">Month 3 (Jan 2027) Forecast (m²)</label>
+            <input type="number" step="1" value="283.34" oninput="validateForecastSum()" class="fc-month-input w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg font-mono text-xs font-bold text-slate-900">
+          </div>
+        </div>
+
+            <!-- Forecast vs NCA Balance Bar -->
+            <div id="bd-forecast-status" class="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs flex flex-wrap items-center justify-between gap-2 text-emerald-900">
+              <span>Forecasted Sum across <strong id="fc-month-count">3</strong> month(s): <strong id="fc-sum-m2" class="font-mono">850.00 m²</strong></span>
+              <span id="fc-match-badge" class="font-bold text-emerald-700">✓ Matches Approved NCA Area (850.00 m²)</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Live Contract Summary & Plant Capacity Ceiling Simulator -->
+        <div class="space-y-6">
+          
+          <!-- Live Pricing Box ($149,795.50 Default) -->
+          <div class="bg-slate-900 text-white rounded-xl p-6 shadow-md space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Live Commercial Valuation</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-900/60 text-emerald-300 border border-emerald-700">Zero #VALUE! Errors</span>
+            </div>
+
+            <div class="space-y-2.5 text-xs">
+              <div class="flex justify-between text-slate-300">
+                <span>Approved NCA Area:</span>
+                <span class="font-mono font-bold text-white" id="summary-area">850.00 m²</span>
+              </div>
+              <div class="flex justify-between text-slate-300">
+                <span>Base Selling Rate:</span>
+                <span class="font-mono" id="summary-base">$145.00 / m²</span>
+              </div>
+              <div class="flex justify-between text-slate-300">
+                <span>Props / WPB / Waler / Acc:</span>
+                <span class="font-mono text-sky-300" id="summary-props">+$12.00 / m²</span>
+              </div>
+              <div class="flex justify-between text-slate-300">
+                <span>Dynamic LME Adjustment:</span>
+                <span class="font-mono text-emerald-400" id="summary-lme">+$12.685 / m²</span>
+              </div>
+              <div class="flex justify-between text-slate-300">
+                <span>Aluminium Weight Adjusted:</span>
+                <span class="font-mono" id="summary-aluminium">+$0.000 / m²</span>
+              </div>
+              <div class="flex justify-between text-slate-300">
+                <span>Freight Adjusted:</span>
+                <span class="font-mono" id="summary-surcharge">+$6.545 / m²</span>
+              </div>
+              <div class="border-t border-slate-800 pt-2.5 flex justify-between items-baseline">
+                <span class="font-bold text-slate-200">Final Selling Price:</span>
+                <span class="font-mono text-base font-bold text-sky-400" id="summary-unit-rate">$176.23 / m²</span>
+              </div>
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-800/90 border border-slate-700 space-y-1">
+              <div class="text-[11px] text-slate-400">Total Contract Value (Flows to Step 2 Finance):</div>
+              <div class="text-2xl font-extrabold font-mono text-emerald-400" id="summary-total-contract">$149,795.50</div>
+              <div id="summary-terms-preview" class="text-[11px] text-slate-400 pt-1 space-y-0.5"></div>
+            </div>
+
+            <button onclick="switchTab(2)" class="w-full py-2.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer">
+              <span>Transmit Contract to Finance Gateway</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="arrow-right" aria-hidden="true" class="lucide lucide-arrow-right w-4 h-4"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+            </button>
+          </div>
+
+          <!-- Plant Capacity Ceiling Simulator (74,200 m² Base vs 110,000 m² Cap) -->
+          <div id="bd-capacity-card" class="bg-white rounded-xl border-2 border-emerald-500 shadow-xs p-5 space-y-4 transition-all">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="factory" aria-hidden="true" class="lucide lucide-factory w-4 h-4 text-sky-600"><path d="M12 16h.01"></path><path d="M16 16h.01"></path><path d="M3 19a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5a.5.5 0 0 0-.769-.422l-4.462 2.844A.5.5 0 0 1 15 10.5v-2a.5.5 0 0 0-.769-.422L9.77 10.922A.5.5 0 0 1 9 10.5V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"></path><path d="M8 16h.01"></path></svg>
+                <h3 class="text-sm font-bold text-slate-900">Plant Capacity Check (Alert, Not a Block)</h3>
+              </div>
+              <span id="cap-pill" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">WITHIN CAP</span>
+            </div>
+
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Monthly plant capacity is <strong>110,000 m²</strong> (not complexity-weighted). Going over raises a high <code class="font-mono">PRODUCTION_OVER_CAPACITY</code> alert for BD and Planning; it does not block the order.
+            </p>
+
+            <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-2 text-xs">
+              <div class="flex justify-between">
+                <span class="text-slate-500">Existing Committed Plant Load:</span>
+                <span class="font-mono font-bold text-slate-800">74,200 m²</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-500">Remaining Available Capacity:</span>
+                <span class="font-mono font-bold text-emerald-700">35,800 m²</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-500">This Order NCA Scope:</span>
+                <span class="font-mono font-bold text-sky-700" id="cap-this-order">+850 m²</span>
+              </div>
+              <div class="border-t border-slate-200 pt-1.5 flex justify-between text-sm">
+                <span class="font-bold text-slate-900">Projected Cumulative Load:</span>
+                <span class="font-mono font-extrabold text-emerald-700" id="cap-projected-total">75,050 / 110,000 m²</span>
+              </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="space-y-1">
+              <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                <div id="cap-bar-fill" class="h-full bg-emerald-500 transition-all duration-300" style="width: 68.2%;"></div>
+              </div>
+              <div class="flex justify-between text-[10px] font-mono text-slate-500">
+                <span>Base: 74,200 m²</span>
+                <span id="cap-pct-text">68.2% Utilized</span>
+                <span>Cap: 110,000 m²</span>
+              </div>
+            </div>
+
+            <!-- Over-Capacity Alert Banner (Hidden by default) -->
+            <div id="cap-breach-banner" class="hidden p-3 rounded-lg bg-rose-50 border border-rose-300 text-xs text-rose-900 space-y-1">
+              <div class="font-extrabold text-rose-700 flex items-center gap-1.5">
+                <i data-lucide="octagon-alert" class="w-4 h-4"></i> ALERT: PRODUCTION_OVER_CAPACITY
+              </div>
+              <p class="text-[11px] leading-relaxed" id="cap-breach-msg"></p>
+            </div>
+
+            <!-- Interactive Simulation Buttons -->
+            <div class="pt-1 grid grid-cols-1 gap-2">
+              <button onclick="simulateCapacityBreach(true)" class="w-full py-2 px-3 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-800 font-bold text-xs transition cursor-pointer">
+                Simulate Over Capacity (&gt;110,000 m² — Set Order 36,500 m²)
+              </button>
+              <button onclick="simulateCapacityBreach(false)" class="w-full py-2 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 font-semibold text-xs transition cursor-pointer">
+                Restore Standard Order (850 m² — Total 75,050 m²)
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- STEP 2: FINANCE GATEWAY -->
+    <!-- ========================================================================= -->
+    <section id="step-panel-2" class="step-panel space-y-6 hidden">
+      <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-start sm:items-center gap-3">
+          <div class="p-2 rounded-lg bg-indigo-600 text-white shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="landmark" aria-hidden="true" class="lucide lucide-landmark w-5 h-5"><path d="M10 18v-7"></path><path d="M11.119 2.205a2 2 0 0 1 1.762 0l7.84 3.846A.5.5 0 0 1 20.5 7h-17a.5.5 0 0 1-.22-.949z"></path><path d="M14 18v-7"></path><path d="M18 18v-7"></path><path d="M3 22h18"></path><path d="M6 18v-7"></path></svg>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-slate-900">Payment lines &amp; bank-line matching</h2>
+            <p class="text-xs text-slate-600">Milestones come from the BD payment terms and total the contract value (<strong class="font-mono" id="fin-banner-total">$149,795.50</strong>). The advance % is read from each contract. A held project is re-checked when the next bank line lands.</p>
+          </div>
+        </div>
+        <span id="fin-top-pill" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 shrink-0">Advance Cleared</span>
+      </div>
+
+      <!-- Inherited BD Scope Bar -->
+      <div class="bg-white rounded-xl border border-slate-200 p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+        <div>
+          <span class="text-slate-400 block text-[11px]">Project Name (from BD)</span>
+          <span class="font-bold text-slate-900" id="fin-proj-name">Skyline Tower Phase 2</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block text-[11px]">Building (from BD)</span>
+          <span class="font-bold text-slate-900" id="fin-bldg-name">Tower A - Podium &amp; Core</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block text-[11px]">Formwork System</span>
+          <span class="font-semibold text-sky-700" id="fin-formwork">MIVAN/MONOLITIC FORMWORK</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block text-[11px]">Product Type</span>
+          <span class="font-semibold text-amber-700" id="fin-product">MFE New</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+          
+          <!-- Payment Lines Table (from the BD payment terms) -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">Payment Lines (Synced with BD Terms &amp; Total)</h3>
+                <p class="text-xs text-slate-500">Confirming a bank line fills in Actual Received, Payment Date and Status, and MR11 rebuilds</p>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] uppercase font-bold text-slate-400 block">BD Contract Total</span>
+                <span class="text-base font-mono font-extrabold text-emerald-600" id="fin-table-header-total">$149,795.50</span>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs text-left">
+                <thead class="bg-slate-50 text-slate-600 border-y border-slate-200">
+                  <tr>
+                    <th class="py-2.5 px-3">Milestone</th>
+                    <th class="py-2.5 px-3">Split %</th>
+                    <th class="py-2.5 px-3">Invoice Amount (USD)</th>
+                    <th class="py-2.5 px-3">Actual Received (USD)</th>
+                    <th class="py-2.5 px-3">Payment Date</th>
+                    <th class="py-2.5 px-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="fin-lines-body" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Bank Line Matching -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">Semi-Automated Payment Confirmation</h3>
+                <p class="text-xs text-slate-500">Amount within tolerance +60 | Project named +30 | Payment type +10. Score ≥ 60 suggested to Finance; ≥ 90 from the mailbox can auto-confirm.</p>
+              </div>
+              <span id="fin-auto-pill" class="text-xs font-mono bg-slate-100 px-2.5 py-1 rounded text-slate-700">Auto-confirm: OFF</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
+              <textarea id="bank-paste" rows="2" placeholder="Paste bank lines: date, reference, amount, description" class="sm:col-span-2 px-3 py-2 border border-slate-300 rounded-lg font-mono text-[11px]"></textarea>
+              <button onclick="importBankLines()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold">Match Pasted Lines</button>
+              <button onclick="simulateMailboxAdvice()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 rounded-lg font-semibold">Simulate Mailbox Bank Advice</button>
+            </div>
+            <div id="bank-lines-list" class="space-y-2.5 text-xs"></div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Stage-Gate Hard Stop Simulator -->
+        <div class="space-y-6">
+          <div id="fin-gate-box" class="bg-white rounded-xl border-2 border-emerald-500 shadow-xs p-6 text-center space-y-4">
+            <div id="fin-gate-icon-wrap" class="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="unlock" aria-hidden="true" class="lucide lucide-unlock w-7 h-7"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>
+            </div>
+            <div>
+              <h3 id="fin-gate-heading" class="text-base font-bold text-slate-900">Step 3 Design Access: UNLOCKED</h3>
+              <p id="fin-gate-desc" class="text-xs text-slate-500 mt-1">
+                Advance payment M1 (<span id="fin-gate-m1-inline">$29,959.10</span>) is confirmed cleared. Technical Design can draft 2D/3D Shell Plans.
+              </p>
+            </div>
+
+            <div class="pt-2 space-y-2">
+              <button onclick="setAdvancePaymentCleared(false)" class="w-full py-2.5 px-3 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-700 font-bold text-xs transition cursor-pointer">
+                Simulate Payment Hold (Lock Step 3 Design)
+              </button>
+              <button onclick="setAdvancePaymentCleared(true)" class="w-full py-2.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer">
+                Confirm Advance Cleared (Unlock Step 3)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- STEP 3: TECHNICAL DESIGN & SHELL PLAN (WITH MATCHING SCREENSHOT LAYOUT) -->
+    <!-- ========================================================================= -->
+    <section id="step-panel-3" class="step-panel space-y-6 hidden">
+      
+      <!-- HARD STOP LOCK BANNER (Shown when Step 2 Advance Payment is on hold) -->
+      <div id="design-hard-stop-banner" class="hidden bg-rose-950 text-white border-2 border-rose-500 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg">
+        <div class="flex items-center gap-3">
+          <div class="p-3 rounded-xl bg-rose-600 text-white shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="lock" aria-hidden="true" class="lucide lucide-lock w-6 h-6"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          </div>
+          <div>
+            <h3 class="text-base font-extrabold text-rose-200">HARD STOP: TECHNICAL DESIGN ACCESS LOCKED BY FINANCE GATEWAY</h3>
+            <p class="text-xs text-rose-100 mt-0.5"><span id="design-stop-text">The advance payment</span> has not been confirmed in Step 2. Drafting is held until Finance confirms receipt. How strictly this applies awaits a management ruling; it can be switched in Rules.</p>
+          </div>
+        </div>
+        <button onclick="setAdvancePaymentCleared(true)" class="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs shrink-0 cursor-pointer">
+          Clear Payment in Finance to Unlock
+        </button>
+      </div>
+
+      <!-- Inherited Context & Stream/Block Selector Bar -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-5 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900 mt-0.5">
+            <span id="des-proj-title">Skyline Tower Phase 2</span> — <span id="des-bldg-title" class="text-slate-600">Tower A - Podium &amp; Core</span>
+          </h3>
+        </div>
+        <div class="flex flex-wrap items-center gap-3 text-xs">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Active Stream (from BD)</label>
+            <select id="des-stream-select" class="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg font-semibold text-slate-800"><option value="Stream 1">Stream 1</option><option value="Stream 2">Stream 2</option><option value="Stream 3">Stream 3</option></select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Active Block (from BD)</label>
+            <select id="des-block-select" class="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg font-semibold text-slate-800"><option value="Block A">Block A</option><option value="Block B">Block B</option><option value="Central Core">Central Core</option></select>
+          </div>
+        </div>
+      </div>
+
+      <div id="design-workspace-content" class="space-y-6">
+        
+        <!-- SECTION A: Shell Plan Online Entry -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-5">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">1. Shell Plan Submission (2D/3D General Arrangement)</h3>
+              <p class="text-xs text-slate-500">Approved date must be on or after submission date. Each resubmission adds a revision. Prevents the 1900-01-29 date error.</p>
+            </div>
+            <span id="sp-clock-pill" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">Shell-plan clock: 14 days</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1.5">Start Date</label>
+              <input type="date" id="sp-start-date" value="2026-10-22" onchange="validateShellPlanSchedule()" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-800 font-medium focus:ring-2 focus:ring-sky-500 outline-none">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1.5">Submission Date</label>
+              <input type="date" id="sp-sub-date" value="2026-10-28" onchange="validateShellPlanSchedule()" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-800 font-medium focus:ring-2 focus:ring-sky-500 outline-none">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1.5">Est. Completion Date</label>
+              <input type="date" id="sp-est-date" value="2026-11-02" onchange="validateShellPlanSchedule()" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-800 font-medium focus:ring-2 focus:ring-sky-500 outline-none">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1.5">Approved Date</label>
+              <input type="date" id="sp-act-date" value="2026-11-01" onchange="validateShellPlanSchedule()" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-800 font-medium focus:ring-2 focus:ring-sky-500 outline-none">
+            </div>
+          </div>
+          <div id="sp-validation-banner" class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs flex items-center gap-2.5 text-emerald-900">
+            <span id="sp-validation-text"></span>
+          </div>
+          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end text-xs">
+              <div>
+                <label class="block text-slate-600 mb-1">Shell Plan Status</label>
+                <select id="sp-rev-select" onchange="validateShellPlanSchedule()" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-semibold text-slate-800">
+                  <option value="Approved" selected>Approved</option>
+                  <option value="Reapprove">Reapprove</option>
+                  <option value="Submitted">Submitted</option>
+                  <option value="Pending Consultant Drawings">Pending Consultant Drawings</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-slate-600 mb-1">Remarks (shell model update, correction, client changes)</label>
+                <input type="text" id="sp-remarks" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg" value="Client frozen shell">
+              </div>
+              <button onclick="addShellRevision()" class="px-3 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-bold">Record Resubmission (New Revision)</button>
+            </div>
+            <div id="sp-history" class="space-y-1.5 text-[11px]"></div>
+            <div class="space-y-2">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <span class="text-xs font-bold text-slate-900">Approval History</span>
+                <select id="approval-project" onchange="renderApprovalHistory()" aria-label="Project" class="px-2 py-1 bg-white border border-slate-300 rounded-lg text-xs font-semibold"></select>
+              </div>
+              <div id="approval-history" class="overflow-x-auto"></div>
+            </div>
+            <div class="p-3 rounded-lg bg-white border border-slate-200 text-xs">
+              <span class="text-[11px] text-slate-500 block">Shell Plan Geometry Scope:</span>
+              <span id="sp-load-output" class="font-mono font-bold text-sm text-sky-700">850 m² Verified Shell Envelope</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION B: Design Release Online Entry -->
+        <div class="bg-white rounded-xl border-2 border-sky-200 shadow-xs p-6 space-y-5">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">2. Design Release &amp; Design Complexity Factor (DCF)</h3>
+              <p class="text-xs text-slate-500">Completion on or after start. A completion date is required before status can be Completed. Duration calculates itself.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="simulateInvalidDesignDate()" class="px-2.5 py-1 rounded border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-semibold transition cursor-pointer">Test 1900-01-29 Date Error</button>
+              <button onclick="restoreValidDesignDate()" class="px-2.5 py-1 rounded border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-[11px] font-semibold transition cursor-pointer">Reset Valid Dates</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1.5">Design Start Date</label>
+              <input type="date" id="des-start-date" value="2026-11-04" onchange="validateDesignSchedule()" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-800 font-medium focus:ring-2 focus:ring-sky-500 outline-none">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1.5">Est. Completion Date</label>
+              <input type="date" id="des-est-date" value="2026-11-14" onchange="validateDesignSchedule()" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-800 font-medium focus:ring-2 focus:ring-sky-500 outline-none">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1.5">Actual Completion Date</label>
+              <input type="date" id="des-act-date" value="2026-11-13" onchange="validateDesignSchedule()" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-800 font-medium focus:ring-2 focus:ring-sky-500 outline-none">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1.5">Design Status</label>
+              <select id="des-status" onchange="validateDesignSchedule()" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-800 font-semibold">
+                <option>To Start</option><option>Ongoing</option><option selected>Completed</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1.5">Level</label>
+              <input type="text" id="des-level" value="L1 to L12" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-800 font-medium">
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1.5">Total Quantity Ordered m² (Design Final)</label>
+              <input type="number" id="des-final-m2" value="850" oninput="runFourWayRecon()" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-mono font-bold text-slate-800">
+            </div>
+          </div>
+          <div id="des-validation-banner" class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs flex items-center gap-2.5 text-emerald-900">
+            <span id="des-validation-text"></span>
+          </div>
+          <div class="p-5 rounded-xl border border-slate-200 bg-slate-50/40 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="text-xs font-bold text-slate-900">Design Complexity Factor (DCF)</span>
+              <span class="text-xs font-mono text-slate-500">Design Capacity: <span id="des-cap-label">110,000</span> weighted m²/month</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+              <div>
+                <label class="block text-xs text-slate-600 mb-1.5">DCF Classification</label>
+                <select id="des-dcf-multiplier" onchange="recalculateDCF()" class="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-900 shadow-2xs">
+                  <option value="Complex" selected>Complex (weighted by the Complex weight in Rules)</option>
+                  <option value="Standard">Standard (1.0x)</option>
+                </select>
+              </div>
+              <div class="p-3.5 rounded-xl bg-white border border-slate-200">
+                <span class="text-xs text-slate-500 block">Effective Design Load:</span>
+                <span id="des-dcf-output" class="font-mono font-bold text-sm text-sky-700 mt-0.5 block"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION C: Accessories & Holing Items, one SLA clock per item -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h3 class="text-base font-bold text-slate-900">3. Accessories &amp; Holing Tracking (One SLA Clock per Item)</h3>
+              <p class="text-xs text-slate-500">Quantity, status and completion time for each item. Items drive gate checks 3 and 4. The clock length is set in Rules; its start event is still to be agreed.</p>
+            </div>
+            <span id="items-sla-pill" class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">SLA 48h</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+            <select id="item-row" class="px-2.5 py-2 bg-white border border-slate-300 rounded-lg font-semibold" aria-label="MR11 row"></select>
+            <select id="item-kind" class="px-2.5 py-2 bg-white border border-slate-300 rounded-lg font-semibold" aria-label="Item kind"><option value="HOLING">Holing</option><option value="ACCESSORY">Accessory</option></select>
+            <input type="text" id="item-name" placeholder="Item name" class="px-2.5 py-2 border border-slate-300 rounded-lg">
+            <input type="number" id="item-qty" placeholder="Qty required" class="px-2.5 py-2 border border-slate-300 rounded-lg font-mono">
+            <button onclick="addItem()" class="px-3 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-bold">Add Item</button>
+          </div>
+          <div id="items-table" class="overflow-x-auto"></div>
+        </div>
+
+        <!-- SECTION D: Design-Load & Plant Capacity View -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+          <div class="border-b border-slate-100 pb-3">
+            <h3 class="text-base font-bold text-slate-900">4. Design-Load &amp; Plant Capacity View</h3>
+            <p class="text-xs text-slate-500">Two separate limits. Complex DCF is weighted for design only; plant capacity is unweighted. Going over either raises an alert.</p>
+          </div>
+          <div id="capacity-table" class="overflow-x-auto"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- STEP 4: FACTORY PRODUCTION & YARD (MOBILE PWA FLOOR LOGGER) -->
+    <!-- ========================================================================= -->
+    <section id="step-panel-4" class="step-panel space-y-6 hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+        <!-- Left 5 Cols: Daily Panel Actuals (same form as the mobile app) -->
+        <div class="lg:col-span-5 bg-slate-900 text-white rounded-3xl p-5 border-4 border-slate-800 shadow-xl space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              <span class="text-xs font-bold tracking-wide uppercase text-slate-300">Daily Panel Actuals</span>
+            </div>
+            <span class="text-[11px] font-mono text-sky-400" id="pwa-prod-proj-tag">Skyline Tower Phase 2</span>
+          </div>
+          <div class="space-y-3 text-xs">
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[10px] text-slate-400 uppercase mb-1">Stream (From BD)</label>
+                <select id="prod-stream-select" class="w-full px-2.5 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white font-semibold"></select>
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-400 uppercase mb-1">Block (From BD)</label>
+                <select id="prod-block-select" class="w-full px-2.5 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white font-semibold"></select>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[10px] text-slate-400 uppercase mb-1">Date</label>
+                <input type="date" id="prod-date" value="2026-11-18" class="w-full px-2.5 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white">
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-400 uppercase mb-1">Move Panels To</label>
+                <select id="prod-state-select" class="w-full px-2.5 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sky-300 font-bold">
+                  <option value="PROCESSED">PROCESSED</option>
+                  <option value="PRODUCED" selected>PRODUCED</option>
+                  <option value="DISPATCHED">DISPATCHED</option>
+                  <option value="DELIVERED">DELIVERED</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-400 uppercase mb-1">Panel Codes (Must Be in the Panel Register)</label>
+              <input type="text" id="prod-serial-input" value="W-043" placeholder="W-041 to W-045, or W-041, W-042" class="w-full px-2.5 py-2 rounded-lg bg-slate-800 border border-slate-700 font-mono text-white">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[10px] text-slate-400 uppercase mb-1">Evidence Type</label>
+                <select id="prod-source" class="w-full px-2.5 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white"><option>Photo</option><option>Email</option><option>PO</option><option>Document Link</option></select>
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-400 uppercase mb-1">Evidence Reference</label>
+                <input type="text" id="prod-evidence" value="IMG_BAY2_W043.jpg" class="w-full px-2.5 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white">
+              </div>
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-400 uppercase mb-1">Reason Not Produced (If Any)</label>
+              <input type="text" id="prod-reason" class="w-full px-2.5 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white">
+            </div>
+            <button onclick="logFactoryBatch()" class="w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs shadow-md transition cursor-pointer">
+              + Save Panel Actuals
+            </button>
+            <p class="text-[11px] text-slate-400">Replaces the 31-column monthly matrix and WhatsApp actuals. Also available on the Mobile App tab.</p>
+          </div>
+        </div>
+
+        <!-- Right 7 Cols: Capacity, Yard Evidence, Panel Register & Planning Series -->
+        <div class="lg:col-span-7 space-y-6">
+          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">Plant Monthly Capacity</h3>
+                <p class="text-xs text-slate-500">Alert at 110,000 m²/month (not complexity-weighted); it does not stop work</p>
+              </div>
+              <span class="font-mono text-xs font-bold text-emerald-700" id="prod-cap-label">75,050 / 110,000 m²</span>
+            </div>
+            <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+              <div id="prod-cap-bar" class="h-full bg-sky-600 rounded-full" style="width: 68.2%;"></div>
+            </div>
+          </div>
+
+        <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-slate-900">Yard Staging: 'No Evidence, No Change'</h3>
+            <span id="yard-photo-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Attached</span>
+          </div>
+          <p class="text-xs text-slate-500">Photos of packed bundles, or an email, PO or document link. Up to 5 files of 5 MB each. An entry without evidence cannot be marked ready.</p>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <select id="yard-source" aria-label="Evidence type" class="px-2.5 py-2 bg-white border border-slate-300 rounded-lg"><option>Photo</option><option>Email</option><option>PO</option><option>Document Link</option></select>
+            <input type="text" id="yard-ref" placeholder="Reference (email subject, PO no., link)" class="px-2.5 py-2 border border-slate-300 rounded-lg">
+          </div>
+          <input type="file" id="yard-files" multiple accept="image/*,application/pdf" onchange="addEvidenceFiles(this)" class="block w-full text-xs text-slate-600">
+          <div id="yard-evidence-list" class="space-y-1.5 text-xs"></div>
+          <button onclick="markYardReady()" class="px-3 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold cursor-pointer">Mark Yard Entry Ready</button>
+        </div>
+
+          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Panel Register</h3>
+              <p class="text-xs text-slate-500">DESIGNED → PROCESSED → PRODUCED → DISPATCHED → DELIVERED. Unknown codes are refused. Panel m² rolls up by block and into the row's produced figure.</p>
+            </div>
+            <div class="grid grid-cols-3 sm:grid-cols-7 gap-2 text-xs">
+              <input type="text" id="pb-prefix" value="W-" aria-label="Code prefix" class="px-2 py-2 border border-slate-300 rounded-lg font-mono">
+              <input type="number" id="pb-from" placeholder="From" aria-label="From number" class="px-2 py-2 border border-slate-300 rounded-lg font-mono">
+              <input type="number" id="pb-to" placeholder="To" aria-label="To number" class="px-2 py-2 border border-slate-300 rounded-lg font-mono">
+              <input type="number" id="pb-m2" placeholder="m² each" aria-label="Area each" class="px-2 py-2 border border-slate-300 rounded-lg font-mono">
+              <input type="text" id="pb-series" placeholder="Series" aria-label="Series" class="px-2 py-2 border border-slate-300 rounded-lg">
+              <select id="pb-block" aria-label="Block" class="px-2 py-2 bg-white border border-slate-300 rounded-lg"></select>
+              <button onclick="addPanelBatch()" class="px-2 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-bold">Add Batch</button>
+            </div>
+            <div class="flex gap-2 text-xs">
+              <textarea id="pb-paste" rows="2" placeholder="Paste from Planning: code, type, m², series, tower/block (one per line)" class="flex-1 px-3 py-2 border border-slate-300 rounded-lg font-mono text-[11px]"></textarea>
+              <button onclick="importPanels()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg font-semibold">Import</button>
+            </div>
+            <div id="panel-rollup" class="overflow-x-auto"></div>
+            <div id="production-series" class="overflow-x-auto"></div>
+            <div>
+              <h4 class="text-xs font-bold text-slate-700 uppercase mb-2">Recent Panel Actuals</h4>
+              <div id="prod-log-list" class="space-y-2 text-xs"></div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Planning: Series Entry &amp; Ledger</h3>
+              <p class="text-xs text-slate-500">A reason is required when an amount is not processed.</p>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <input type="text" id="ps-series" placeholder="Series" class="px-2.5 py-2 border border-slate-300 rounded-lg">
+              <input type="text" id="ps-building" placeholder="Building type" class="px-2.5 py-2 border border-slate-300 rounded-lg">
+              <input type="number" id="ps-area" placeholder="Area m²" class="px-2.5 py-2 border border-slate-300 rounded-lg font-mono">
+              <input type="number" id="ps-processed" placeholder="Processed m²" class="px-2.5 py-2 border border-slate-300 rounded-lg font-mono">
+              <input type="date" id="ps-date" value="2026-11-18" aria-label="Processed date" class="px-2.5 py-2 border border-slate-300 rounded-lg">
+              <select id="ps-pack" aria-label="Pack" class="px-2.5 py-2 bg-white border border-slate-300 rounded-lg"><option>Pack</option><option>Not Pack</option></select>
+              <select id="ps-stock" aria-label="Stock type" class="px-2.5 py-2 bg-white border border-slate-300 rounded-lg"><option>New Stock</option><option>Used Stock</option><option>Spec</option><option>Make New</option></select>
+              <input type="text" id="ps-status" placeholder="Order status" class="px-2.5 py-2 border border-slate-300 rounded-lg">
+              <input type="text" id="ps-reason" placeholder="Reason not processed" class="col-span-2 sm:col-span-3 px-2.5 py-2 border border-slate-300 rounded-lg">
+              <button onclick="addPlanningSeries()" class="px-3 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-bold">Save Series</button>
+            </div>
+            <div id="planning-table" class="overflow-x-auto"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- YARD STAGING: MERGED INTO STEPS 4 AND 5 -->
+    <!-- ========================================================================= -->
+    <!-- Yard Staging is no longer its own step: its evidence card is in Step 4 and its 4-way check is in Step 5 -->
+
+    <!-- ========================================================================= -->
+    <!-- STEP 5: 5-POINT DISPATCH-READINESS GATE & 4-WAY M2 CHECK -->
+    <!-- ========================================================================= -->
+    <section id="step-panel-6" class="step-panel space-y-6 hidden">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Five-point dispatch-readiness gate &amp; 4-way m² check</h2>
+            <p class="text-xs text-slate-500">A lorry can be booked only when all five checks are green. Checks read live from the other steps. Use "Simulate fail" to show a failure on the live row.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="gate6-overall-badge" class="px-3 py-1.5 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800"></span>
+            <button onclick="openReleaseModal('LIVE')" class="px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold transition cursor-pointer">Admin Release</button>
+          </div>
+        </div>
+        <div id="gate6-cards-grid" class="grid grid-cols-1 sm:grid-cols-5 gap-3"></div>
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs flex flex-wrap items-end gap-2">
+          <div class="flex-1 min-w-[200px]">
+            <label class="block font-semibold text-slate-700 mb-1">Freight Booking Reference (Logistics, Passes Check 5)</label>
+            <input type="text" id="freight-ref" value="MAERSK-88120" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-mono">
+          </div>
+          <button onclick="saveFreightRef()" class="px-3 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-bold">Save Freight Confirmation</button>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-3">
+        <h3 class="text-sm font-bold text-slate-900">Gate by MR11 Row</h3>
+        <div id="gate-matrix" class="overflow-x-auto"></div>
+        <div id="gate-release-log" class="space-y-1.5 text-xs"></div>
+      </div>
+      <!-- 4-Way m² Reconciliation (moved here from the old Yard Staging step) -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900">4-Way m² Reconciliation</h3>
+          <p class="text-xs text-slate-500">Latest approved NCA vs Design Final vs Produced vs Shipped. Over <span id="recon-tol-label">2.0</span>% raises a <code class="font-mono">RECON_VARIANCE</code> alert. It is not one of the five gate checks and does not block shipment. Shipped counts once loads go out.</p>
+        </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl border border-slate-200 p-4 space-y-1">
+          <span class="text-xs font-bold text-slate-500">1. NCA (<span id="recon-nca-ver">v1</span>, Latest Approved)</span>
+          <div class="text-xl font-extrabold font-mono text-slate-900"><span id="recon-nca-m2">850.00</span> m²</div>
+          <span class="text-[11px] text-slate-400">Commercial baseline</span>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 p-4 space-y-1">
+          <span class="text-xs font-bold text-slate-500">2. Design Final</span>
+          <div class="text-xl font-extrabold font-mono text-sky-700"><span id="recon-des-m2">850.00</span> m²</div>
+          <span class="text-[11px] text-slate-400">Design's total quantity ordered</span>
+        </div>
+        <div class="bg-white rounded-xl border-2 border-sky-300 p-4 space-y-1.5">
+          <label class="text-xs font-bold text-slate-700 block">3. Produced (m²)</label>
+          <input type="number" id="recon-prod-input" value="842" step="1" oninput="runFourWayRecon()" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg font-mono text-lg font-extrabold text-slate-900">
+          <span class="text-[11px] text-emerald-700 font-medium block">Panel register: <span id="recon-panel-m2">0</span> m²</span>
+        </div>
+        <div id="recon-ship-card" class="bg-white rounded-xl border-2 border-emerald-400 p-4 space-y-1.5 transition-all">
+          <label class="text-xs font-bold text-slate-700 block">4. Shipped (m²)</label>
+          <input type="number" id="recon-ship-input" value="450" step="1" oninput="onShippedTyped()" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg font-mono text-lg font-extrabold text-slate-900">
+          <span class="text-[11px] text-slate-500 block" id="recon-ship-limit-hint"></span>
+        </div>
+      </div>
+
+      <div id="shipped-exceeds-produced-alert" class="hidden p-4 rounded-xl bg-rose-950 text-white border-2 border-rose-500 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-md">
+        <div class="flex items-start gap-3">
+          <i data-lucide="shield-x" class="w-6 h-6 text-rose-300 shrink-0"></i>
+          <div>
+            <h4 class="text-sm font-extrabold text-rose-200">REFUSED: SHIPPED RUNS AHEAD OF PRODUCED</h4>
+            <p class="text-xs text-rose-100 mt-1" id="shipped-violation-detail"></p>
+          </div>
+        </div>
+        <div class="flex flex-col gap-2 shrink-0">
+          <button onclick="clampShippedToProduced()" class="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs cursor-pointer">Correct to Produced</button>
+          <button onclick="confirmOverShip()" class="px-4 py-2 rounded-lg border border-rose-300 hover:bg-rose-900 text-rose-100 font-bold text-xs cursor-pointer">Confirm on Purpose (Logged)</button>
+        </div>
+      </div>
+
+          <div id="recon-status-box" class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 font-medium"></div>
+          <div id="recon-reference" class="grid grid-cols-3 gap-2 text-xs"></div>
+          <div class="flex flex-wrap gap-2 pt-1">
+            <button onclick="testShippedGreaterThanProduced()" class="px-3 py-2 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-800 text-xs font-bold cursor-pointer">Test: Set Shipped Above Produced</button>
+            <button onclick="testDesignVariance()" class="px-3 py-2 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold cursor-pointer">Test: Design Final 5% Over NCA</button>
+            <button onclick="resetReconValues()" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer">Restore Baseline (842 m² Produced / 450 m² Shipped)</button>
+          </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- STEP 6: LOGISTICS & SHIPPING -->
+    <!-- ========================================================================= -->
+    <section id="step-panel-7" class="step-panel space-y-6 hidden">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Forward lorry planning (<span id="log-cap-label">450</span> m² per lorry)</h2>
+            <p class="text-xs text-slate-500">Project: <strong id="log-proj-label">Skyline Tower Phase 2</strong> (<span id="log-bldg-label">Tower A - Podium &amp; Core</span>)</p>
+          </div>
+          <div class="flex items-center gap-2 text-xs">
+            <select id="log-stream-select" class="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg font-semibold"></select>
+            <select id="log-block-select" class="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg font-semibold"></select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
+          <div class="p-4 rounded-xl bg-sky-50 border border-sky-200">
+            <span class="text-sky-700 font-semibold block">Produced Stock Waiting (All Rows)</span>
+            <span class="text-2xl font-extrabold font-mono text-slate-900" id="log-area-m2">0 m²</span>
+          </div>
+          <div class="p-4 rounded-xl bg-indigo-50 border border-indigo-200">
+            <span class="text-indigo-700 font-semibold block">Lorries Needed, Next 8 Weeks</span>
+            <span class="text-2xl font-extrabold font-mono text-indigo-900" id="log-lorry-count">0</span>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+            <span class="text-slate-600 font-semibold block">Lorries Planned</span>
+            <span class="text-2xl font-extrabold font-mono text-slate-900" id="log-lorry-planned">0</span>
+          </div>
+          <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
+            <span class="text-emerald-700 font-semibold block">Departure Alert to Client &amp; PIC</span>
+            <span class="text-sm font-bold text-emerald-900 block mt-1">In-platform alert on ATD</span>
+            <span class="text-[11px] text-emerald-800">Email or Teams needs MFE IT</span>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="text-sm font-bold text-slate-900">Lorries</h3>
+            <button onclick="planLorriesForGreenStock()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold">Plan Lorries for Green Stock</button>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-6 gap-2 text-xs">
+            <select id="lorry-row" aria-label="MR11 row" class="px-2.5 py-2 bg-white border border-slate-300 rounded-lg font-semibold"></select>
+            <input type="date" id="lorry-date" value="2026-11-19" aria-label="Lorry date" class="px-2.5 py-2 border border-slate-300 rounded-lg">
+            <input type="text" id="lorry-ref" placeholder="Plate / reference" class="px-2.5 py-2 border border-slate-300 rounded-lg font-mono">
+            <input type="text" id="lorry-dest" placeholder="Destination" class="px-2.5 py-2 border border-slate-300 rounded-lg">
+            <input type="number" id="lorry-m2" placeholder="Load m²" class="px-2.5 py-2 border border-slate-300 rounded-lg font-mono">
+            <button onclick="bookLorry()" class="px-3 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-bold">Book Lorry</button>
+          </div>
+          <div id="lorry-table" class="overflow-x-auto"></div>
+        </div>
+
+        <div class="space-y-2">
+          <h3 class="text-sm font-bold text-slate-900">Lorries Needed by Month (MR11 Forecast m² ÷ Lorry Capacity)</h3>
+          <div id="lorry-forecast" class="overflow-x-auto"></div>
+        </div>
+
+        <div class="space-y-2">
+          <h3 class="text-sm font-bold text-slate-900">Monthly Dispatched (m²)</h3>
+          <div id="monthly-dispatched" class="overflow-x-auto"></div>
+        </div>
+
+        <!-- Shipping Form -->
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3 text-xs">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="font-bold text-slate-900">Shipping Form</div>
+            <select id="ship-mode" onchange="toggleShipMode()" aria-label="Shipping type" class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg font-semibold"><option value="LOCAL">Local</option><option value="OVERSEAS">Overseas</option></select>
+          </div>
+          <div id="ship-local" class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <input type="date" id="ship-l-date" value="2026-11-18" aria-label="Dispatch date" class="px-3 py-2 bg-white border border-slate-300 rounded-lg">
+            <input type="number" id="ship-l-m2" placeholder="m² dispatched" class="px-3 py-2 bg-white border border-slate-300 rounded-lg font-mono">
+            <input type="text" id="ship-l-lorry" placeholder="Lorry" class="px-3 py-2 bg-white border border-slate-300 rounded-lg font-mono">
+            <button onclick="saveShipping()" class="px-3 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-lg">Save</button>
+          </div>
+          <div id="ship-overseas" class="hidden grid grid-cols-2 sm:grid-cols-5 gap-2">
+            <input type="text" id="ship-o-pod" placeholder="POD" class="px-3 py-2 bg-white border border-slate-300 rounded-lg">
+            <input type="text" id="ship-o-port" placeholder="Delivery to port (date)" class="px-3 py-2 bg-white border border-slate-300 rounded-lg">
+            <input type="text" id="ship-o-eta" placeholder="ETA POL (date)" class="px-3 py-2 bg-white border border-slate-300 rounded-lg">
+            <input type="text" id="ship-o-atd" placeholder="ATD (date)" class="px-3 py-2 bg-white border border-slate-300 rounded-lg">
+            <input type="number" id="ship-o-m2" placeholder="m² sailed" class="px-3 py-2 bg-white border border-slate-300 rounded-lg font-mono">
+            <input type="text" id="ship-o-cont" placeholder="20ft / 40ft containers" class="px-3 py-2 bg-white border border-slate-300 rounded-lg">
+            <input type="text" id="ship-o-vessel" placeholder="Feeder / mother vessel" class="px-3 py-2 bg-white border border-slate-300 rounded-lg">
+            <input type="number" id="ship-o-cost" placeholder="Cost (USD)" class="px-3 py-2 bg-white border border-slate-300 rounded-lg font-mono">
+            <button onclick="saveShipping()" class="sm:col-span-2 px-3 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-lg">Save</button>
+          </div>
+        </div>
+
+        <!-- Audited Delay Log (Replaces Manual Rev 1-7 Spreadsheet Columns) -->
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3 text-xs">
+          <div class="font-bold text-slate-900">Audited ETD/ATD Log (Replaces Manual Rev 1–7 Columns). Every ETD Change Needs a Reason.</div>
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+            <input type="date" id="log-new-etd" value="2026-11-20" aria-label="New ETD" class="px-3 py-2 bg-white border border-slate-300 rounded-lg">
+            <input type="text" id="log-delay-reason" placeholder="Reason for ETD revision (e.g. Crane booking at site)" class="sm:col-span-2 px-3 py-2 bg-white border border-slate-300 rounded-lg">
+            <button onclick="addLogisticsRevision()" class="px-3 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-lg cursor-pointer">Log Audited ETD Change</button>
+          </div>
+          <div id="log-audit-entries" class="space-y-1.5 pt-2">
+            <div class="p-2.5 rounded bg-white border border-slate-200 flex justify-between">
+              <span><strong>Baseline ETD: 2026-11-16</strong> — Initial lorry allocation</span>
+              <span class="font-mono text-slate-400">Logged by Logistics PIC</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- STEP 7: SITE RECEIVING (FIELD ENGINEER MOBILE PWA) -->
+    <!-- ========================================================================= -->
+    <section id="step-panel-8" class="step-panel space-y-6 hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div class="lg:col-span-5 bg-slate-900 text-white rounded-3xl p-5 border-4 border-slate-800 shadow-xl space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Site Progress &amp; Receiving</span>
+            <span class="text-[11px] font-mono text-slate-300" id="site-proj-tag">Skyline Tower Phase 2</span>
+          </div>
+          <div class="space-y-3 text-xs">
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[10px] text-slate-400 uppercase mb-1">Stream</label>
+                <select id="site-stream-select" class="w-full px-2.5 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white font-semibold"></select>
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-400 uppercase mb-1">Tower / Block</label>
+                <select id="site-block-select" class="w-full px-2.5 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white font-semibold"></select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-400 uppercase mb-1">Departed Lorry Received</label>
+              <select id="site-lorry-select" class="w-full px-2.5 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white font-mono"></select>
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-400 uppercase mb-1">Condition &amp; Handover Note</label>
+              <input type="text" id="site-note-input" value="All pallets intact, zero transit damage" class="w-full px-2.5 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white">
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-400 uppercase mb-1">Evidence (Photo, Email, PO or Document Link)</label>
+              <input type="text" id="site-evidence" placeholder="e.g. IMG_SITE_LORRY02.jpg" class="w-full px-2.5 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white">
+            </div>
+            <button onclick="confirmSiteDelivery()" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold text-xs transition cursor-pointer">
+              Confirm Site Handover (DELIVERED)
+            </button>
+          </div>
+        </div>
+
+        <div class="lg:col-span-7 space-y-6">
+          <div class="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+            <h3 class="text-sm font-bold text-slate-900">Site Delivery Register (Replaces WhatsApp Chats)</h3>
+            <div id="site-delivery-list" class="space-y-2.5 text-xs"></div>
+          </div>
+          <div class="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Incident &amp; Cost Log</h3>
+              <p class="text-xs text-slate-500">Cost in MYR and m². Totals by type feed the weekly report.</p>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-6 gap-2 text-xs">
+              <select id="inc-type" aria-label="Incident type" class="px-2.5 py-2 bg-white border border-slate-300 rounded-lg"><option>Re-transportation</option><option>Demurrage</option><option>Under-shipment</option><option>Idle lorry</option><option>Re-shipment</option><option>Other</option></select>
+              <input type="date" id="inc-date" value="2026-11-18" aria-label="Incident date" class="px-2.5 py-2 border border-slate-300 rounded-lg">
+              <input type="number" id="inc-cost" placeholder="Cost (MYR)" class="px-2.5 py-2 border border-slate-300 rounded-lg font-mono">
+              <input type="number" id="inc-m2" placeholder="m²" class="px-2.5 py-2 border border-slate-300 rounded-lg font-mono">
+              <input type="text" id="inc-note" placeholder="Note" class="px-2.5 py-2 border border-slate-300 rounded-lg">
+              <button onclick="addIncident()" class="px-3 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-bold">Log Incident</button>
+            </div>
+            <div id="incident-table" class="overflow-x-auto"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- STEP 8: MR11 EXCEL PIPELINE OUTPUT & MULTI-SHEET .XLSX GENERATOR -->
+    <!-- ========================================================================= -->
+    <section id="step-panel-9" class="step-panel space-y-6 hidden">
+      <!-- Full Multi-Header MR11 Spreadsheet Grid -->
+      <div id="mr11-card" class="sf-ledger bg-white rounded-xl border border-slate-200 shadow-xs p-5 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div class="flex items-center gap-2.5"><h2 class="sf-ledger-title">MR11 Master Operations Ledger</h2><span id="mr11-count" class="sf-ledger-count"></span></div>
+            <p class="text-xs text-slate-500">Production, dispatch milestones and fulfilment for every contract. Row 1 is live from steps 1 to 7. Font colour shows the product type and fill colour the formwork type, as in the MR11 workbook.</p>
+          </div>
+          <div class="flex items-center gap-2 text-xs">
+            <button id="mr11-edit-btn" onclick="toggleEditMode()" class="px-2.5 py-1 rounded border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 font-semibold">Edit in MR11: Off</button>
+            <span class="px-2.5 py-1 rounded bg-sky-50 border border-sky-200 text-sky-800 font-semibold">Row 1 = Live From Steps 1–7</span>
+          </div>
+        </div>
+
+        <!-- MR11 Tools: Search, Filters, Column Groups, Highlight, Zoom, Full Screen, Sync, Deleted Rows -->
+        <div class="sf-ledger-tools space-y-2.5 text-xs">
+          <div class="flex flex-wrap items-center gap-2">
+            <input type="text" id="mr11-search" oninput="renderMR11PipelineTab()" placeholder="Search project name, number or building" class="px-3 py-1.5 border border-slate-300 rounded-lg min-w-[220px] flex-1 bg-white">
+            <button onclick="setMr11Zoom(-15)" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-bold" title="Zoom out" aria-label="Zoom out">−</button>
+            <button onclick="setMr11Zoom(0)" id="mr11-zoom-label" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-mono" title="Reset zoom">100%</button>
+            <button onclick="setMr11Zoom(15)" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-bold" title="Zoom in" aria-label="Zoom in">+</button>
+            <button onclick="toggleMr11Fullscreen()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold">Full Screen</button>
+            <button onclick="syncMr11()" class="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold" title="Rebuild MR11 from every department's latest entries">Sync</button>
+            <button onclick="exportMR11Workbook()" class="px-2.5 py-1.5 rounded-lg bg-slate-900 text-white font-bold" title="Download the MR11 workbook (.xlsx)">Export</button>
+            <button onclick="toggleDeletedRows()" id="mr11-deleted-btn" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold">Deleted Rows (0)</button>
+            <button type="button" id="mr11-options-btn" onclick="toggleMr11Options()" aria-expanded="true" aria-controls="mr11-filters mr11-groups" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold">Hide filters &amp; columns</button>
+            <span id="mr11-sync-label" class="text-[11px] text-slate-500"></span>
+          </div>
+          <div id="mr11-deleted" class="hidden space-y-1.5"></div>
+          <div id="mr11-filters" class="flex flex-wrap items-center gap-2"></div>
+          <div id="mr11-groups" class="flex flex-wrap items-center gap-x-3 gap-y-1.5"></div>
+        </div>
+
+        <div id="mr11-table-wrap" class="overflow-x-auto custom-scrollbar border border-slate-300 rounded-lg">
+          <table class="mr11-table w-full border-collapse text-left">
+            <thead id="mr11-head"></thead>
+            <tbody id="mr11-master-tbody" class="divide-y divide-slate-200 font-mono">
+          <tr class="bg-sky-50/90 font-semibold text-slate-900 hover:bg-sky-100/50 transition">
+            <td class="text-center font-bold bg-sky-600 text-white">1 (LIVE)</td>
+            <td class="font-bold text-slate-900">Skyline Tower Phase 2</td>
+            <td>Tower A - Podium &amp; Core (Stream 1 / Block A)</td>
+            <td>SF-26-0001</td>
+            <td>Malaysia (MY)</td>
+            <td>Alex Tan</td>
+            <td><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Active Live</span></td>
+            <td class="text-amber-800 font-bold">MFE New</td>
+            <td>PO-SKY-2026-01</td>
+            <td>NCA-2026-001</td>
+            <td class="text-right font-bold">850.00</td>
+            <td>M1: $29,959.10 / M2: $119,836.40</td>
+            <td><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">CLEARED (20%)</span></td>
+            <td>2026-11-01</td>
+            <td>2026-11-13</td>
+            <td class="text-right">$2600</td>
+            <td class="text-center">CIF</td>
+            <td class="text-right">$145.00</td>
+            <td class="text-right">$12.00</td>
+            <td class="text-right">$12.685</td>
+            <td class="text-right">$6.545</td>
+            <td class="text-right font-bold text-sky-700">$176.23</td>
+            <td class="text-right">283.3</td>
+            <td class="text-right">283.3</td>
+            <td class="text-right">283.3</td>
+            <td class="text-right">0.0</td>
+            <td class="text-right">0.0</td>
+            <td class="text-right">0.0</td>
+            <td class="text-right font-bold bg-amber-50">850.00</td>
+            <td class="font-bold text-indigo-800">MIVAN/MONOLITIC FORMWORK</td>
+            <td class="text-right">$49,931.25</td>
+            <td class="text-right">$49,931.25</td>
+            <td class="text-right">$49,933.01</td>
+            <td class="text-right">$0.00</td>
+            <td class="text-right">$0.00</td>
+            <td class="text-right">$0.00</td>
+            <td class="text-right font-extrabold text-emerald-700 bg-emerald-50">$149,795.50</td>
+            <td class="text-center font-bold text-emerald-700">OK (0.0)</td>
+            <td class="text-right font-bold">842.00</td>
+            <td class="text-right font-bold text-emerald-700">450.00</td>
+            <td class="text-right font-bold text-amber-700">400.00</td>
+          </tr>
+        
+          <tr class="bg-white text-slate-700 hover:bg-sky-100/50 transition">
+            <td class="text-center font-bold bg-slate-100">2</td>
+            <td class="font-bold text-slate-900"> Gamuda Cove — Plot 4 Towers</td>
+            <td>Tower B / Stream 1 / Block B1</td>
+            <td>MY-26-0104</td>
+            <td>Malaysia (MY)</td>
+            <td>Alex Tan</td>
+            <td><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Confirmed</span></td>
+            <td class="text-amber-800 font-bold">MFE New</td>
+            <td>PO-GAM-8821</td>
+            <td>NCA-2026-104</td>
+            <td class="text-right font-bold">1200.00</td>
+            <td>20% Adv / 80% CAD</td>
+            <td><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">CLEARED (20%)</span></td>
+            <td>2026-10-15</td>
+            <td>2026-10-28</td>
+            <td class="text-right">$2600</td>
+            <td class="text-center">CIF</td>
+            <td class="text-right">$148.00</td>
+            <td class="text-right">$10.00</td>
+            <td class="text-right">$9.500</td>
+            <td class="text-right">$5.000</td>
+            <td class="text-right font-bold text-sky-700">$172.50</td>
+            <td class="text-right">600.0</td>
+            <td class="text-right">600.0</td>
+            <td class="text-right">0.0</td>
+            <td class="text-right">0.0</td>
+            <td class="text-right">0.0</td>
+            <td class="text-right">0.0</td>
+            <td class="text-right font-bold bg-amber-50">1200.00</td>
+            <td class="font-bold text-indigo-800">MIVAN/MONOLITIC FORMWORK</td>
+            <td class="text-right">$103,500.00</td>
+            <td class="text-right">$103,500.00</td>
+            <td class="text-right">$0.00</td>
+            <td class="text-right">$0.00</td>
+            <td class="text-right">$0.00</td>
+            <td class="text-right">$0.00</td>
+            <td class="text-right font-extrabold text-emerald-700 bg-emerald-50">$207,000.00</td>
+            <td class="text-center font-bold text-emerald-700">OK (0.0)</td>
+            <td class="text-right font-bold">1200.00</td>
+            <td class="text-right font-bold text-emerald-700">900.00</td>
+            <td class="text-right font-bold text-amber-700">300.00</td>
+          </tr>
+        
+          <tr class="bg-white text-slate-700 hover:bg-sky-100/50 transition">
+            <td class="text-center font-bold bg-slate-100">3</td>
+            <td class="font-bold text-slate-900">Ayala Park Terraces Phase 3</td>
+            <td>North Wing / Stream 2 / Core</td>
+            <td>PH-26-0219</td>
+            <td>Philippines (PH)</td>
+            <td>lim.wk</td>
+            <td><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Confirmed</span></td>
+            <td class="text-amber-800 font-bold">MFE Used (Refurbished)</td>
+            <td>PO-AYA-4410</td>
+            <td>NCA-2026-219</td>
+            <td class="text-right font-bold">950.00</td>
+            <td>30% Adv / 70% CAD</td>
+            <td><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">CLEARED (30%)</span></td>
+            <td>2026-11-05</td>
+            <td>Pending Approval</td>
+            <td class="text-right">$2550</td>
+            <td class="text-center">FOB</td>
+            <td class="text-right">$112.00</td>
+            <td class="text-right">$8.00</td>
+            <td class="text-right">$0.000</td>
+            <td class="text-right">$4.000</td>
+            <td class="text-right font-bold text-sky-700">$124.00</td>
+            <td class="text-right">0.0</td>
+            <td class="text-right">450.0</td>
+            <td class="text-right">500.0</td>
+            <td class="text-right">0.0</td>
+            <td class="text-right">0.0</td>
+            <td class="text-right">0.0</td>
+            <td class="text-right font-bold bg-amber-50">950.00</td>
+            <td class="font-bold text-indigo-800">QUICK DECK / LIGHTDECK</td>
+            <td class="text-right">$0.00</td>
+            <td class="text-right">$55,800.00</td>
+            <td class="text-right">$62,000.00</td>
+            <td class="text-right">$0.00</td>
+            <td class="text-right">$0.00</td>
+            <td class="text-right">$0.00</td>
+            <td class="text-right font-extrabold text-emerald-700 bg-emerald-50">$117,800.00</td>
+            <td class="text-center font-bold text-emerald-700">OK (0.0)</td>
+            <td class="text-right font-bold">300.00</td>
+            <td class="text-right font-bold text-emerald-700">0.00</td>
+            <td class="text-right font-bold text-amber-700">950.00</td>
+          </tr>
+        
+          <tr class="bg-white text-slate-700 hover:bg-sky-100/50 transition">
+            <td class="text-center font-bold bg-slate-100">4</td>
+            <td class="font-bold text-slate-900">Marina View Residences</td>
+            <td>Podium / Stream 1 / Transfer</td>
+            <td>SG-26-0305</td>
+            <td>Singapore (SG)</td>
+            <td>Sarah Chen</td>
+            <td><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Contract Issued</span></td>
+            <td class="text-amber-800 font-bold">Modification</td>
+            <td>Pending PO</td>
+            <td>NCA-2026-305</td>
+            <td class="text-right font-bold">620.00</td>
+            <td>20% Adv / 80% CAD</td>
+            <td><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800">HOLD (Awaiting M1)</span></td>
+            <td>2026-10-20</td>
+            <td>2026-11-02</td>
+            <td class="text-right">$2600</td>
+            <td class="text-center">CIF</td>
+            <td class="text-right">$165.00</td>
+            <td class="text-right">$15.00</td>
+            <td class="text-right">$5.500</td>
+            <td class="text-right">$3.500</td>
+            <td class="text-right font-bold text-sky-700">$189.00</td>
+            <td class="text-right">0.0</td>
+            <td class="text-right">0.0</td>
+            <td class="text-right">310.0</td>
+            <td class="text-right">310.0</td>
+            <td class="text-right">0.0</td>
+            <td class="text-right">0.0</td>
+            <td class="text-right font-bold bg-amber-50">620.00</td>
+            <td class="font-bold text-indigo-800">PREMIUM FORMWORK</td>
+            <td class="text-right">$0.00</td>
+            <td class="text-right">$0.00</td>
+            <td class="text-right">$58,590.00</td>
+            <td class="text-right">$58,590.00</td>
+            <td class="text-right">$0.00</td>
+            <td class="text-right">$0.00</td>
+            <td class="text-right font-extrabold text-emerald-700 bg-emerald-50">$117,180.00</td>
+            <td class="text-center font-bold text-emerald-700">OK (0.0)</td>
+            <td class="text-right font-bold">0.00</td>
+            <td class="text-right font-bold text-emerald-700">0.00</td>
+            <td class="text-right font-bold text-amber-700">620.00</td>
+          </tr>
+        </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Top Banner -->
+      <div class="bg-indigo-950 text-white border border-indigo-700 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-md">
+        <div class="flex items-start sm:items-center gap-3.5">
+          <div class="p-2.5 rounded-xl bg-indigo-600 text-white shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="table-2" aria-hidden="true" class="lucide lucide-table-2 w-6 h-6"><path d="M3 9h18"></path><path d="M9 3v18"></path><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-base font-extrabold">Live MR11 master schedule</h2>
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">Excel Is Output Only</span>
+            </div>
+            <p class="text-xs text-indigo-200 mt-0.5">
+              Every department now enters online and MR11 rebuilds itself. Row 1 is bound live to Tabs 1–7. <strong>Export MR11 (.xlsx)</strong> downloads a 3-sheet workbook (`MR11 2026`, `Summary &amp; Gate Matrix`, `Workflow Audit`).
+            </p>
+          </div>
+        </div>
+        <button onclick="exportMR11Workbook()" class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold text-xs flex items-center gap-2 shrink-0 shadow-lg cursor-pointer transition">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="download" aria-hidden="true" class="lucide lucide-download w-4 h-4"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg>
+          <span>Export MR11 Excel (.xlsx)</span>
+        </button>
+      </div>
+
+      <!-- Market Cards: Exchange Rates & LME (Phase 1.10) -->
+      <div id="market-cards" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+
+      <!-- 4-State Production Readiness Matrix + Product Type Subtotals (From MR11 Bottom Summary Rows) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- 4-State Production Readiness Matrix -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-5 space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">MR11 Production Readiness Gate Matrix (4-State Summary)</h3>
+              <p class="text-xs text-slate-500">Automatically classifies active pipeline m² &amp; USD based on Step 2 Payment &amp; Step 3 Design status</p>
+            </div>
+            <span id="mr11-active-readiness-pill" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">Got Payment &amp; Design, Can Produce</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs border-collapse">
+              <thead class="bg-slate-100 text-slate-700">
+                <tr>
+                  <th class="py-2 px-3 text-left border border-slate-200">MR11 Gate Classification</th>
+                  <th class="py-2 px-3 text-right border border-slate-200">2026 Area (m²)</th>
+                  <th class="py-2 px-3 text-right border border-slate-200">2026 Value (USD)</th>
+                  <th class="py-2 px-3 text-center border border-slate-200">Live Row 1 Match</th>
+                </tr>
+              </thead>
+              <tbody id="mr11-readiness-matrix-body" class="divide-y divide-slate-200 font-mono text-[11px]">
+            <tr class="bg-emerald-50 font-bold text-slate-900">
+              <td class="py-2 px-3 border border-slate-200 font-sans">Got Payment &amp; Design, Can Produce</td>
+              <td class="py-2 px-3 text-right border border-slate-200">2050.00 m²</td>
+              <td class="py-2 px-3 text-right border border-slate-200 text-emerald-700">$356,795.50</td>
+              <td class="py-2 px-3 text-center border border-slate-200">✓ ACTIVE ROW 1</td>
+            </tr>
+          
+            <tr class="text-slate-600">
+              <td class="py-2 px-3 border border-slate-200 font-sans">Got Payment, Waiting Design</td>
+              <td class="py-2 px-3 text-right border border-slate-200">950.00 m²</td>
+              <td class="py-2 px-3 text-right border border-slate-200 text-emerald-700">$117,800.00</td>
+              <td class="py-2 px-3 text-center border border-slate-200">—</td>
+            </tr>
+          
+            <tr class="text-slate-600">
+              <td class="py-2 px-3 border border-slate-200 font-sans">No Payment, Got Design</td>
+              <td class="py-2 px-3 text-right border border-slate-200">620.00 m²</td>
+              <td class="py-2 px-3 text-right border border-slate-200 text-emerald-700">$117,180.00</td>
+              <td class="py-2 px-3 text-center border border-slate-200">—</td>
+            </tr>
+          
+            <tr class="text-slate-600">
+              <td class="py-2 px-3 border border-slate-200 font-sans">Waiting Both Payment &amp; Design</td>
+              <td class="py-2 px-3 text-right border border-slate-200">0.00 m²</td>
+              <td class="py-2 px-3 text-right border border-slate-200 text-emerald-700">$0.00</td>
+              <td class="py-2 px-3 text-center border border-slate-200">—</td>
+            </tr>
+          </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Product Type & Formwork System Summary Table -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-5 space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">MR11 Product Type &amp; Formwork Subtotals</h3>
+              <p class="text-xs text-slate-500">Aggregates Row 1 (Live Workspace) + Reference Pipeline Projects</p>
+            </div>
+            <span class="text-xs font-mono font-bold text-indigo-700" id="mr11-grand-total-badge">Pipeline Total: $591,775.50</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs border-collapse">
+              <thead class="bg-slate-100 text-slate-700">
+                <tr>
+                  <th class="py-2 px-3 text-left border border-slate-200">Product Category (MR11 Col F)</th>
+                  <th class="py-2 px-3 text-right border border-slate-200">Total m²</th>
+                  <th class="py-2 px-3 text-right border border-slate-200">Total USD</th>
+                  <th class="py-2 px-3 text-right border border-slate-200">Shipped m²</th>
+                </tr>
+              </thead>
+              <tbody id="mr11-product-summary-body" class="divide-y divide-slate-200 font-mono text-[11px]">
+            <tr class="bg-sky-50 font-bold text-slate-900">
+              <td class="py-2 px-3 border border-slate-200 font-sans">MFE New (Includes Row 1)</td>
+              <td class="py-2 px-3 text-right border border-slate-200">2050.00 m²</td>
+              <td class="py-2 px-3 text-right border border-slate-200 text-emerald-700">$356,795.50</td>
+              <td class="py-2 px-3 text-right border border-slate-200">1350.00 m²</td>
+            </tr>
+          
+            <tr class="text-slate-600">
+              <td class="py-2 px-3 border border-slate-200 font-sans">MFE Used (Refurbished) </td>
+              <td class="py-2 px-3 text-right border border-slate-200">950.00 m²</td>
+              <td class="py-2 px-3 text-right border border-slate-200 text-emerald-700">$117,800.00</td>
+              <td class="py-2 px-3 text-right border border-slate-200">0.00 m²</td>
+            </tr>
+          
+            <tr class="text-slate-600">
+              <td class="py-2 px-3 border border-slate-200 font-sans">Re-Design Only (Non-physical Despatch) </td>
+              <td class="py-2 px-3 text-right border border-slate-200">0.00 m²</td>
+              <td class="py-2 px-3 text-right border border-slate-200 text-emerald-700">$0.00</td>
+              <td class="py-2 px-3 text-right border border-slate-200">0.00 m²</td>
+            </tr>
+          
+            <tr class="text-slate-600">
+              <td class="py-2 px-3 border border-slate-200 font-sans">Direct </td>
+              <td class="py-2 px-3 text-right border border-slate-200">0.00 m²</td>
+              <td class="py-2 px-3 text-right border border-slate-200 text-emerald-700">$0.00</td>
+              <td class="py-2 px-3 text-right border border-slate-200">0.00 m²</td>
+            </tr>
+          
+            <tr class="text-slate-600">
+              <td class="py-2 px-3 border border-slate-200 font-sans">Modification </td>
+              <td class="py-2 px-3 text-right border border-slate-200">620.00 m²</td>
+              <td class="py-2 px-3 text-right border border-slate-200 text-emerald-700">$117,180.00</td>
+              <td class="py-2 px-3 text-right border border-slate-200">0.00 m²</td>
+            </tr>
+          </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-5 space-y-3">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900">Team Notes Board</h3>
+          <p class="text-xs text-slate-500">Everyone signed in can read and write.</p>
+        </div>
+        <div class="flex gap-2 text-xs">
+          <input type="text" id="note-input" placeholder="Write a note for the team" class="flex-1 px-3 py-2 border border-slate-300 rounded-lg">
+          <button onclick="addTeamNote()" class="px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold">Post</button>
+        </div>
+        <div id="notes-list" class="space-y-2 text-xs"></div>
+      </div>
+    </section>
+
+
+    <!-- ========================================================================= -->
+    <!-- PHASE 2: ALERTS & REMINDERS -->
+    <!-- ========================================================================= -->
+    <section id="step-panel-10" class="step-panel space-y-6 hidden">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Alerting Engine</h2>
+            <p class="text-xs text-slate-500">Worked out live from the data, and an alert clears itself when its cause is fixed. They appear inside the platform; email or Teams needs a flow from MFE IT.</p>
+          </div>
+          <div class="flex items-center gap-2 text-xs">
+            <select id="alert-filter-sev" onchange="renderAlerts()" aria-label="Severity filter" class="px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg font-semibold"><option value="">All levels</option><option>HIGH</option><option>MEDIUM</option><option>LOW</option></select>
+            <select id="alert-filter-state" onchange="renderAlerts()" aria-label="State filter" class="px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg font-semibold"><option value="OPEN">Open</option><option value="ALL">All</option><option value="RESOLVED">Resolved</option></select>
+          </div>
+        </div>
+        <div id="alerts-list" class="space-y-2 text-xs"></div>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Date Reminders for Every Department</h2>
+            <p class="text-xs text-slate-500">Automatic clocks: shell plan to approval, design to production, production to sailing, accessories SLA, design completion and lorry dates. Add your own as well.</p>
+          </div>
+          <select id="reminder-filter" onchange="renderReminders()" aria-label="Department filter" class="px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold"></select>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+          <input type="text" id="rem-title" placeholder="Reminder" class="sm:col-span-2 px-2.5 py-2 border border-slate-300 rounded-lg">
+          <input type="date" id="rem-date" value="2026-11-25" aria-label="Reminder date" class="px-2.5 py-2 border border-slate-300 rounded-lg">
+          <select id="rem-dept" aria-label="Department" class="px-2.5 py-2 bg-white border border-slate-300 rounded-lg"></select>
+          <button onclick="addReminder()" class="px-3 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-bold">Add Reminder</button>
+        </div>
+        <div id="reminders-list" class="space-y-2 text-xs"></div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- PHASE 2: APPROVALS & ACTIVITY LOG -->
+    <!-- ========================================================================= -->
+    <section id="step-panel-11" class="step-panel space-y-6 hidden">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+        <div class="border-b border-slate-100 pb-3">
+          <h2 class="text-base font-bold text-slate-900">Approvals</h2>
+          <p class="text-xs text-slate-500">MR11 edits and row deletes by non-admins wait here. Administrators approve, reject with a reason, or undo an approved edit. Switch "Viewing as" in the header to try each side.</p>
+        </div>
+        <div id="approvals-list" class="space-y-2 text-xs"></div>
+      </div>
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-3">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900">Validation: Flagged Rows</h3>
+          <p class="text-xs text-slate-500">Incomplete or inconsistent rows are flagged here for the department to fix.</p>
+        </div>
+        <div id="validation-list" class="space-y-2 text-xs"></div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-3">
+          <h3 class="text-sm font-bold text-slate-900">Update Log (Evidence &amp; Source)</h3>
+          <div id="updates-list" class="space-y-2 text-xs max-h-96 overflow-y-auto custom-scrollbar"></div>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-3">
+          <h3 class="text-sm font-bold text-slate-900">Activity Log (Who, When, What Changed)</h3>
+          <div id="activity-list" class="space-y-2 text-xs max-h-96 overflow-y-auto custom-scrollbar"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- PHASE 2: AUTOMATED REPORTING -->
+    <!-- ========================================================================= -->
+    <section id="step-panel-12" class="step-panel space-y-6 hidden">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Weekly Report</h2>
+            <p class="text-xs text-slate-500">Saved every Monday and available on demand. Sheets: summary, pipeline, cash at risk, incidents, reconciliation, alerts, dispatch gate, lorry forecast and design capacity. Sent through the report webhook; the platform does not send email itself.</p>
+          </div>
+          <button onclick="generateReport('On demand')" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold">Generate Report Now</button>
+        </div>
+        <div id="report-kpis" class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs"></div>
+        <div id="reports-list" class="space-y-2 text-xs"></div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- PHASE 2: MOBILE APP -->
+    <!-- ========================================================================= -->
+    <section id="step-panel-13" class="step-panel space-y-6 hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div class="lg:col-span-5 bg-slate-900 text-white rounded-3xl p-5 border-4 border-slate-800 shadow-xl space-y-4 max-w-sm w-full mx-auto">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-sky-300" id="m-title">MR11 Mobile</span>
+            <button onclick="mobileGo('home')" class="text-[11px] text-slate-300 hover:text-white">Home</button>
+          </div>
+          <div id="m-screen" class="text-xs space-y-3"></div>
+        </div>
+        <div class="lg:col-span-7 bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-3 text-xs text-slate-600">
+          <h2 class="text-base font-bold text-slate-900">Mobile App for Critical &amp; Urgent Inputs</h2>
+          <p>An installable web app with the normal sign-in and role checks. It caches only the app shell, never MR11 data, so nobody sees old figures.</p>
+          <ul class="list-disc pl-4 space-y-1">
+            <li><strong>Site progress:</strong> dates, m² and tower/block, with a photo from the camera.</li>
+            <li><strong>Panel actuals:</strong> daily production by panel code, replacing WhatsApp actuals.</li>
+            <li><strong>Urgent payment:</strong> payment landed; goes to Finance to confirm.</li>
+            <li><strong>Dispatch check:</strong> is this row green to load, plus freight confirmation.</li>
+            <li><strong>Alerts:</strong> open alerts and due reminders.</li>
+          </ul>
+          <p>Every entry is timestamped and shows as "Mobile" in the update log on the Approvals &amp; Log tab.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- PHASE 2: RULES (ADMIN) -->
+    <!-- ========================================================================= -->
+    <section id="step-panel-14" class="step-panel space-y-6 hidden">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+        <div class="border-b border-slate-100 pb-3">
+          <h2 class="text-base font-bold text-slate-900">Rules (Admin)</h2>
+          <p class="text-xs text-slate-500">Administrators set capacities, tolerances, SLA hours, clocks, gate checks, evidence rules and report recipients. Items marked "to confirm" are defaults still waiting for an MFE decision.</p>
+        </div>
+        <div id="rules-form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs"></div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- PHASE 1: CEO EXECUTIVE HUB -->
+    <!-- ========================================================================= -->
+    <section id="step-panel-15" class="step-panel space-y-6 hidden">
+      <div id="ceo-content" class="space-y-6"></div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- PHASE 1: ADMIN PERMISSIONS -->
+    <!-- ========================================================================= -->
+    <section id="step-panel-16" class="step-panel space-y-6 hidden">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+        <div class="border-b border-slate-100 pb-3">
+          <h2 class="text-base font-bold text-slate-900">Admin Permissions</h2>
+          <p class="text-xs text-slate-500"><!--@if hosted-->Control who can sign in and what they can open. Every change applies straight away, and the server enforces it. The main administrator is protected, so nobody can be locked out.<!--@else-->Create users, set their roles and departments, or delete them. The main administrator is protected. Role changes take full effect the next time the person signs in. The CEO role cannot be given here; IT adds it.<!--@endif--></p>
+        </div>
+        <div id="admin-form" class="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs">
+          <input type="text" id="admin-new-name" placeholder="Full name" class="px-2.5 py-2 border border-slate-300 rounded-lg">
+          <input type="email" id="admin-new-email" placeholder="Corporate email" class="px-2.5 py-2 border border-slate-300 rounded-lg">
+          <input type="password" id="admin-new-password" autocomplete="new-password" placeholder="Temporary password" class="px-2.5 py-2 border border-slate-300 rounded-lg">
+          <select id="admin-new-preset" aria-label="Primary role preset" class="px-2.5 py-2 bg-white border border-slate-300 rounded-lg font-semibold"></select>
+          <button onclick="createUser()" class="px-3 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-bold">Provision New User</button>
+        </div>
+        <div class="flex items-center justify-between gap-2">
+          <h3 class="text-sm font-bold text-slate-900">User Department Provisioning Matrix</h3>
+          <button onclick="renderAdminUsers(); notify('User list refreshed.', 'info')" class="px-2.5 py-1 rounded-lg border border-slate-300 text-xs font-semibold hover:bg-slate-50">Refresh</button>
+        </div>
+        <div id="admin-users" class="overflow-x-auto"></div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- PHASE 1: DEPARTMENT WORKBOOK VIEWER, PLANNING LEDGER & PRODUCTION REGISTRY -->
+    <!-- ========================================================================= -->
+    <section id="step-panel-17" class="step-panel space-y-6 hidden">
+      <input type="file" id="wb-file" accept=".xlsx" onchange="handleWorkbookFile(this)" class="hidden" aria-label="Workbook file">
+      <div id="wb-content"></div>
+    </section>
+    <!-- ========================================================================= -->
+    <!-- MY WORK: everything waiting on the signed-in person -->
+    <!-- ========================================================================= -->
+    <section id="step-panel-18" class="step-panel space-y-6 hidden">
+      <div id="mywork-content" class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start"></div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- PROJECT TIMELINE: every MR11 row month by month -->
+    <!-- ========================================================================= -->
+    <section id="step-panel-19" class="step-panel space-y-5 hidden">
+      <div class="sf-filters" role="group" aria-label="Timeline filters">
+        <label>Region <select id="tl-region" onchange="renderTimeline()"><option value="">All regions</option></select></label>
+        <label>Status <select id="tl-status" onchange="renderTimeline()"><option value="">All statuses</option></select></label>
+        <label><input type="checkbox" id="tl-late" onchange="renderTimeline()"> Only projects needing attention</label>
+        <span id="tl-count" class="ml-auto"></span>
+      </div>
+      <div class="sf-slab"><div class="sf-gantt" id="tl-gantt"></div></div>
+      <div class="sf-legend" id="tl-legend"></div>
+      <div class="sf-slab">
+        <div class="sf-slab-head"><h2>Milestones by project</h2><span>The same dates as the chart, as a table</span></div>
+        <div class="overflow-x-auto"><table class="sf-table" id="tl-table"></table></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="sf-cmdk" class="sf-cmdk" role="dialog" aria-modal="true" aria-label="Search ShellFlow" onclick="if (event.target === this) closeCommand()">
+    <div class="sf-cmdk-box">
+      <div class="sf-cmdk-input"><i data-lucide="search"></i><input id="sf-cmdk-input" type="text" role="combobox" aria-expanded="true" aria-controls="sf-cmdk-list" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search pages, projects, NCAs, lorries and alerts"></div>
+      <div id="sf-cmdk-list" class="sf-cmdk-list" role="listbox" aria-label="Results"></div>
+      <div class="sf-cmdk-foot"><span><kbd>↑</kbd><kbd>↓</kbd>Move</span><span><kbd>Enter</kbd>Open</span><span><kbd>Esc</kbd>Close</span></div>
+    </div>
+  </div>
+  <div id="sf-print-root" class="sf-print"></div>
+
+  <script><!--@include scripts/app.js--></script>
+  <script><!--@include scripts/features.js--></script>
+
+<!--@if hosted--><script src="/hosted.js"></script>
+<!--@endif--></body></html>

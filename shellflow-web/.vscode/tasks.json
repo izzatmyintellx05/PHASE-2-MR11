@@ -1,0 +1,32 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "ShellFlow: Build both versions",
+      "type": "npm",
+      "script": "build",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": [],
+      "detail": "src/ → public/index.html (hosted) and dist/ (single file)"
+    },
+    {
+      "label": "ShellFlow: Run site and rebuild on save",
+      "type": "npm",
+      "script": "dev",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "shellflow",
+        "pattern": { "regexp": "^\\[build\\] (A build marker.*|Missing source file.*|Unknown version.*)$", "message": 1 },
+        "background": { "activesBegins": "^\\[build\\]", "beginsPattern": "^\\[build\\]", "endsPattern": "Running on http" }
+      },
+      "detail": "Opens on http://localhost:8766 (or PORT in .env); refresh after saving"
+    },
+    {
+      "label": "ShellFlow: Run tests",
+      "type": "npm",
+      "script": "test",
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": []
+    }
+  ]
+}

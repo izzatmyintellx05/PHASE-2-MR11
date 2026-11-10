@@ -1,0 +1,22 @@
+{
+  "files.eol": "\n",
+  "files.insertFinalNewline": false,
+  "editor.formatOnSave": false,
+  "files.exclude": {
+    "**/node_modules": true
+  },
+  "search.exclude": {
+    "public/index.html": true,
+    "dist/**": true,
+    "data/**": true
+  },
+  "files.readonlyInclude": {
+    "public/index.html": true,
+    "dist/**": true
+  },
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "package.json": "package-lock.json",
+    ".env.example": ".env"
+  }
+}

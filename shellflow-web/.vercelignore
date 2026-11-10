@@ -1,0 +1,6 @@
+test/
+data/
+.env
+.env.*
+Dockerfile
+.dockerignore
