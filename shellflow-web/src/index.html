@@ -1332,25 +1332,42 @@
           </div>
         </div>
 
-        <!-- MR11 Tools: Search, Filters, Column Groups, Highlight, Zoom, Full Screen, Sync, Deleted Rows -->
-        <div class="sf-ledger-tools space-y-2.5 text-xs">
-          <div class="flex flex-wrap items-center gap-2">
-            <input type="text" id="mr11-search" oninput="renderMR11PipelineTab()" placeholder="Search project name, number or building" class="px-3 py-1.5 border border-slate-300 rounded-lg min-w-[220px] flex-1 bg-white">
-            <button onclick="setMr11Zoom(-15)" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-bold" title="Zoom out" aria-label="Zoom out">−</button>
-            <button onclick="setMr11Zoom(0)" id="mr11-zoom-label" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-mono" title="Reset zoom">100%</button>
-            <button onclick="setMr11Zoom(15)" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-bold" title="Zoom in" aria-label="Zoom in">+</button>
-            <button onclick="toggleMr11Fullscreen()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold">Full Screen</button>
-            <button onclick="syncMr11()" class="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold" title="Rebuild MR11 from every department's latest entries">Sync</button>
-            <button onclick="exportMR11Workbook()" class="px-2.5 py-1.5 rounded-lg bg-slate-900 text-white font-bold" title="Download the MR11 workbook (.xlsx)">Export</button>
-            <button onclick="toggleDeletedRows()" id="mr11-deleted-btn" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold">Deleted Rows (0)</button>
-            <button type="button" id="mr11-options-btn" onclick="toggleMr11Options()" aria-expanded="true" aria-controls="mr11-filters mr11-groups" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold">Hide filters &amp; columns</button>
+        <!-- MR11 tools: the Phase 1 tool row, quick views, rates, and what is narrowing the table -->
+        <div class="sf-ledger-tools text-xs space-y-2.5">
+          <div class="sf-ledger-bar">
+            <div class="sf-ledger-search">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="search" id="mr11-search" oninput="renderMR11PipelineTab()" placeholder="Search project, number, short name, PIC or country" aria-label="Search the MR11 ledger" autocomplete="off">
+              <button type="button" id="mr11-search-clear" data-mr11="search-clear" class="hidden" aria-label="Clear search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+            </div>
+            <div class="sf-seg" role="group" aria-label="Zoom">
+              <button type="button" onclick="setMr11Zoom(-5)" aria-label="Zoom out">−</button>
+              <button type="button" onclick="setMr11Zoom(0)" id="mr11-zoom-label" title="Back to 100%">100%</button>
+              <button type="button" onclick="setMr11Zoom(5)" aria-label="Zoom in">+</button>
+            </div>
+            <button type="button" class="sf-btn sf-btn-sm" data-mr11="panel" id="mr11-panel-btn" aria-controls="mr11-panel" aria-pressed="true">Options</button>
+            <button type="button" class="sf-btn sf-btn-sm" data-mr11="rates" id="mr11-rates-btn" aria-controls="mr11-rates" aria-pressed="false">Rates &amp; LME</button>
+            <button type="button" class="sf-btn sf-btn-sm" data-mr11="freeze" id="mr11-freeze-btn" aria-pressed="true" title="Keep the project name on screen while scrolling sideways">Freeze project</button>
+            <button type="button" class="sf-btn sf-btn-sm" data-mr11="density" id="mr11-density-btn" aria-pressed="false" title="Fit more rows on screen">Compact rows</button>
+            <details class="sf-menu" id="mr11-views-menu"><summary class="sf-btn sf-btn-sm">Saved views</summary><div class="sf-menu-pop" id="mr11-views"></div></details>
+            <details class="sf-menu"><summary class="sf-btn sf-btn-sm">Export &amp; print</summary><div class="sf-menu-pop">
+              <button type="button" data-mr11="export-view">Export this view (.xlsx)</button>
+              <button type="button" data-mr11="copy-view">Copy this view for Excel</button>
+              <button type="button" data-mr11="print-view">Print this view (A4 landscape)</button>
+              <button type="button" onclick="exportMR11Workbook()">Export the full MR11 workbook</button>
+            </div></details>
+            <button type="button" class="sf-btn sf-btn-sm" onclick="toggleMr11Fullscreen()">Full screen</button>
+            <button type="button" class="sf-btn sf-btn-sm sf-primary" onclick="syncMr11()" title="Rebuild MR11 from every department's latest entries">Sync</button>
+            <button type="button" class="sf-btn sf-btn-sm" onclick="toggleDeletedRows()" id="mr11-deleted-btn">Deleted rows (0)</button>
             <span id="mr11-sync-label" class="text-[11px] text-slate-500"></span>
           </div>
+          <div id="mr11-quick" class="sf-chips" role="group" aria-label="Quick views"></div>
           <div id="mr11-deleted" class="hidden space-y-1.5"></div>
-          <div id="mr11-filters" class="flex flex-wrap items-center gap-2"></div>
-          <div id="mr11-groups" class="flex flex-wrap items-center gap-x-3 gap-y-1.5"></div>
         </div>
-
+        <div id="mr11-rates" class="hidden"><div id="market-cards" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></div>
+        <div id="mr11-summary" class="sf-mr11-summary hidden" role="status"></div>
+        <div class="sf-ledger-body">
+          <div class="sf-ledger-main">
         <div id="mr11-table-wrap" class="overflow-x-auto custom-scrollbar border border-slate-300 rounded-lg">
           <table class="mr11-table w-full border-collapse text-left">
             <thead id="mr11-head"></thead>
@@ -1533,6 +1550,9 @@
         </tbody>
           </table>
         </div>
+          </div>
+          <aside id="mr11-panel" class="sf-mr11-panel" aria-label="MR11 options"></aside>
+        </div>
       </div>
 
       <!-- Top Banner -->
@@ -1557,8 +1577,6 @@
         </button>
       </div>
 
-      <!-- Market Cards: Exchange Rates & LME (Phase 1.10) -->
-      <div id="market-cards" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
 
       <!-- 4-State Production Readiness Matrix + Product Type Subtotals (From MR11 Bottom Summary Rows) -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1881,10 +1899,12 @@
       <div class="sf-cmdk-foot"><span><kbd>↑</kbd><kbd>↓</kbd>Move</span><span><kbd>Enter</kbd>Open</span><span><kbd>Esc</kbd>Close</span></div>
     </div>
   </div>
+  <aside id="mr11-drawer" class="sf-drawer" role="dialog" aria-modal="false" aria-labelledby="mr11-drawer-title" hidden></aside>
   <div id="sf-print-root" class="sf-print"></div>
 
   <script><!--@include scripts/app.js--></script>
   <script><!--@include scripts/features.js--></script>
+  <script><!--@include scripts/mr11-ledger.js--></script>
 
 <!--@if hosted--><script src="/hosted.js"></script>
 <!--@endif--></body></html>

@@ -511,14 +511,6 @@
       enhanceCollapsibles();
       renderPageHead();
     }
-    function toggleMr11Options(force) {
-      const open = typeof force === 'boolean' ? force : $('mr11-filters').classList.contains('hidden');
-      ['mr11-filters', 'mr11-groups'].forEach(id => $(id).classList.toggle('hidden', !open));
-      const btn = $('mr11-options-btn');
-      if (btn) { btn.setAttribute('aria-expanded', String(open)); btn.textContent = open ? 'Hide filters & columns' : 'Filters & columns'; }
-      try { localStorage.setItem('sf.mr11Options', open ? 'open' : 'closed'); } catch {}
-    }
-    window.addEventListener('DOMContentLoaded', () => { let pref = null; try { pref = localStorage.getItem('sf.mr11Options'); } catch {} if (pref === 'closed') toggleMr11Options(false); });
 
     // ---------------- Page links: every page has its own address ----------------
     const PAGE_SLUGS = { 1: 'bd-commercial', 2: 'finance', 3: 'design', 4: 'production', 6: 'readiness-gate', 7: 'logistics', 8: 'site', 9: 'mr11', 18: 'my-work', 10: 'alerts', 11: 'approvals', 12: 'reports', 19: 'timeline', 13: 'mobile', 14: 'rules', 15: 'ceo', 16: 'permissions', 17: 'workbooks' };

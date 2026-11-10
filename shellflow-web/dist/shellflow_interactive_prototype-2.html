@@ -246,6 +246,144 @@
     .sf-tip .sf-hole { border-color: #8E8B84; }
     .sf-tip .sf-hole.is-met { background: var(--verd-on-steel); border-color: var(--verd-on-steel); }
 
+    /* ---------------- MR11 ledger tools ---------------- */
+    .sf-btn[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+    .sf-btn.sf-btn-sm { border-color: var(--joint); }
+    .sf-btn.sf-btn-sm:hover { border-color: #B9B6AF; }
+    .sf-btn.sf-btn-sm[aria-pressed="true"] { border-color: var(--ink); }
+    .sf-btn.sf-btn-sm.sf-primary { border-color: var(--verd); }
+    .sf-ledger-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .sf-ledger-search { position: relative; flex: 1 1 260px; max-width: 380px; display: flex; align-items: center; }
+    .sf-ledger-search > svg { position: absolute; left: 10px; color: var(--ink-3); pointer-events: none; }
+    .sf-ledger-search input { width: 100%; height: 30px; padding: 0 30px 0 30px; border: 1px solid var(--joint); border-radius: var(--radius); background: var(--face); font-size: 12px; }
+    .sf-ledger-search input::-webkit-search-cancel-button { display: none; }
+    .sf-ledger-search button { position: absolute; right: 4px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: var(--radius); color: var(--ink-3); }
+    .sf-ledger-search button:hover { background: var(--panel); color: var(--ink); }
+    .sf-ledger-search button.hidden { display: none; }
+    .sf-seg { display: inline-flex; border: 1px solid var(--joint); border-radius: var(--radius); overflow: hidden; background: var(--face); }
+    .sf-seg button { height: 28px; min-width: 28px; padding: 0 8px; font-size: 12px; font-weight: 600; color: var(--ink); }
+    .sf-seg button + button { border-left: 1px solid var(--joint); }
+    .sf-seg button:hover { background: var(--panel); }
+    .sf-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .sf-chip { height: 26px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px; border-radius: var(--radius); border: 1px solid var(--joint); background: var(--face); font-size: 11.5px; font-weight: 600; color: var(--ink-2); }
+    .sf-chip span { font-weight: 700; color: var(--ink-3); }
+    .sf-chip:hover { border-color: #B9B6AF; color: var(--ink); }
+    .sf-chip[aria-pressed="true"] { background: var(--verd-tint); border-color: var(--verd); color: var(--verd-deep); }
+    .sf-chip[aria-pressed="true"] span { color: var(--verd-deep); }
+    .sf-menu { position: relative; }
+    .sf-menu > summary { list-style: none; cursor: pointer; }
+    .sf-menu > summary::-webkit-details-marker { display: none; }
+    .sf-menu[open] > summary { background: var(--ink); color: #fff; border-color: var(--ink); }
+    .sf-menu-pop { position: absolute; z-index: 45; top: calc(100% + 6px); left: 0; min-width: 250px; padding: 6px; border: 1px solid var(--joint); border-radius: 4px; background: var(--face); box-shadow: var(--lift-2); display: grid; gap: 2px; }
+    .sf-menu-pop > button, .sf-menu-row > button:first-child { text-align: left; padding: 7px 10px; border-radius: var(--radius); font-size: 12px; font-weight: 500; color: var(--ink); }
+    .sf-menu-pop > button:hover, .sf-menu-row > button:first-child:hover { background: var(--verd-tint); }
+    .sf-menu-row { display: flex; align-items: center; }
+    .sf-menu-row > button:first-child { flex: 1; }
+    .sf-menu-del { width: 26px; height: 26px; display: grid; place-items: center; border-radius: var(--radius); color: var(--ink-3); }
+    .sf-menu-del:hover { background: var(--oxide-tint); color: var(--oxide); }
+    .sf-menu-note { padding: 6px 10px; font-size: 11.5px; color: var(--ink-3); }
+    .sf-mr11-summary { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding: 8px 12px; border: 1px solid var(--ochre-tint); border-radius: var(--radius); background: #FBF6EC; font-size: 12px; color: var(--ochre); }
+    .sf-mr11-summary b { color: #6B430D; }
+    .sf-ledger-deleted { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 0; border-top: 1px solid var(--joint-soft); font-size: 12px; }
+    .sf-ledger-body { display: flex; align-items: flex-start; gap: 16px; }
+    .sf-ledger-main { flex: 1 1 auto; min-width: 0; }
+    .sf-ledger-empty { padding: 28px 16px !important; text-align: center; color: var(--ink-3); white-space: normal !important; }
+
+    /* Table: sortable headers, frozen project name, totals row, row spacing, open row */
+    .sf-th-btn { display: inline-flex; align-items: center; gap: 6px; width: 100%; text-align: left; font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit; }
+    .sf-th-btn .sf-sort { color: #A6A39C; flex-shrink: 0; }
+    .sf-th-btn:hover .sf-sort, .sf-th-btn.is-sorted .sf-sort { color: var(--verd); }
+    .sf-th-btn.is-sorted { color: var(--ink); }
+    .mr11-table.is-frozen tbody td:nth-child(2), .mr11-table.is-frozen thead tr.sf-mr11-cols th:nth-child(2), .mr11-table.is-frozen tfoot td:nth-child(2) { position: sticky; left: var(--mr11-col1, 80px); z-index: 2; box-shadow: 1px 0 0 var(--joint), 6px 0 8px -6px rgba(28, 28, 26, 0.25); }
+    .mr11-table.is-frozen tbody td:nth-child(2) { background-color: inherit; }
+    .mr11-table.is-frozen thead tr.sf-mr11-cols th:nth-child(2) { z-index: 4; }
+    .mr11-table tbody tr.bg-white, .mr11-table tbody tr.bg-sky-50 { background-color: var(--face); }
+    .mr11-table tbody tr.bg-sky-50 { background-color: #F1F0EC; }
+    .mr11-table tbody tr:hover { filter: brightness(0.97); }
+    .mr11-table tbody tr.is-open > td { box-shadow: inset 0 2px 0 var(--verd), inset 0 -2px 0 var(--verd); }
+    .mr11-table tfoot td { position: sticky; bottom: 0; z-index: 3; background: var(--ink); color: #fff; font-weight: 700; font-size: 11px; border-color: #3A3D40; white-space: nowrap; text-align: right; }
+    .mr11-table tfoot td:first-child { left: 0; z-index: 4; text-align: center; }
+    .mr11-table tfoot td:nth-child(2) { text-align: left; }
+    .mr11-table.is-frozen tfoot td:nth-child(2) { z-index: 4; background: var(--ink); }
+    .mr11-table.is-compact th, .mr11-table.is-compact td { padding-top: 2px; padding-bottom: 2px; font-size: 10.5px; }
+    .mr11-table.is-compact thead tr.sf-mr11-groups th { height: 24px; line-height: 23px; }
+    .mr11-table.is-compact thead tr.sf-mr11-cols th { top: 24px; }
+    .mr11-table mark { background: #F6DFA6; color: inherit; border-radius: 2px; padding: 0 1px; }
+    .sf-row-open { font: inherit; color: inherit; text-align: left; text-decoration: underline; text-decoration-color: rgba(28, 28, 26, 0.25); text-underline-offset: 3px; }
+    .sf-row-open:hover { text-decoration-color: currentColor; }
+
+    /* The Options panel beside the table, as in Phase 1 */
+    .sf-mr11-panel { width: 288px; flex-shrink: 0; position: sticky; top: 112px; max-height: calc(100vh - 140px); overflow-y: auto; border: 1px solid var(--joint); border-radius: var(--radius); background: var(--face); font-size: 12px; }
+    .sf-pp-top { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--joint); background: var(--panel); font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+    .sf-pp-close { width: 26px; height: 26px; display: grid; place-items: center; border-radius: var(--radius); color: var(--ink-3); }
+    .sf-pp-close:hover { background: var(--face); color: var(--ink); }
+    .sf-pp-sec { border-bottom: 1px solid var(--joint-soft); }
+    .sf-pp-sec:last-child { border-bottom: 0; }
+    .sf-pp-head { display: flex; align-items: center; gap: 6px; padding: 8px 10px 8px 8px; }
+    .sf-pp-toggle { flex: 1; display: flex; align-items: center; gap: 6px; text-align: left; }
+    .sf-pp-title { font-size: 11px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-2); }
+    .sf-pp-toggle:hover .sf-pp-title { color: var(--ink); }
+    .sf-pp-chev { display: inline-grid; color: var(--ink-3); transition: transform 0.2s var(--ease-out); }
+    [aria-expanded="false"] > .sf-pp-chev { transform: rotate(-90deg); }
+    .sf-pp-badge { margin-left: auto; padding: 0 6px; border-radius: 9px; background: var(--ink); color: #fff; font-style: normal; font-size: 10px; font-weight: 700; line-height: 17px; }
+    .sf-pp-badge.is-warn { background: var(--ochre-tint); color: #6B430D; }
+    .sf-pp-body { padding: 0 10px 12px; }
+    .sf-pp-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .sf-pp-label { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+    .sf-pp-link { padding: 2px 6px; border-radius: var(--radius); font-size: 11px; font-weight: 600; color: var(--ink-2); }
+    .sf-pp-link:hover { background: var(--panel); color: var(--ink); }
+    .sf-pp-link.is-danger { color: var(--oxide); }
+    .sf-pp-list { list-style: none; margin: 0; padding: 0; }
+    .sf-pp-check { display: flex; align-items: center; gap: 8px; padding: 5px 4px; border-radius: var(--radius); cursor: pointer; }
+    .sf-pp-check:hover { background: var(--panel); }
+    .sf-pp-check em, .sf-pp-value em { margin-left: auto; font-style: normal; font-size: 10.5px; color: var(--ink-3); }
+    .sf-pp-note { margin-top: 6px; font-size: 10.5px; line-height: 1.4; color: var(--ink-3); }
+    .sf-pp-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .sf-pp-filter { border-radius: var(--radius); }
+    .sf-pp-filter.is-open { background: var(--panel); }
+    .sf-pp-ftoggle { width: 100%; display: flex; align-items: center; gap: 6px; padding: 6px; border-radius: var(--radius); text-align: left; font-weight: 600; color: var(--ink-2); }
+    .sf-pp-ftoggle:hover { background: var(--panel); color: var(--ink); }
+    .sf-pp-picked { padding: 0 8px 6px 26px; font-size: 10.5px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sf-pp-find { width: calc(100% - 12px); margin: 0 6px 6px; height: 28px; padding: 0 8px; border: 1px solid var(--joint); border-radius: var(--radius); background: var(--face); font-size: 11.5px; }
+    .sf-pp-values { list-style: none; margin: 0; padding: 0 4px 6px; max-height: 196px; overflow-y: auto; }
+    .sf-pp-value { width: 100%; display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: var(--radius); text-align: left; font-size: 11.5px; color: var(--ink-2); }
+    .sf-pp-value:hover { background: var(--face); }
+    .sf-pp-value[aria-checked="true"] { background: var(--face); color: var(--ink); font-weight: 600; box-shadow: var(--lift); }
+    .sf-pp-box { width: 14px; height: 14px; flex-shrink: 0; display: grid; place-items: center; border: 1px solid #A6A39C; border-radius: 2px; background: var(--face); color: #fff; }
+    .sf-pp-value[aria-checked="true"] .sf-pp-box { background: var(--verd); border-color: var(--verd); }
+    .sf-pp-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* The details panel for one project */
+    .sf-drawer { position: fixed; z-index: 55; top: 0; right: 0; bottom: 0; width: min(440px, 100vw); display: flex; flex-direction: column; background: var(--face); border-left: 1px solid var(--joint); box-shadow: -24px 0 48px -24px rgba(28, 28, 26, 0.45); animation: sf-slide 0.24s var(--ease-out); }
+    .sf-drawer[hidden] { display: none; }
+    @keyframes sf-slide { from { transform: translateX(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .sf-drawer-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 20px 12px; border-bottom: 1px solid var(--joint-soft); }
+    .sf-drawer-head h2 { font-size: 20px; font-weight: 300; letter-spacing: -0.01em; line-height: 1.2; }
+    .sf-drawer-head p { margin-top: 4px; font-size: 12px; color: var(--ink-2); }
+    .sf-drawer-close { width: 30px; height: 30px; flex-shrink: 0; display: grid; place-items: center; border-radius: var(--radius); color: var(--ink-3); }
+    .sf-drawer-close:hover { background: var(--panel); color: var(--ink); }
+    .sf-drawer-status { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 20px 0; }
+    .sf-pill { padding: 2px 8px; border-radius: var(--radius); font-size: 11px; font-weight: 700; background: var(--verd-tint); color: var(--verd-deep); }
+    .sf-pill[data-tone="warn"] { background: var(--ochre-tint); color: #6B430D; }
+    .sf-pill[data-tone="high"] { background: var(--oxide-tint); color: #8C2822; }
+    .sf-drawer-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 12px 20px; border-bottom: 1px solid var(--joint-soft); }
+    .sf-drawer-nav { margin-left: auto; display: inline-flex; gap: 6px; }
+    .sf-drawer-body { flex: 1; overflow-y: auto; padding: 4px 20px 24px; }
+    .sf-drawer-body section { padding-top: 14px; }
+    .sf-drawer-body h3 { font-size: 11px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 6px; }
+    .sf-drawer-body dl div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 12px; padding: 6px 0; border-top: 1px solid var(--joint-soft); font-size: 12px; }
+    .sf-drawer-body dt { color: var(--ink-2); }
+    .sf-drawer-body dd { color: var(--ink); font-weight: 600; text-align: right; overflow-wrap: anywhere; }
+
+    @media (max-width: 1023px) {
+      .sf-ledger-body { flex-direction: column-reverse; align-items: stretch; }
+      .sf-mr11-panel { width: auto; position: static; max-height: none; }
+    }
+    @media (max-width: 639px) {
+      .sf-ledger-search { max-width: none; flex-basis: 100%; }
+      .sf-menu-pop { left: auto; right: 0; }
+    }
+
     /* ---------------- Collapsible sections ---------------- */
     .sf-collapse-btn { width: 24px; height: 24px; margin: -4px 6px -4px -4px; display: inline-grid; place-items: center; flex-shrink: 0; vertical-align: middle; border-radius: var(--radius); border: 1px solid transparent; background: transparent; color: var(--ink-3); }
     .sf-collapse-btn:hover { border-color: var(--joint); background: var(--face); color: var(--ink); }
@@ -425,7 +563,16 @@
       .sf-gantt-grid { min-width: 0; }
       body.sf-printing > *:not(#sf-print-root) { display: none !important; }
       body.sf-printing #sf-print-root { display: block !important; }
+      /* The MR11 view prints alone, landscape, with the columns and rows on screen */
+      body.sf-print-ledger #sf-pagehead, body.sf-print-ledger #step-panel-9 > :not(#mr11-card), body.sf-print-ledger #mr11-card > :not(.sf-ledger-body):not(:first-child), body.sf-print-ledger .sf-mr11-panel, body.sf-print-ledger .sf-drawer { display: none !important; }
+      body.sf-print-ledger #mr11-card { page: ledger; border: 0 !important; padding: 0 !important; }
+      body.sf-print-ledger #mr11-table-wrap { max-height: none !important; min-height: 0 !important; overflow: visible !important; zoom: 0.5 !important; border: 0 !important; }
+      body.sf-print-ledger .mr11-table thead th, body.sf-print-ledger .mr11-table tfoot td, body.sf-print-ledger .mr11-table tbody td { position: static !important; }
+      body.sf-print-ledger .mr11-table thead { display: table-header-group; }
+      body.sf-print-ledger .sf-th-btn .sf-sort, body.sf-print-ledger .sf-collapse-btn { display: none !important; }
+      .mr11-table, .mr11-table tr, .mr11-table td { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     }
+    @page ledger { size: A4 landscape; margin: 10mm; }
     .sf-print { font-family: var(--font); color: #111; font-variant-numeric: tabular-nums; }
     .sf-print-cover { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1.5px solid #111; padding-bottom: 10px; margin-bottom: 14px; }
     .sf-print-cover h1 { font-size: 26px; font-weight: 300; letter-spacing: -0.01em; }
@@ -1763,25 +1910,42 @@
           </div>
         </div>
 
-        <!-- MR11 Tools: Search, Filters, Column Groups, Highlight, Zoom, Full Screen, Sync, Deleted Rows -->
-        <div class="sf-ledger-tools space-y-2.5 text-xs">
-          <div class="flex flex-wrap items-center gap-2">
-            <input type="text" id="mr11-search" oninput="renderMR11PipelineTab()" placeholder="Search project name, number or building" class="px-3 py-1.5 border border-slate-300 rounded-lg min-w-[220px] flex-1 bg-white">
-            <button onclick="setMr11Zoom(-15)" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-bold" title="Zoom out" aria-label="Zoom out">−</button>
-            <button onclick="setMr11Zoom(0)" id="mr11-zoom-label" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-mono" title="Reset zoom">100%</button>
-            <button onclick="setMr11Zoom(15)" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-bold" title="Zoom in" aria-label="Zoom in">+</button>
-            <button onclick="toggleMr11Fullscreen()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold">Full Screen</button>
-            <button onclick="syncMr11()" class="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold" title="Rebuild MR11 from every department's latest entries">Sync</button>
-            <button onclick="exportMR11Workbook()" class="px-2.5 py-1.5 rounded-lg bg-slate-900 text-white font-bold" title="Download the MR11 workbook (.xlsx)">Export</button>
-            <button onclick="toggleDeletedRows()" id="mr11-deleted-btn" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold">Deleted Rows (0)</button>
-            <button type="button" id="mr11-options-btn" onclick="toggleMr11Options()" aria-expanded="true" aria-controls="mr11-filters mr11-groups" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold">Hide filters &amp; columns</button>
+        <!-- MR11 tools: the Phase 1 tool row, quick views, rates, and what is narrowing the table -->
+        <div class="sf-ledger-tools text-xs space-y-2.5">
+          <div class="sf-ledger-bar">
+            <div class="sf-ledger-search">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="search" id="mr11-search" oninput="renderMR11PipelineTab()" placeholder="Search project, number, short name, PIC or country" aria-label="Search the MR11 ledger" autocomplete="off">
+              <button type="button" id="mr11-search-clear" data-mr11="search-clear" class="hidden" aria-label="Clear search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+            </div>
+            <div class="sf-seg" role="group" aria-label="Zoom">
+              <button type="button" onclick="setMr11Zoom(-5)" aria-label="Zoom out">−</button>
+              <button type="button" onclick="setMr11Zoom(0)" id="mr11-zoom-label" title="Back to 100%">100%</button>
+              <button type="button" onclick="setMr11Zoom(5)" aria-label="Zoom in">+</button>
+            </div>
+            <button type="button" class="sf-btn sf-btn-sm" data-mr11="panel" id="mr11-panel-btn" aria-controls="mr11-panel" aria-pressed="true">Options</button>
+            <button type="button" class="sf-btn sf-btn-sm" data-mr11="rates" id="mr11-rates-btn" aria-controls="mr11-rates" aria-pressed="false">Rates &amp; LME</button>
+            <button type="button" class="sf-btn sf-btn-sm" data-mr11="freeze" id="mr11-freeze-btn" aria-pressed="true" title="Keep the project name on screen while scrolling sideways">Freeze project</button>
+            <button type="button" class="sf-btn sf-btn-sm" data-mr11="density" id="mr11-density-btn" aria-pressed="false" title="Fit more rows on screen">Compact rows</button>
+            <details class="sf-menu" id="mr11-views-menu"><summary class="sf-btn sf-btn-sm">Saved views</summary><div class="sf-menu-pop" id="mr11-views"></div></details>
+            <details class="sf-menu"><summary class="sf-btn sf-btn-sm">Export &amp; print</summary><div class="sf-menu-pop">
+              <button type="button" data-mr11="export-view">Export this view (.xlsx)</button>
+              <button type="button" data-mr11="copy-view">Copy this view for Excel</button>
+              <button type="button" data-mr11="print-view">Print this view (A4 landscape)</button>
+              <button type="button" onclick="exportMR11Workbook()">Export the full MR11 workbook</button>
+            </div></details>
+            <button type="button" class="sf-btn sf-btn-sm" onclick="toggleMr11Fullscreen()">Full screen</button>
+            <button type="button" class="sf-btn sf-btn-sm sf-primary" onclick="syncMr11()" title="Rebuild MR11 from every department's latest entries">Sync</button>
+            <button type="button" class="sf-btn sf-btn-sm" onclick="toggleDeletedRows()" id="mr11-deleted-btn">Deleted rows (0)</button>
             <span id="mr11-sync-label" class="text-[11px] text-slate-500"></span>
           </div>
+          <div id="mr11-quick" class="sf-chips" role="group" aria-label="Quick views"></div>
           <div id="mr11-deleted" class="hidden space-y-1.5"></div>
-          <div id="mr11-filters" class="flex flex-wrap items-center gap-2"></div>
-          <div id="mr11-groups" class="flex flex-wrap items-center gap-x-3 gap-y-1.5"></div>
         </div>
-
+        <div id="mr11-rates" class="hidden"><div id="market-cards" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></div>
+        <div id="mr11-summary" class="sf-mr11-summary hidden" role="status"></div>
+        <div class="sf-ledger-body">
+          <div class="sf-ledger-main">
         <div id="mr11-table-wrap" class="overflow-x-auto custom-scrollbar border border-slate-300 rounded-lg">
           <table class="mr11-table w-full border-collapse text-left">
             <thead id="mr11-head"></thead>
@@ -1964,6 +2128,9 @@
         </tbody>
           </table>
         </div>
+          </div>
+          <aside id="mr11-panel" class="sf-mr11-panel" aria-label="MR11 options"></aside>
+        </div>
       </div>
 
       <!-- Top Banner -->
@@ -1988,8 +2155,6 @@
         </button>
       </div>
 
-      <!-- Market Cards: Exchange Rates & LME (Phase 1.10) -->
-      <div id="market-cards" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
 
       <!-- 4-State Production Readiness Matrix + Product Type Subtotals (From MR11 Bottom Summary Rows) -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -2312,6 +2477,7 @@
       <div class="sf-cmdk-foot"><span><kbd>↑</kbd><kbd>↓</kbd>Move</span><span><kbd>Enter</kbd>Open</span><span><kbd>Esc</kbd>Close</span></div>
     </div>
   </div>
+  <aside id="mr11-drawer" class="sf-drawer" role="dialog" aria-modal="false" aria-labelledby="mr11-drawer-title" hidden></aside>
   <div id="sf-print-root" class="sf-print"></div>
 
   <script>
@@ -6082,14 +6248,6 @@
       enhanceCollapsibles();
       renderPageHead();
     }
-    function toggleMr11Options(force) {
-      const open = typeof force === 'boolean' ? force : $('mr11-filters').classList.contains('hidden');
-      ['mr11-filters', 'mr11-groups'].forEach(id => $(id).classList.toggle('hidden', !open));
-      const btn = $('mr11-options-btn');
-      if (btn) { btn.setAttribute('aria-expanded', String(open)); btn.textContent = open ? 'Hide filters & columns' : 'Filters & columns'; }
-      try { localStorage.setItem('sf.mr11Options', open ? 'open' : 'closed'); } catch {}
-    }
-    window.addEventListener('DOMContentLoaded', () => { let pref = null; try { pref = localStorage.getItem('sf.mr11Options'); } catch {} if (pref === 'closed') toggleMr11Options(false); });
 
     // ---------------- Page links: every page has its own address ----------------
     const PAGE_SLUGS = { 1: 'bd-commercial', 2: 'finance', 3: 'design', 4: 'production', 6: 'readiness-gate', 7: 'logistics', 8: 'site', 9: 'mr11', 18: 'my-work', 10: 'alerts', 11: 'approvals', 12: 'reports', 19: 'timeline', 13: 'mobile', 14: 'rules', 15: 'ceo', 16: 'permissions', 17: 'workbooks' };
@@ -6138,6 +6296,401 @@
       btn.setAttribute('aria-expanded', String(open));
       btn.textContent = open ? 'Less' : 'Details';
     }
+</script>
+  <script>
+    // =========================================================================
+    // MR11 LEDGER: the Phase 1 master table, with its Options panel (column groups,
+    // department highlight, multi-value filters), rates strip and filter summary,
+    // plus sorting, a totals row, a frozen project column, row spacing, quick views,
+    // saved views, export and copy of the current view, A4 landscape printing and
+    // a details panel for each project. These replace the simpler table functions
+    // in app.js; the columns themselves still come from mr11Columns().
+    // =========================================================================
+    const LEDGER = {
+      panel: loadPref('mr11.panelOpen', true),
+      rates: loadPref('mr11.ratesOpen', false),
+      freeze: loadPref('mr11.freeze', true),
+      density: loadPref('mr11.density', 'comfortable'),
+      sort: loadPref('mr11.sort', null),
+      highlights: loadPref('mr11.highlights', []),
+      sections: loadPref('mr11.panelSections', { view: true, highlight: true, filters: true }),
+      openFilters: new Set(),
+      drawerKey: null
+    };
+    const LEDGER_ICONS = {
+      chevron: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>',
+      up: '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg>',
+      down: '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>',
+      both: '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 9 5-5 5 5M7 15l5 5 5-5"/></svg>',
+      x: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+      check: '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>'
+    };
+    // Quick views: the questions people ask of MR11 most often, one click each
+    const MR11_QUICK = [
+      ['', 'All contracts', () => true],
+      ['attention', 'Needs attention', (r, alerts) => rowAttention(r, alerts).length > 0],
+      ['payment', 'Waiting on advance', r => !/CLEARED/.test(r.advStatus)],
+      ['design', 'Design not released', r => !/^\d{4}-\d{2}-\d{2}$/.test(r.designDate)],
+      ['ready', 'Ready to dispatch', r => gateFor(r.key).ok && r.producedM2 > r.shippedM2],
+      ['shipped', 'Dispatched', r => r.shippedM2 > 0]
+    ];
+    // Columns whose figures add up in the totals row (rates, prices and dates do not)
+    const SUMMABLE = /^(NCA Qty|Actual Received|Total Quantity|Total m²|Total USD|Total Processed|Actual Produced|Actual Del|Sailed|Pending Delivery)|\((m²|USD)\)$/;
+    const textBox = document.createElement('div');
+    const htmlText = html => { textBox.innerHTML = html; return (textBox.textContent || '').replace(/\s+/g, ' ').trim(); };
+    const colKey = c => htmlText(c.head.replace(/<span[^>]*>(ACTUAL|F'CAST)<\/span>/g, ''));
+    const asNumber = text => { const t = String(text).replace(/[$,\s]|m²/g, ''); return /^-?\d+(\.\d+)?$/.test(t) ? parseFloat(t) : null; };
+    function ledgerFilterValues(field) { const v = appState.mr11Filters[field]; return Array.isArray(v) ? v : v ? [v] : []; }
+    function ledgerSearchTerm() { return ($('mr11-search')?.value || '').trim().toLowerCase(); }
+
+    // Search covers more of the row, filters take several values each, then the quick view
+    function mr11ShownRows(allRows, alerts) {
+      const term = ledgerSearchTerm();
+      const quick = MR11_QUICK.find(q => q[0] === (appState.mr11Quick || '')) || MR11_QUICK[0];
+      alerts = alerts || computeAlerts();
+      return allRows.filter(r => {
+        if (term && ![r.customerProject, r.projectNo, r.buildingStream, r.shortName, r.pic, r.country, r.nca, r.po].some(v => String(v ?? '').toLowerCase().includes(term))) return false;
+        if (!quick[2](r, alerts)) return false;
+        return MR11_FILTERS.every(([field]) => { const vals = ledgerFilterValues(field); return !vals.length || vals.includes(mr11FilterValue(r, field)); });
+      });
+    }
+    // One place builds what the table, export, copy and print all show: the same rows in the same order
+    function ledgerView(allRows) {
+      const alerts = computeAlerts();
+      const cols = mr11Columns().filter(c => !appState.hiddenGroups.includes(c.group));
+      const all = allRows || allMr11Rows();
+      let rows = mr11ShownRows(all, alerts);
+      const sort = LEDGER.sort;
+      const sortCol = sort && cols.find(c => colKey(c) === sort.key);
+      if (sortCol) {
+        const value = r => { const t = htmlText(sortCol.cell(r, all.indexOf(r))); const n = asNumber(t); return n === null ? t.toLowerCase() : n; };
+        const keyed = rows.map(r => [value(r), r]);
+        keyed.sort((a, b) => {
+          const [x, y] = [a[0], b[0]];
+          const cmp = typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y), undefined, { numeric: true });
+          return sort.dir === 'desc' ? -cmp : cmp;
+        });
+        rows = keyed.map(k => k[1]);
+      }
+      return { cols, rows, all, alerts };
+    }
+    // Identifiers stay text in Excel, so a project number is never turned into a sum or loses a zero
+    const TEXT_COLUMNS = /^(Project No|Short Name|PO|NCA|Stream|Incoterms)$/;
+    function ledgerCellValue(c, r, all) {
+      const key = colKey(c);
+      if (key === 'Row') return r.isLive ? '1 (LIVE)' : all.indexOf(r) + 1;
+      const text = htmlText(c.cell(r, all.indexOf(r)));
+      if (TEXT_COLUMNS.test(key)) return text;
+      const n = asNumber(text);
+      return n === null ? text : n;
+    }
+    function ledgerTotals(cols, rows, all) {
+      return cols.map((c, i) => {
+        const key = colKey(c);
+        if (i === 0) return 'Total';
+        if (key === 'Customer & Project Name') return plural(rows.length, 'contract');
+        if (!SUMMABLE.test(key)) return '';
+        let money = false, sum = 0, any = false;
+        rows.forEach(r => {
+          const text = htmlText(c.cell(r, all.indexOf(r)));
+          if (text.includes('$')) money = true;
+          const n = asNumber(text);
+          if (n !== null) { sum += n; any = true; }
+        });
+        return any ? (money ? formatUSD(sum) : fmtNum(sum, 2)) : '';
+      });
+    }
+    const markTerm = (html, term) => {
+      if (!term) return html;
+      const re = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+      return html.replace(/>([^<]+)</g, (m, text) => `>${text.replace(re, x => `<mark>${x}</mark>`)}<`);
+    };
+
+    function renderMr11Table(allRows) {
+      const { cols, rows, all } = ledgerView(allRows);
+      const term = ledgerSearchTerm();
+      const lit = group => LEDGER.highlights.some(d => (MR11_GROUPS[group].depts || []).includes(d));
+      const groupRow = [];
+      cols.forEach(c => {
+        const last = groupRow[groupRow.length - 1];
+        if (last && last.group === c.group) last.span++; else groupRow.push({ group: c.group, span: 1 });
+      });
+      const sortIcon = key => (LEDGER.sort && LEDGER.sort.key === key ? (LEDGER.sort.dir === 'asc' ? LEDGER_ICONS.up : LEDGER_ICONS.down) : LEDGER_ICONS.both);
+      const ariaSort = key => (LEDGER.sort && LEDGER.sort.key === key ? (LEDGER.sort.dir === 'asc' ? 'ascending' : 'descending') : 'none');
+      $('mr11-head').innerHTML = `<tr class="sf-mr11-groups">${groupRow.map(g => `<th colspan="${g.span}" class="${lit(g.group) ? 'hl-col' : ''}">${esc(MR11_GROUPS[g.group].label)}</th>`).join('')}</tr>
+        <tr class="sf-mr11-cols">${cols.map(c => { const key = colKey(c); return `<th class="${lit(c.group) ? 'hl-col' : ''}" aria-sort="${ariaSort(key)}"><button type="button" class="sf-th-btn${LEDGER.sort && LEDGER.sort.key === key ? ' is-sorted' : ''}" data-mr11="sort" data-key="${esc(key)}" title="Sort by ${esc(key)}"><span>${c.head}</span><span class="sf-sort">${sortIcon(key)}</span></button></th>`; }).join('')}</tr>`;
+      $('mr11-master-tbody').innerHTML = rows.map(r => {
+        const fill = FORMWORK_FILL[r.formworkSystem];
+        const rowBg = r.isLive ? `${fill ? '' : 'bg-sky-50'} font-semibold` : `${fill ? '' : 'bg-white'}`;
+        const position = all.indexOf(r);
+        const cells = cols.map(c => {
+          const key = colKey(c);
+          let html = key === 'Customer & Project Name'
+            ? `<td class="font-bold"><button type="button" class="sf-row-open" data-mr11="open" data-key="${esc(r.key)}" title="Open the details of ${esc(r.customerProject.trim())}">${markTerm(`>${esc(r.customerProject)}<`, term).slice(1, -1)}</button></td>`
+            : c.cell(r, position);
+          if (term && ['Project No', 'Short Name', 'Building / Stream / Block', 'PIC', 'Countries'].includes(key)) html = markTerm(html, term);
+          return lit(c.group) ? html.replace('<td class="', '<td class="hl-col ') : html;
+        }).join('');
+        return `<tr class="${rowBg}${LEDGER.drawerKey === r.key ? ' is-open' : ''}" data-row="${esc(r.key)}" style="color:${PRODUCT_FONT[r.product] || '#000000'};${fill ? `background:${fill};` : ''}">${cells}</tr>`;
+      }).join('') || `<tr><td colspan="${cols.length}" class="sf-ledger-empty">No contracts match. Clear the search, a filter or the quick view to see more.</td></tr>`;
+      const table = $('mr11-head').closest('table');
+      let foot = table.querySelector('tfoot');
+      if (!foot) { foot = document.createElement('tfoot'); table.appendChild(foot); }
+      foot.innerHTML = rows.length ? `<tr>${ledgerTotals(cols, rows, all).map(v => `<td>${esc(v)}</td>`).join('')}</tr>` : '';
+      table.classList.toggle('is-frozen', !!LEDGER.freeze);
+      table.classList.toggle('is-compact', LEDGER.density === 'compact');
+      requestAnimationFrame(() => { const first = table.querySelector('thead tr.sf-mr11-cols th'); if (first && first.offsetWidth) table.style.setProperty('--mr11-col1', `${first.offsetWidth}px`); });
+      if ($('mr11-count')) $('mr11-count').textContent = rows.length === all.length ? `${all.length} contracts` : `${rows.length} of ${all.length} contracts`;
+      renderMr11Tools(all, rows);
+      if (LEDGER.drawerKey && !$('mr11-drawer').hidden) renderMr11Drawer();
+    }
+
+    function renderMr11Tools(allRows, shown) {
+      const alerts = computeAlerts();
+      // Tool row states
+      const press = (id, on) => { const b = $(id); if (b) b.setAttribute('aria-pressed', String(!!on)); };
+      press('mr11-panel-btn', LEDGER.panel);
+      press('mr11-rates-btn', LEDGER.rates);
+      press('mr11-freeze-btn', LEDGER.freeze);
+      press('mr11-density-btn', LEDGER.density === 'compact');
+      $('mr11-rates').classList.toggle('hidden', !LEDGER.rates);
+      $('mr11-panel').classList.toggle('hidden', !LEDGER.panel);
+      $('mr11-search-clear').classList.toggle('hidden', !ledgerSearchTerm());
+      $('mr11-zoom-label').textContent = `${appState.mr11Zoom}%`;
+      $('mr11-table-wrap').style.zoom = `${appState.mr11Zoom}%`;
+      $('mr11-sync-label').textContent = `Last rebuilt ${appState.lastSync}`;
+      // Quick views, each with how many contracts it holds
+      $('mr11-quick').innerHTML = MR11_QUICK.map(([key, label, test]) => {
+        const n = allRows.filter(r => test(r, alerts)).length;
+        return `<button type="button" class="sf-chip" data-mr11="quick" data-quick="${key}" aria-pressed="${(appState.mr11Quick || '') === key}">${esc(label)} <span>${n}</span></button>`;
+      }).join('');
+      // What is narrowing the table, in words, with one way to undo it all
+      const parts = [];
+      const quick = MR11_QUICK.find(q => q[0] === (appState.mr11Quick || ''));
+      if (quick && quick[0]) parts.push(`Quick view: ${quick[1]}`);
+      if (ledgerSearchTerm()) parts.push(`Search: "${$('mr11-search').value.trim()}"`);
+      MR11_FILTERS.forEach(([field, label]) => { const v = ledgerFilterValues(field); if (v.length) parts.push(`${label}: ${v.join(', ')}`); });
+      if (appState.hiddenGroups.length) parts.push(`${plural(appState.hiddenGroups.length, 'column group')} hidden`);
+      if (LEDGER.sort) parts.push(`Sorted by ${LEDGER.sort.key}, ${LEDGER.sort.dir === 'asc' ? 'lowest first' : 'highest first'}`);
+      const summary = $('mr11-summary');
+      summary.classList.toggle('hidden', !parts.length);
+      summary.innerHTML = parts.length ? `<span><b>Showing ${shown.length} of ${plural(allRows.length, 'contract')}</b> · ${parts.map(esc).join(' · ')}</span><button type="button" class="sf-btn sf-btn-sm" data-mr11="reset-view">Clear all</button>` : '';
+      // Deleted rows (administrators), as before
+      const deleted = referenceMR11Projects.filter(r => r.deleted);
+      $('mr11-deleted-btn').textContent = `Deleted rows (${deleted.length})`;
+      $('mr11-deleted-btn').classList.toggle('hidden', !isAdmin());
+      $('mr11-deleted').classList.toggle('hidden', !appState.deletedOpen || !isAdmin());
+      $('mr11-deleted').innerHTML = deleted.length ? deleted.map(r => {
+        const entry = appState.approvals.find(a => a.type === 'DELETE' && a.row === r.key && a.status === 'APPROVED');
+        return `<div class="sf-ledger-deleted"><span><strong>${esc(r.customerProject)}</strong> · ${esc(r.buildingStream)}${entry ? ` · deleted by ${esc(entry.by)}, ${esc(entry.when)}` : ''}</span>${entry ? `<button type="button" class="sf-btn sf-btn-sm sf-primary" onclick="undoApproval(${entry.id})">Restore</button>` : ''}</div>`;
+      }).join('') : '<p class="sf-empty">No rows have been deleted.</p>';
+      renderMr11Views();
+      renderMr11Panel(allRows);
+    }
+
+    // ---- The Options panel, as in Phase 1: View, Highlight columns, Filters ----
+    function renderMr11Panel(allRows) {
+      const panel = $('mr11-panel');
+      if (!panel || !LEDGER.panel) return;
+      const section = (id, title, badge, body, action = '') => {
+        const open = LEDGER.sections[id] !== false;
+        return `<section class="sf-pp-sec"><div class="sf-pp-head"><button type="button" class="sf-pp-toggle" data-mr11="section" data-id="${id}" aria-expanded="${open}"><span class="sf-pp-chev">${LEDGER_ICONS.chevron}</span><span class="sf-pp-title">${title}</span>${badge}</button>${action}</div>${open ? `<div class="sf-pp-body">${body}</div>` : ''}</section>`;
+      };
+      const cols = mr11Columns();
+      const groups = Object.entries(MR11_GROUPS).filter(([, g]) => !g.locked);
+      const hidden = appState.hiddenGroups.filter(k => MR11_GROUPS[k] && !MR11_GROUPS[k].locked).length;
+      const view = `<div class="sf-pp-row"><span class="sf-pp-label">Column groups</span><span><button type="button" class="sf-pp-link" data-mr11="groups" data-to="all">Show all</button><button type="button" class="sf-pp-link" data-mr11="groups" data-to="none">Hide all</button></span></div>
+        <ul class="sf-pp-list">${groups.map(([key, g]) => `<li><label class="sf-pp-check"><input type="checkbox" ${appState.hiddenGroups.includes(key) ? '' : 'checked'} onchange="toggleMr11Group('${key}', this.checked)"><span>${esc(g.short)}</span><em>${cols.filter(c => c.group === key).length}</em></label></li>`).join('')}</ul>
+        <p class="sf-pp-note">Project name, number, short name and stream always stay visible.</p>`;
+      const highlight = `<div class="sf-pp-chips">${DEPT_KEYS.map(k => `<button type="button" class="sf-chip" data-mr11="hl" data-dept="${k}" aria-pressed="${LEDGER.highlights.includes(k)}">${esc(ROLES[k])}</button>`).join('')}</div><p class="sf-pp-note">Outlines each chosen department's columns so you can see what they own.</p>`;
+      const active = MR11_FILTERS.reduce((n, [f]) => n + (ledgerFilterValues(f).length ? 1 : 0), 0);
+      const filters = MR11_FILTERS.map(([field, label]) => {
+        const counts = {};
+        allRows.forEach(r => { const v = mr11FilterValue(r, field); counts[v] = (counts[v] || 0) + 1; });
+        const values = Object.keys(counts).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+        const selected = ledgerFilterValues(field);
+        const open = LEDGER.openFilters.has(field) || selected.length > 0 && !LEDGER.openFilters.has(`!${field}`);
+        const list = values.map(v => { const on = selected.includes(v); return `<li data-value-text="${esc(v.toLowerCase())}"><button type="button" class="sf-pp-value" role="checkbox" aria-checked="${on}" data-mr11="fv" data-field="${field}" data-value="${esc(v)}"><span class="sf-pp-box">${on ? LEDGER_ICONS.check : ''}</span><span class="sf-pp-text">${esc(v)}</span><em>${counts[v]}</em></button></li>`; }).join('');
+        return `<div class="sf-pp-filter${open ? ' is-open' : ''}"><button type="button" class="sf-pp-ftoggle" data-mr11="fopen" data-field="${field}" aria-expanded="${open}"><span class="sf-pp-chev">${LEDGER_ICONS.chevron}</span><span>${esc(label)}</span>${selected.length ? `<em class="sf-pp-badge">${selected.length}</em>` : ''}</button>
+          ${!open && selected.length ? `<p class="sf-pp-picked">${esc(selected.join(', '))}</p>` : ''}
+          ${open ? `${values.length > 8 ? `<input type="search" class="sf-pp-find" placeholder="Find ${esc(label.toLowerCase())}" aria-label="Find a ${esc(label.toLowerCase())}" oninput="filterMr11Values(this)">` : ''}<ul class="sf-pp-values">${list}</ul>` : ''}</div>`;
+      }).join('');
+      panel.innerHTML = `<div class="sf-pp-top"><span>Options</span><button type="button" class="sf-pp-close" data-mr11="panel" aria-label="Close the options panel">${LEDGER_ICONS.x}</button></div>
+        ${section('view', 'View', hidden ? `<em class="sf-pp-badge is-warn">${hidden} hidden</em>` : '', view)}
+        ${section('highlight', 'Highlight columns', LEDGER.highlights.length ? `<em class="sf-pp-badge">${LEDGER.highlights.length}</em>` : '', highlight)}
+        ${section('filters', 'Filters', active ? `<em class="sf-pp-badge">${active}</em>` : '', filters, active ? '<button type="button" class="sf-pp-link is-danger" data-mr11="fclear">Clear</button>' : '')}`;
+    }
+    function filterMr11Values(input) {
+      const q = input.value.trim().toLowerCase();
+      input.parentElement.querySelectorAll('.sf-pp-values li').forEach(li => { li.hidden = !!q && !li.dataset.valueText.includes(q); });
+    }
+
+    // ---- Saved views: a named set of filters, columns, highlight, sort and spacing ----
+    function readViews() { return loadPref('mr11.views', []); }
+    function currentViewState() {
+      return { filters: JSON.parse(JSON.stringify(appState.mr11Filters)), hiddenGroups: [...appState.hiddenGroups], highlights: [...LEDGER.highlights], sort: LEDGER.sort, density: LEDGER.density, freeze: LEDGER.freeze, quick: appState.mr11Quick || '', search: $('mr11-search')?.value || '' };
+    }
+    function applyViewState(v) {
+      appState.mr11Filters = v.filters || {};
+      appState.hiddenGroups = v.hiddenGroups || [];
+      LEDGER.highlights = v.highlights || [];
+      LEDGER.sort = v.sort || null;
+      LEDGER.density = v.density || 'comfortable';
+      LEDGER.freeze = v.freeze !== false;
+      appState.mr11Quick = v.quick || '';
+      if ($('mr11-search')) $('mr11-search').value = v.search || '';
+      ['hiddenGroups', 'highlights', 'sort', 'density', 'freeze'].forEach(k => savePref(k === 'hiddenGroups' ? 'mr11.hiddenGroups' : `mr11.${k}`, k === 'hiddenGroups' ? appState.hiddenGroups : LEDGER[k]));
+      renderMR11PipelineTab();
+    }
+    function renderMr11Views() {
+      const box = $('mr11-views');
+      if (!box) return;
+      const views = readViews();
+      box.innerHTML = `${views.length ? views.map((v, i) => `<div class="sf-menu-row"><button type="button" data-mr11="view-apply" data-index="${i}">${esc(v.name)}</button><button type="button" class="sf-menu-del" data-mr11="view-delete" data-index="${i}" aria-label="Delete the view ${esc(v.name)}">${LEDGER_ICONS.x}</button></div>`).join('') : '<p class="sf-menu-note">No saved views yet.</p>'}
+        <button type="button" data-mr11="view-save">Save the current view…</button>
+        <button type="button" data-mr11="reset-view">Back to the full table</button>`;
+    }
+
+    // ---- Export, copy and print exactly what is on screen ----
+    function ledgerGrid() {
+      const { cols, rows, all } = ledgerView();
+      const head = cols.map(colKey);
+      const body = rows.map(r => cols.map(c => ledgerCellValue(c, r, all)));
+      const totals = ledgerTotals(cols, rows, all);
+      return { head, body, totals, count: rows.length };
+    }
+    function exportMr11View() {
+      if (typeof XLSX === 'undefined') { notify('The Excel library is still loading. Please try again in a moment.', 'error'); return; }
+      const { head, body, totals, count } = ledgerGrid();
+      const ws = XLSX.utils.aoa_to_sheet([head, ...body, totals.map(t => asNumber(t) ?? t)]);
+      ws['!cols'] = head.map(h => ({ wch: Math.min(40, Math.max(10, h.length + 2)) }));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'MR11 view');
+      XLSX.writeFile(wb, `MR11_view_${DEMO_TODAY}.xlsx`);
+      logActivity(`Exported the MR11 view (${plural(count, 'contract')})`);
+      notify(`Exported ${plural(count, 'contract')} with the columns on screen.`, 'success');
+    }
+    function copyMr11View() {
+      const { head, body, count } = ledgerGrid();
+      const tsv = [head, ...body].map(row => row.map(v => String(v).replace(/[\t\n]/g, ' ')).join('\t')).join('\n');
+      const done = () => notify(`Copied ${plural(count, 'contract')}. Paste into Excel.`, 'success');
+      const fallback = () => { const ta = document.createElement('textarea'); ta.value = tsv; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); done(); } catch { notify('Copy is not available in this browser window.', 'error'); } ta.remove(); };
+      if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(tsv).then(done, fallback); else fallback();
+    }
+    function printMr11View() {
+      document.body.classList.add('sf-print-ledger');
+      const done = () => { document.body.classList.remove('sf-print-ledger'); window.removeEventListener('afterprint', done); };
+      window.addEventListener('afterprint', done);
+      window.print();
+    }
+
+    // ---- The details panel for one project ----
+    function openMr11Drawer(key) {
+      LEDGER.drawerKey = key;
+      const drawer = $('mr11-drawer');
+      drawer.hidden = false;
+      renderMr11Drawer();
+      drawer.querySelector('.sf-drawer-close')?.focus();
+      document.querySelectorAll('#mr11-master-tbody tr').forEach(tr => tr.classList.toggle('is-open', tr.dataset.row === key));
+    }
+    function closeMr11Drawer() {
+      const key = LEDGER.drawerKey;
+      LEDGER.drawerKey = null;
+      $('mr11-drawer').hidden = true;
+      document.querySelectorAll('#mr11-master-tbody tr.is-open').forEach(tr => tr.classList.remove('is-open'));
+      document.querySelector(`#mr11-master-tbody [data-mr11="open"][data-key="${CSS.escape(key || '')}"]`)?.focus();
+    }
+    function renderMr11Drawer() {
+      const { rows, all, alerts } = ledgerView();
+      const r = all.find(x => x.key === LEDGER.drawerKey);
+      if (!r) { closeMr11Drawer(); return; }
+      const cols = mr11Columns();
+      const at = rows.indexOf(r);
+      const gate = gateFor(r.key);
+      const flags = rowAttention(r, alerts);
+      const comments = (appState.comments[r.key] || []).length;
+      const sections = Object.entries(MR11_GROUPS).map(([key, g]) => {
+        const items = cols.filter(c => c.group === key && colKey(c) !== 'Row').map(c => [colKey(c), htmlText(c.cell(r, all.indexOf(r)))]);
+        return items.length ? `<section><h3>${esc(g.short || 'Project')}</h3><dl>${items.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v || '—')}</dd></div>`).join('')}</dl></section>` : '';
+      }).join('');
+      $('mr11-drawer').innerHTML = `<div class="sf-drawer-head">
+          <div><h2 id="mr11-drawer-title">${esc(r.customerProject.trim())}</h2><p>${esc(r.projectNo)} · ${esc(r.country)} · ${esc(r.pic)} · ${esc(r.status)}</p></div>
+          <button type="button" class="sf-drawer-close" data-mr11="drawer-close" aria-label="Close the project details">${LEDGER_ICONS.x}</button>
+        </div>
+        <div class="sf-drawer-status">
+          <span class="sf-pill" data-tone="${gate.ok ? 'ok' : 'warn'}">${gate.nonPhysical ? 'No dispatch gate (design only)' : gate.green ? 'Dispatch gate met' : gate.released ? 'Released by an administrator' : `Gate not met: ${esc(gate.failed.join(', '))}`}</span>
+          ${flags.map(([tone, text]) => `<span class="sf-pill" data-tone="${tone === 'high' ? 'high' : 'warn'}">${esc(text)}</span>`).join('')}
+        </div>
+        <div class="sf-drawer-actions">
+          <button type="button" class="sf-btn sf-btn-sm" onclick="openComments('${esc(r.key)}')">Comments${comments ? ` (${comments})` : ''}</button>
+          <button type="button" class="sf-btn sf-btn-sm" data-mr11="drawer-timeline">Open in the timeline</button>
+          <span class="sf-drawer-nav"><button type="button" class="sf-btn sf-btn-sm" data-mr11="drawer-nav" data-dir="-1" ${at <= 0 ? 'disabled' : ''} aria-label="Previous contract">Previous</button><button type="button" class="sf-btn sf-btn-sm" data-mr11="drawer-nav" data-dir="1" ${at < 0 || at >= rows.length - 1 ? 'disabled' : ''} aria-label="Next contract">Next</button></span>
+        </div>
+        <div class="sf-drawer-body">${sections}</div>`;
+    }
+
+    // ---- Every control in the ledger and its details panel goes through one listener ----
+    document.addEventListener('click', e => {
+      const t = e.target.closest('[data-mr11]');
+      if (!t || !t.closest('#mr11-card, #mr11-drawer')) return;
+      const act = t.dataset.mr11;
+      const menu = t.closest('details');
+      if (menu && t.tagName !== 'SUMMARY') menu.removeAttribute('open');
+      const rerender = () => renderMR11PipelineTab();
+      switch (act) {
+        case 'panel': LEDGER.panel = !LEDGER.panel; savePref('mr11.panelOpen', LEDGER.panel); rerender(); break;
+        case 'rates': LEDGER.rates = !LEDGER.rates; savePref('mr11.ratesOpen', LEDGER.rates); renderMarket(); rerender(); break;
+        case 'freeze': LEDGER.freeze = !LEDGER.freeze; savePref('mr11.freeze', LEDGER.freeze); rerender(); break;
+        case 'density': LEDGER.density = LEDGER.density === 'compact' ? 'comfortable' : 'compact'; savePref('mr11.density', LEDGER.density); rerender(); break;
+        case 'search-clear': $('mr11-search').value = ''; $('mr11-search').focus(); rerender(); break;
+        case 'section': LEDGER.sections[t.dataset.id] = LEDGER.sections[t.dataset.id] === false; savePref('mr11.panelSections', LEDGER.sections); rerender(); break;
+        case 'groups': appState.hiddenGroups = t.dataset.to === 'none' ? Object.keys(MR11_GROUPS).filter(k => !MR11_GROUPS[k].locked) : []; savePref('mr11.hiddenGroups', appState.hiddenGroups); rerender(); break;
+        case 'hl': { const d = t.dataset.dept; LEDGER.highlights = LEDGER.highlights.includes(d) ? LEDGER.highlights.filter(x => x !== d) : [...LEDGER.highlights, d]; savePref('mr11.highlights', LEDGER.highlights); rerender(); break; }
+        case 'fopen': { const f = t.dataset.field; const open = t.getAttribute('aria-expanded') === 'true'; LEDGER.openFilters.delete(f); LEDGER.openFilters.delete(`!${f}`); LEDGER.openFilters.add(open ? `!${f}` : f); rerender(); break; }
+        case 'fv': { const f = t.dataset.field, v = t.dataset.value; const vals = ledgerFilterValues(f); appState.mr11Filters[f] = vals.includes(v) ? vals.filter(x => x !== v) : [...vals, v]; LEDGER.openFilters.add(f); rerender(); break; }
+        case 'fclear': appState.mr11Filters = {}; rerender(); break;
+        case 'quick': appState.mr11Quick = t.dataset.quick; rerender(); break;
+        case 'reset-view': appState.mr11Filters = {}; appState.mr11Quick = ''; LEDGER.sort = null; savePref('mr11.sort', null); appState.hiddenGroups = []; savePref('mr11.hiddenGroups', []); $('mr11-search').value = ''; rerender(); break;
+        case 'sort': {
+          const key = t.dataset.key;
+          const s = LEDGER.sort;
+          LEDGER.sort = !s || s.key !== key ? { key, dir: 'asc' } : s.dir === 'asc' ? { key, dir: 'desc' } : null;
+          savePref('mr11.sort', LEDGER.sort);
+          rerender();
+          break;
+        }
+        case 'open': openMr11Drawer(t.dataset.key); break;
+        case 'drawer-close': closeMr11Drawer(); break;
+        case 'drawer-timeline': closeMr11Drawer(); switchTab(19); break;
+        case 'drawer-nav': {
+          const { rows } = ledgerView();
+          const at = rows.findIndex(r => r.key === LEDGER.drawerKey) + Number(t.dataset.dir);
+          if (rows[at]) openMr11Drawer(rows[at].key);
+          break;
+        }
+        case 'view-save':
+          askModal({ title: 'Save this view', desc: 'Saves the search, filters, quick view, column groups, highlight, sort and row spacing under a name, in this browser.', label: 'View name', confirm: 'Save view', min: 2,
+            onOk: name => { const views = readViews().filter(v => v.name !== name.trim()); views.push({ name: name.trim(), state: currentViewState() }); savePref('mr11.views', views); renderMr11Views(); notify(`Saved the view "${name.trim()}".`, 'success'); } });
+          break;
+        case 'view-apply': { const v = readViews()[Number(t.dataset.index)]; if (v) { applyViewState(v.state); notify(`Showing the view "${v.name}".`, 'info'); } break; }
+        case 'view-delete': { const views = readViews(); const v = views.splice(Number(t.dataset.index), 1)[0]; savePref('mr11.views', views); renderMr11Views(); if (v) notify(`Deleted the view "${v.name}".`, 'info'); break; }
+        case 'export-view': exportMr11View(); break;
+        case 'copy-view': copyMr11View(); break;
+        case 'print-view': printMr11View(); break;
+        default: break;
+      }
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && LEDGER.drawerKey && !$('sf-cmdk')?.classList.contains('is-open') && !document.querySelector('#reason-modal.flex, #comment-modal.flex')) { e.preventDefault(); closeMr11Drawer(); }
+    });
+    // Zoom moves in steps of 5%, between 20% and 135%, as in Phase 1
+    function setMr11Zoom(step) {
+      appState.mr11Zoom = step === 0 ? 100 : Math.min(135, Math.max(20, appState.mr11Zoom + step));
+      savePref('mr11.zoom', appState.mr11Zoom);
+      renderMR11PipelineTab();
+    }
+    function setMr11Filter(field, value) { appState.mr11Filters[field] = value ? [value] : []; renderMR11PipelineTab(); }
+    function clearMr11Filters() { appState.mr11Filters = {}; appState.mr11Quick = ''; if ($('mr11-search')) $('mr11-search').value = ''; renderMR11PipelineTab(); }
 </script>
 
 </body></html>

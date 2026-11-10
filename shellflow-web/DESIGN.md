@@ -237,7 +237,7 @@ The five gate checks are columns of one slab, each under a 2px joint, with the G
 A centred dialog on a dimmed ground: a 54px search field, grouped results (Recent, Pages, Actions, Projects, NCA versions, Lorries, Approvals, Alerts), the active result on a verdigris tint, and a key guide at the foot. Opened with Ctrl K or /.
 
 ### MR11 ledger
-The Phase 1 ledger layout: an uppercase ledger title with a contract count, a tool row (search, zoom, full screen, sync, export, deleted rows), filters, and the table with two light uppercase header rows and a first column that stay on screen.
+The Phase 1 ledger layout: an uppercase ledger title with a contract count, one tool row (search with clear, a segmented zoom control, toggle buttons that turn carbon ink when on, two menus for saved views and export), quick-view chips with counts (verdigris tint when chosen), an ochre summary bar when anything narrows the table, and the table with two light uppercase header rows that stay on screen. Every column heading is a sort button with a small arrow that turns verdigris. The row number and project name can stay frozen while scrolling sideways. A carbon-ink totals row stays at the bottom. The Options panel (288px, form face, sticky beside the table) holds View, Highlight columns and Filters, each section folding on its chevron. A project's name opens a 440px details drawer from the right with its gate state, attention flags and every field by group.
 
 ## Do's and Don'ts
 

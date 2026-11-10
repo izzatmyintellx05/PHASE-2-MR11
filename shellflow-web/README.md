@@ -24,7 +24,9 @@ The server enforces all of this, so it holds even if someone edits the page in t
 - **Tie holes on each step.** The dots on each step in the menu fill in as that step's gate conditions are met. Hover or focus a step to see which conditions are met; the page heading lists them too.
 - **Page links.** Every page has its own address, for example `#timeline` or `#my-work`, so links can be shared and the browser's Back and Forward buttons work.
 - **Collapsible sections.** Every section with a heading folds with the arrow at the start of its heading, and pages with several sections have Collapse all / Expand all. The browser remembers what each person folded. On the MR11 Master Schedule, the filters and column choices fold away too.
-- **MR11 ledger.** The MR11 Master Schedule opens with the full MR11 table, laid out as in Phase 1: its two header rows and first column stay on screen while scrolling, with search, zoom, full screen, sync and export above it.
+- **MR11 ledger.** The MR11 Master Schedule opens with the full MR11 table, laid out as in Phase 1: its two header rows and the project columns stay on screen while scrolling. Around it:
+  - **As in Phase 1:** an Options panel (show or hide column groups, highlight several departments' columns, and filters where you tick several values, with counts and a search box), a Rates & LME strip, a bar saying what is narrowing the table, search with a clear button, zoom in 5% steps, full screen, sync, export and deleted rows.
+  - **New:** click any column heading to sort; a totals row for the contracts on screen; Freeze project to keep the name in view; Compact rows; quick views (Needs attention, Waiting on advance, Design not released, Ready to dispatch, Dispatched); saved views; export or copy exactly what is on screen for Excel; print the view on A4 landscape; and a details panel for each contract (click its name) with Previous and Next.
 - **Printing.** Every page has a Print button laid out for A4. On Reports it prints the weekly report, and on the CEO Executive Hub it prints the CEO summary.
 
 ## Work on it in Visual Studio Code
