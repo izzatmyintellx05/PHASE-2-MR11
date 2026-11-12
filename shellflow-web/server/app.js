@@ -39,6 +39,13 @@ function createApp(options = {}) {
   // Demo quick login: one click signs in as the main administrator. Only for a demonstration on your
   // own computer: it must be switched on, it is refused in production, and only this computer may use it.
   const demoQuickLogin = !production && String(env.DEMO_QUICK_LOGIN || '').toLowerCase() === 'true';
+  // A live demonstration can open quick login to everyone, but only until a set date (at most 60 days
+  // ahead): DEMO_QUICK_LOGIN_PUBLIC_UNTIL=YYYY-MM-DD. After that day it switches itself off.
+  const publicUntil = /^\d{4}-\d{2}-\d{2}$/.test(env.DEMO_QUICK_LOGIN_PUBLIC_UNTIL || '') ? env.DEMO_QUICK_LOGIN_PUBLIC_UNTIL : '';
+  const latestAllowed = new Date(Date.now() + 60 * 86400000).toISOString().slice(0, 10);
+  const publicQuickLogin = () => publicUntil !== '' && publicUntil <= latestAllowed && new Date().toISOString().slice(0, 10) <= publicUntil;
+  if (publicUntil && publicUntil > latestAllowed) console.warn(`[shellflow] DEMO_QUICK_LOGIN_PUBLIC_UNTIL is more than 60 days away (${publicUntil}), so public quick login stays off.`);
+  else if (publicQuickLogin()) console.warn(`[shellflow] Public quick login is on until ${publicUntil}: anyone with the link can sign in as any department, including Administrator.`);
   if (demoQuickLogin) console.warn('[shellflow] DEMO_QUICK_LOGIN is on: anyone using this computer can sign in as the main administrator with one click. Switch it off before sharing the site.');
 
   const store = options.store || createStore(env);
@@ -98,7 +105,7 @@ function createApp(options = {}) {
   // Optional fixed date for demonstrations on the sample data; blank means the real date
   app.get('/config.js', (req, res) => {
     const demoDate = /^\d{4}-\d{2}-\d{2}$/.test(env.DEMO_DATE || '') ? `${env.DEMO_DATE}T09:00:00` : '';
-    res.type('application/javascript').set('Cache-Control', 'no-store').send(`window.SHELLFLOW_HOSTED = true;${demoDate ? ` window.SHELLFLOW_NOW = ${JSON.stringify(demoDate)};` : ' window.SHELLFLOW_NOW = new Date().toISOString();'}${demoQuickLogin ? ' window.SHELLFLOW_DEMO_LOGIN = true;' : ''}`);
+    res.type('application/javascript').set('Cache-Control', 'no-store').send(`window.SHELLFLOW_HOSTED = true;${demoDate ? ` window.SHELLFLOW_NOW = ${JSON.stringify(demoDate)};` : ' window.SHELLFLOW_NOW = new Date().toISOString();'}${demoQuickLogin || publicQuickLogin() ? ' window.SHELLFLOW_DEMO_LOGIN = true;' : ''}`);
   });
 
   const api = express.Router();
@@ -172,7 +179,7 @@ function createApp(options = {}) {
   const fromThisComputer = req => ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.socket.remoteAddress);
   api.post('/demo-login', loginLimiter, async (req, res, next) => {
     try {
-      if (!demoQuickLogin || !fromThisComputer(req)) return res.status(404).json({ error: 'Not found.' });
+      if (!((demoQuickLogin && fromThisComputer(req)) || publicQuickLogin())) return res.status(404).json({ error: 'Not found.' });
       const role = String((req.body && req.body.role) || 'ADMIN');
       if (!ROLES.includes(role)) return res.status(400).json({ error: 'Choose a valid role.' });
       let account;

@@ -344,6 +344,23 @@ test('demo quick login is off unless switched on, and never in production', asyn
     assert.deepStrictEqual(fin.user.roles, ['FINANCE']);
     assert.strictEqual((await post(`${demo.url}/api/demo-login`, { role: 'NOBODY' })).status, 400);
   } finally { await demo.close(); }
+
+  // A live demonstration can open quick login to everyone until a date, even in production
+  const day = n => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
+  const live = await startOther({ NODE_ENV: 'production', DEMO_QUICK_LOGIN_PUBLIC_UNTIL: day(7) });
+  try {
+    assert.match(await (await fetch(`${live.url}/config.js`)).text(), /SHELLFLOW_DEMO_LOGIN = true/);
+    const res = await post(`${live.url}/api/demo-login`, { role: 'DESIGN' });
+    assert.strictEqual(res.status, 200);
+    assert.deepStrictEqual((await res.json()).user.roles, ['DESIGN']);
+  } finally { await live.close(); }
+  for (const until of [day(-1), day(90)]) {
+    const off = await startOther({ NODE_ENV: 'production', DEMO_QUICK_LOGIN_PUBLIC_UNTIL: until });
+    try {
+      assert.strictEqual((await post(`${off.url}/api/demo-login`, {})).status, 404, until);
+      assert.doesNotMatch(await (await fetch(`${off.url}/config.js`)).text(), /SHELLFLOW_DEMO_LOGIN/);
+    } finally { await off.close(); }
+  }
 });
 
 test('MR11 lines: only BD and administrators may change them, and bad lines are refused', async () => {

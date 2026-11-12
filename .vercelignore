@@ -1,0 +1,9 @@
+# Only the website goes to Vercel: not the client documents, and never local secrets or data
+/*
+!/shellflow-web
+shellflow-web/.env
+shellflow-web/.env.*
+!shellflow-web/.env.example
+shellflow-web/node_modules
+shellflow-web/data
+shellflow-web/.impeccable
