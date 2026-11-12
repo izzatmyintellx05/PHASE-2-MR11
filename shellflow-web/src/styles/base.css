@@ -1,32 +1,34 @@
 
     /* ShellFlow · Fair-Face Concrete. Tokens first; everything below reads them. */
     :root {
-      --ground: #E4E2DD;
-      --panel: #F4F3EF;
-      --face: #FCFCFA;
-      --ink: #1C1C1A;
-      --ink-2: #55534E;
-      --ink-3: #6B6863;
-      --joint: #CFCCC5;
-      --joint-soft: #DDDAD3;
-      --steel: #3A3D40;
-      --steel-deep: #2C2E30;
-      --steel-raised: #46494C;
-      --steel-line: #55585B;
-      --steel-ink: #EDEBE6;
-      --steel-mute: #B4B1AA;
-      --verd: #2F6B5E;
-      --verd-deep: #275A4F;
-      --verd-tint: #DCE8E4;
-      --verd-on-steel: #9FC9BD;
-      --ochre: #A86A12;
-      --ochre-tint: #F5E8CF;
-      --oxide: #A8322A;
-      --oxide-tint: #F5DEDA;
-      --radius: 3px;
+      --ground: #F7F7F5;
+      --panel: #F2F2EF;
+      --face: #FFFFFF;
+      --ink: #1C1D1A;
+      --ink-2: #4A4B46;
+      --ink-3: #64655F;
+      --joint: #E2E2DD;
+      --joint-soft: #ECECE8;
+      --steel: #1C1D1A;
+      --steel-deep: #161714;
+      --steel-raised: #2A2B27;
+      --steel-line: #3A3B36;
+      --steel-ink: #F2F2EF;
+      --steel-mute: #B5B5AE;
+      --verd: #047857;
+      --verd-deep: #065F46;
+      --verd-tint: #D1FAE5;
+      --verd-on-steel: #6EE7B7;
+      --ochre: #B45309;
+      --ochre-tint: #FEF3C7;
+      --oxide: #B91C1C;
+      --oxide-tint: #FEE2E2;
+      --radius: 6px;
       --lift: 0 1px 2px rgba(28, 28, 26, 0.06);
       --lift-2: 0 12px 28px -16px rgba(28, 28, 26, 0.4);
-      --font: "Albert Sans", system-ui, sans-serif;
+      --font: "Inter", system-ui, sans-serif;
+      --accent: #F26B1D;
+      --side-w: 236px;
       --gutter: clamp(16px, 3vw, 40px);
       --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
       color-scheme: light;
@@ -120,7 +122,7 @@
     .sf-print-mark { display: inline-grid; vertical-align: middle; margin-bottom: 6px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .sf-search:hover { border-color: var(--steel-line); color: var(--steel-ink); }
     .sf-search span { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sf-search kbd, .sf-kbd { font-family: var(--font); font-size: 11px; border: 1px solid #5C5F62; border-radius: var(--radius); padding: 1px 6px; color: var(--steel-mute); }
+    .sf-search kbd, .sf-kbd { font-family: var(--font); font-size: 11px; border: 1px solid #5C5F62; border-radius: var(--radius); padding: 1px 6px; color: #CFCCC5; }
     .sf-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-wrap: wrap; }
     .sf-role { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--steel-mute); }
     .sf-role label { white-space: nowrap; }
@@ -185,6 +187,8 @@
     .sf-hole.just-met { animation: sf-cast 0.42s var(--ease-out); }
     @keyframes sf-cast { from { transform: scale(0.2); background: var(--verd); border-color: var(--verd); } to { transform: scale(1); } }
     .sf-tip { position: absolute; left: 0; top: calc(100% + 6px); z-index: 40; min-width: 240px; max-width: 300px; padding: 10px 12px; border-radius: var(--radius); background: var(--ink); color: #EDEBE6; font-size: 12px; font-weight: 500; line-height: 1.45; box-shadow: var(--lift-2); opacity: 0; visibility: hidden; transform: translateY(-3px); transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s; pointer-events: none; }
+    /* The last step tabs open their tip towards the left, so it never runs past the window */
+    .sf-steps > .sf-tab:nth-last-child(-n+2) .sf-tip { left: auto; right: 0; }
     .sf-tab:hover .sf-tip, .sf-tab:focus-visible .sf-tip { opacity: 1; visibility: visible; transform: none; transition-delay: 0.25s; }
     .sf-tip b { display: block; font-weight: 700; margin-bottom: 4px; color: #fff; }
     .sf-cond { display: flex; align-items: center; gap: 8px; }
@@ -255,12 +259,20 @@
     .mr11-table.is-compact thead tr.sf-mr11-groups th { height: 24px; line-height: 23px; }
     .mr11-table.is-compact thead tr.sf-mr11-cols th { top: 24px; }
     .mr11-table mark { background: #F6DFA6; color: inherit; border-radius: 2px; padding: 0 1px; }
+    .mr11-table td[data-merged] { vertical-align: middle; background-color: rgba(247, 246, 243, 0.85); box-shadow: inset 0 0 0 1px var(--joint); }
+    .sf-fill-dot { display: inline-block; width: 9px; height: 9px; margin-left: 6px; border-radius: 2px; border: 1px solid var(--joint); vertical-align: middle; }
+    .sf-lines-table select, .sf-lines-table input { min-height: 32px; }
+    .sf-lines-table [data-field="stream"] { min-width: 112px; }
+    .sf-lines-table select[data-field="formwork"] { min-width: 210px; }
+    .sf-lines-table select[data-field="product"] { min-width: 170px; }
+    .sf-lines-table input[data-field="terms"] { min-width: 180px; }
+    .sf-drawer-line { margin-top: 6px !important; font-weight: 600; color: var(--ink) !important; }
     .sf-row-open { font: inherit; color: inherit; text-align: left; text-decoration: underline; text-decoration-color: rgba(28, 28, 26, 0.25); text-underline-offset: 3px; }
     .sf-row-open:hover { text-decoration-color: currentColor; }
 
     /* The Options panel beside the table, as in Phase 1 */
     .sf-mr11-panel { width: 288px; flex-shrink: 0; position: sticky; top: 112px; max-height: calc(100vh - 140px); overflow-y: auto; border: 1px solid var(--joint); border-radius: var(--radius); background: var(--face); font-size: 12px; }
-    .sf-pp-top { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--joint); background: var(--panel); font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+    .sf-pp-top { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--joint); background: var(--panel); font-size: var(--fs-small); font-weight: 700; }
     .sf-pp-close { width: 26px; height: 26px; display: grid; place-items: center; border-radius: var(--radius); color: var(--ink-3); }
     .sf-pp-close:hover { background: var(--face); color: var(--ink); }
     .sf-pp-sec { border-bottom: 1px solid var(--joint-soft); }
@@ -414,7 +426,7 @@
     .sf-gantt-label strong { display: block; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sf-gantt-label span { color: var(--ink-3); font-size: 11.5px; }
     .sf-gantt-label .sf-flag { display: inline-block; margin-top: 4px; padding: 1px 6px; border-radius: var(--radius); font-size: 10.5px; font-weight: 700; color: var(--oxide); background: var(--oxide-tint); }
-    .sf-gantt-label .sf-flag[data-tone="warn"] { color: var(--ochre); background: var(--ochre-tint); }
+    .sf-gantt-label .sf-flag[data-tone="warn"] { color: #8A560E; background: var(--ochre-tint); }
     .sf-gantt-lane { grid-column: 2 / -1; position: relative; border-bottom: 1px solid var(--joint-soft); background-image: linear-gradient(90deg, var(--joint-soft) 1px, transparent 1px); background-size: calc(100% / var(--months)) 100%; min-height: 58px; }
     .sf-bar-seg { position: absolute; height: 14px; top: 13px; border-radius: 2px; background: var(--steel); color: #fff; font-size: 10px; font-weight: 600; line-height: 14px; padding: 0 5px; white-space: nowrap; overflow: hidden; }
     .sf-bar-seg[data-kind="forecast"] { background: repeating-linear-gradient(135deg, #A6A39C 0 4px, #B9B6AF 4px 8px); color: var(--ink); }
@@ -437,9 +449,188 @@
     .sf-table th { text-align: left; font-weight: 600; color: var(--ink-2); padding: 8px 12px; border-bottom: 1px solid var(--joint); background: var(--panel); }
     .sf-table td { padding: 8px 12px; border-bottom: 1px solid var(--joint-soft); }
 
+    .sf-quick-login { width: 100%; min-height: 40px; padding: 4px 6px; font-size: 12.5px; line-height: 1.2; border-radius: var(--radius); border: 1px solid var(--verd); background: var(--verd-tint); color: var(--verd-deep); font-weight: 700; }
+    .sf-quick-login:hover { background: var(--verd); color: #fff; }
+    .sf-quick-login.hidden { display: none; }
+
     /* ---------------- Toasts and dialogs ---------------- */
     #toast-container > div { border-radius: var(--radius); }
     [id$="-modal"] > div, #signin-screen > div > div.bg-white { border-radius: 4px; }
+
+    /* ---------------- One system: type scale, case, numbers, sections ---------------- */
+    :root { --fs-caption: 11.5px; --fs-small: 12.5px; --fs-body: 13.5px; --fs-title: 15px; --fs-section: 18px; --pad-section: 24px; }
+    /* The one-off small sizes fold onto the scale: caption 11.5px, small 12.5px */
+    body :is(.text-\[9px\], .text-\[10px\], .text-\[10\.5px\], .text-\[11px\], .text-\[11\.5px\]) { font-size: var(--fs-caption); line-height: 1.4; }
+    body .text-xs { font-size: var(--fs-small); line-height: 1.45; }
+    body .text-sm { font-size: var(--fs-body); line-height: 1.5; }
+    /* Labels are written in sentence case; only the MR11 column headings keep the workbook's capitals */
+    body .uppercase:not(.mr11-table thead *) { text-transform: none; letter-spacing: 0; }
+    .sf-ledger-title, .sf-pp-title, .sf-pp-label, .sf-drawer-body h3 { text-transform: none; letter-spacing: 0; }
+    .sf-ledger-title { font-size: var(--fs-section); font-weight: 700; letter-spacing: -0.01em; }
+    .sf-pp-title, .sf-drawer-body h3 { font-size: var(--fs-small); }
+    .sf-pp-label { font-size: var(--fs-caption); }
+    .sf-ribbon dt { text-transform: none; letter-spacing: 0; font-size: var(--fs-caption); }
+    /* Figures use the page's own face with even-width digits, not a typewriter face */
+    body .font-mono { font-family: var(--font); font-variant-numeric: tabular-nums; letter-spacing: 0; }
+    /* Every section reads the same way: one padding, one heading size, one gap under the heading */
+    main .step-panel .sf-collapsible { padding: var(--pad-section); }
+    main .step-panel .sf-collapsible > .sf-collapse-head :is(h2, h3) { font-size: var(--fs-title); font-weight: 700; line-height: 1.3; letter-spacing: -0.005em; }
+    @media (max-width: 639px) {
+      :root { --pad-section: 18px; }
+    }
+
+    /* ---------------- Readable contrast (WCAG AA: 4.5 to 1 for text) ---------------- */
+    /* Pale greys stay for lines and fills; as text they were too faint on concrete, so they darken a step */
+    body .text-slate-300, body .text-slate-400, body .text-slate-500 { color: #625F5A; }
+    /* On formwork steel the same greys go light instead */
+    body :is(.bg-slate-700, .bg-slate-800, .bg-slate-900, .sf-header, [class*="bg-slate-800/"], [class*="bg-slate-900/"]) :is(.text-slate-300, .text-slate-400, .text-slate-500),
+    body :is(.bg-slate-700, .bg-slate-800, .bg-slate-900):is(.text-slate-300, .text-slate-400, .text-slate-500) { color: #C9C6BF; }
+    /* Ochre as text, or behind white text, goes one shade deeper */
+    body .text-amber-600 { color: #8A560E; }
+    body .bg-amber-600.text-white { background-color: #8A560E; }
+
+    /* A wide table scrolls inside its own box instead of pushing its column (and the page) wider */
+    main .grid > * { min-width: 0; }
+    /* Hidden labels inside a scrolling table stay inside it, so they cannot widen the page on a phone */
+    .overflow-x-auto { position: relative; }
+
+    /* On phones, the smallest print grows to 12px so it can be read at arm's length */
+    @media (max-width: 639px) {
+      body :is(.text-\[9px\], .text-\[10px\], .text-\[10\.5px\], .text-\[11px\], .text-\[11\.5px\]) { font-size: 12px; }
+      .sf-ribbon dt, .sf-tool, .sf-chip, .sf-pill, .sf-count, .sf-cmdk-group, .sf-cmdk-foot { font-size: 12px; }
+    }
+
+    /* ---------------- Smooth motion and small comforts ---------------- */
+    @keyframes sf-enter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    @keyframes sf-fade { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes sf-toast-in { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: none; } }
+    /* A page eases in when it is opened, and a section eases in when it is opened again */
+    main .step-panel:not(.hidden) { animation: sf-enter 0.26s var(--ease-out); }
+    .sf-collapsible.sf-just-opened > :not(.sf-collapse-head) { animation: sf-enter 0.22s var(--ease-out); }
+    /* Dialogs fade in with their box rising a little */
+    [id$="-modal"]:not(.hidden) { animation: sf-fade 0.18s ease-out; }
+    [id$="-modal"]:not(.hidden) > div { animation: sf-enter 0.24s var(--ease-out); }
+    /* Messages slide in and fade out; a click closes one early */
+    #toast-container > div { animation: sf-toast-in 0.28s var(--ease-out); cursor: pointer; }
+    #toast-container > div.sf-leaving { opacity: 0; transform: translateY(6px); transition: opacity 0.2s ease, transform 0.2s ease; }
+    body.sf-show-top #toast-container { bottom: 76px; }
+    /* Fields answer the pointer and the keyboard */
+    input, select, textarea { transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease; }
+    input:not([type="checkbox"]):not([type="radio"]):not(:disabled):not(:focus):hover, select:not(:disabled):not(:focus):hover, textarea:not(:disabled):not(:focus):hover { border-color: #A6A39C; }
+    input:focus-visible, select:focus-visible, textarea:focus-visible { border-color: var(--verd); }
+    /* A press is felt */
+    .sf-btn:not(:disabled):active, .sf-tab:active, .sf-tool:active, .sf-quick-login:active { transform: translateY(1px); }
+    /* Plain tables: rows light up under the pointer */
+    .sf-table tbody tr { transition: background-color 0.12s ease; }
+    .sf-table tbody tr:hover { background: var(--panel); }
+    /* Back to the top, once a page has been scrolled a long way */
+    .sf-top { position: fixed; right: 20px; bottom: 20px; z-index: 45; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--ink); background: var(--ink); color: #fff; box-shadow: var(--lift-2); opacity: 0; visibility: hidden; transform: translateY(10px); transition: opacity 0.2s ease, transform 0.25s var(--ease-out), background-color 0.15s ease, border-color 0.15s ease, visibility 0s linear 0.25s; }
+    .sf-top svg { width: 18px; height: 18px; }
+    .sf-top:hover { background: var(--verd); border-color: var(--verd); }
+    body.sf-show-top .sf-top { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+    /* While a page is scrolled, the pinned menu slims down so more of the page shows */
+    @media (min-width: 1024px) {
+      .sf-header { transition: box-shadow 0.22s ease; }
+      .sf-nav .sf-wrap { transition: padding 0.22s var(--ease-out); }
+      #step-bar { transition: gap 0.22s var(--ease-out); }
+      .sf-tab { transition: min-height 0.22s var(--ease-out), padding 0.22s var(--ease-out), background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease; }
+      body.sf-scrolled .sf-header { box-shadow: 0 10px 24px -18px rgba(28, 28, 26, 0.55); }
+      body.sf-scrolled .sf-nav .sf-wrap { padding-top: 6px; padding-bottom: 6px; }
+      body.sf-scrolled #step-bar { gap: 4px; }
+      body.sf-scrolled .sf-tab { min-height: 36px; padding-top: 3px; padding-bottom: 3px; }
+      body.sf-scrolled .sf-tab > .sf-ties { display: none; }
+      body.sf-scrolled .sf-tab-no { font-size: 15px; }
+      body.sf-scrolled .sf-tool { min-height: 28px; }
+    }
+
+
+    /* =====================================================================
+       Industrial workspace: Inter, a warm off-white ground, crisp 1px joints,
+       a charcoal project header with pills, a left sidebar for the tools, and
+       an eight-step pipeline whose open step carries the one safety-orange edge.
+       ===================================================================== */
+    body { font-family: var(--font); font-feature-settings: "cv11", "ss01"; letter-spacing: -0.003em; }
+    .sf-pagehead h1 { font-weight: 600; font-size: clamp(24px, 2.2vw, 30px); letter-spacing: -0.025em; line-height: 1.15; }
+    main .step-panel .sf-collapsible { border-radius: 10px; border-color: var(--joint); box-shadow: 0 1px 2px rgba(28, 29, 26, 0.04); }
+
+    /* Project header: what you are working on, as pills that open the field they show */
+    .sf-bar, .sf-ribbon { background: var(--steel); }
+    .sf-ribbon { border-top: 1px solid var(--steel-raised); }
+    .sf-ribbon .sf-wrap { gap: 8px; padding-top: 10px; padding-bottom: 10px; }
+    .sf-ribbon .sf-kv { gap: 6px; padding: 5px 10px 5px 12px; border: 1px solid var(--steel-line); border-radius: 999px; background: var(--steel-raised); cursor: pointer; transition: border-color 0.15s ease, background-color 0.15s ease; }
+    .sf-ribbon .sf-kv:hover, .sf-ribbon .sf-kv:focus-visible { border-color: #5A5B55; background: #33342F; }
+    .sf-ribbon .sf-kv::after { content: ""; width: 12px; height: 12px; align-self: center; background: #B5B5AE; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat; }
+    .sf-ribbon dt { color: #A3A39C; font-size: 12px; font-weight: 500; }
+    .sf-ribbon dt::after { content: ":"; }
+    .sf-ribbon dd { color: #FFFFFF; font-weight: 600; font-size: 12.5px; }
+    .sf-ribbon .sf-tag, .sf-ribbon .sf-figure, .sf-ribbon .sf-money { padding: 4px 10px; border-radius: 6px; border: 1px solid var(--steel-line); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+    .sf-ribbon .sf-figure { color: #FFFFFF; background: var(--steel-raised); }
+    .sf-ribbon .sf-money { color: #6EE7B7; background: rgba(4, 120, 87, 0.18); border-color: rgba(110, 231, 183, 0.35); }
+
+    /* The pipeline: eight step cards, each showing its gate progress as a bar; the open one is charcoal with a safety-orange top edge */
+    .sf-nav { background: var(--ground); }
+    .sf-steps { gap: 8px; }
+    body .sf-tab { min-height: 56px; padding: 8px 12px 16px; border-radius: 8px; border-color: var(--joint); background: var(--face); font-weight: 600; font-size: 13px; }
+    .sf-tab:hover { border-color: #C9C9C3; }
+    .sf-tab > .sf-ties { display: none; }
+    .sf-tab-no { font-size: 13px; font-weight: 600; min-width: 22px; height: 22px; display: inline-grid; place-items: center; border-radius: 6px; background: var(--panel); color: var(--ink-2); }
+    .sf-tab::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 7px; height: 3px; border-radius: 2px; background: linear-gradient(to right, var(--verd) calc(var(--p, 0) * 100%), var(--joint-soft) 0); }
+    body .sf-tab.step-btn-active { background: var(--steel); border-color: var(--steel); color: #FFFFFF; box-shadow: inset 0 3px 0 var(--accent), 0 8px 20px -14px rgba(28, 29, 26, 0.6); }
+    .sf-tab.step-btn-active .sf-tab-no { background: var(--accent); color: #1C1D1A; }
+    .sf-tab.step-btn-active::after { background: linear-gradient(to right, #6EE7B7 calc(var(--p, 0) * 100%), var(--steel-line) 0); }
+    body.sf-scrolled .sf-tab { min-height: 44px; padding-bottom: 12px; }
+    body.sf-scrolled .sf-tab::after { bottom: 5px; }
+
+    #sp-clock-pill[data-state] { border: 1px solid; }
+    #sp-clock-pill[data-state="ok"] { background: #ECFDF5; border-color: #A7F3D0; color: #065F46; }
+    #sp-clock-pill[data-state="running"] { background: #FFFBEB; border-color: #FDE68A; color: #92400E; }
+    #sp-clock-pill[data-state="late"] { background: #FEF2F2; border-color: #FECACA; color: #991B1B; }
+    @media (min-width: 1024px) {
+      body .sf-steps { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+      body .sf-tab { font-size: 12.5px; padding-left: 10px; padding-right: 8px; gap: 8px; }
+    }
+
+    /* Gate conditions as pills: emerald with a tick when met, amber with a warning sign while waiting */
+    .sf-conds { display: flex; flex-wrap: wrap; gap: 8px; }
+    .sf-cond { display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px 4px 8px; border-radius: 999px; font-size: 12.5px; font-weight: 500; border: 1px solid #A7F3D0; background: #ECFDF5; color: #065F46; }
+    .sf-cond[data-met="false"] { border-color: #FDE68A; background: #FFFBEB; color: #92400E; }
+    .sf-cond > .sf-hole { display: none; }
+    .sf-cond::before { content: ""; width: 14px; height: 14px; flex: none; background: currentColor; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center / contain no-repeat; }
+    .sf-cond[data-met="false"]::before { -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='M12 17h.01'/%3E%3Cpath d='M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='M12 17h.01'/%3E%3Cpath d='M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z'/%3E%3C/svg%3E"); }
+
+    /* Left sidebar for the tools (desktop); on smaller screens they stay one scrolling row under the steps */
+    .sf-side-head { display: none; }
+    @media (min-width: 1024px) {
+      body { padding-left: var(--side-w); transition: padding-left 0.22s var(--ease-out); }
+      body.sf-side-collapsed { --side-w: 68px; }
+      body .sf-tools { position: fixed; z-index: 41; left: 0; top: 0; bottom: 0; width: var(--side-w); display: flex; flex-direction: column; flex-wrap: nowrap; gap: 2px; padding: 14px 12px 16px; background: var(--face); border-right: 1px solid var(--joint); overflow-y: auto; overflow-x: hidden; transition: width 0.22s var(--ease-out); }
+      .sf-side-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 36px; padding: 0 2px 10px 8px; margin-bottom: 6px; border-bottom: 1px solid var(--joint-soft); font-size: 12px; font-weight: 600; color: var(--ink-3); white-space: nowrap; }
+      .sf-side-toggle { width: 32px; height: 32px; display: grid; place-items: center; flex: none; border-radius: 6px; border: 1px solid var(--joint); background: var(--face); color: var(--ink-2); }
+      .sf-side-toggle:hover { background: var(--panel); color: var(--ink); }
+      .sf-side-toggle svg { width: 16px; height: 16px; transition: transform 0.22s var(--ease-out); }
+      body.sf-side-collapsed .sf-side-toggle svg { transform: rotate(180deg); }
+      body .sf-tools .sf-tool { position: relative; flex: 0 0 auto; width: 100%; min-height: 38px; padding: 8px 10px; gap: 10px; font-size: 13.5px; font-weight: 500; border-radius: 6px; border-color: transparent; color: var(--ink-2); white-space: nowrap; }
+      body .sf-tools .sf-tool svg { width: 16px; height: 16px; }
+      body .sf-tools .sf-tool:hover { background: var(--panel); color: var(--ink); border-color: transparent; }
+      body .sf-tools .sf-tool.step-btn-active { background: var(--steel); color: #FFFFFF; }
+      body .sf-tools .sf-tool .sf-count { margin-left: auto; }
+      body.sf-side-collapsed .sf-side-head > span, body.sf-side-collapsed .sf-tool > span:not(.sf-count) { display: none; }
+      body.sf-side-collapsed .sf-side-head { justify-content: center; padding-left: 2px; }
+      body.sf-side-collapsed .sf-tools .sf-tool { justify-content: center; padding: 8px 0; }
+      body.sf-side-collapsed .sf-tools .sf-tool .sf-count { position: absolute; top: 2px; right: 4px; margin: 0; }
+    }
+
+    /* MR11: each line's Edit button, the department menu for administrators, and Add project for BD */
+    .sf-edit-line, .sf-edit-menu > summary { display: inline-flex; align-items: center; gap: 4px; margin-top: 4px; padding: 2px 8px; border-radius: 6px; border: 1px solid currentColor; font-size: 11.5px; font-weight: 600; line-height: 18px; cursor: pointer; list-style: none; background: transparent; color: inherit; }
+    .sf-edit-line:hover, .sf-edit-menu > summary:hover { background: var(--accent); border-color: var(--accent); color: #1C1D1A; }
+    .sf-edit-menu { position: relative; display: inline-block; }
+    .sf-edit-menu > summary::-webkit-details-marker { display: none; }
+    .sf-edit-menu > div { position: absolute; z-index: 30; left: 0; top: calc(100% + 4px); min-width: 210px; padding: 4px; border: 1px solid var(--joint); border-radius: 8px; background: var(--face); box-shadow: var(--lift-2); color: var(--ink); }
+    .sf-edit-menu > div button { display: block; width: 100%; padding: 7px 10px; border-radius: 6px; text-align: left; font-size: 12.5px; font-weight: 500; }
+    .sf-edit-menu > div button:hover { background: var(--panel); }
+    .sf-add-project { margin-left: 8px; }
+    @keyframes sf-flash { from { background-color: #FED7AA; } to { background-color: transparent; } }
+    .sf-flash > td, tr.sf-flash { animation: sf-flash 1.8s ease-out; }
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
@@ -472,7 +663,9 @@
       .sf-brand-tag { font-size: 10.5px; }
       .sf-bar .sf-wrap { gap: 8px; padding-top: 8px; padding-bottom: 8px; }
       .sf-search { order: 0; flex: 0 0 36px; min-width: 36px; max-width: 36px; padding: 0; justify-content: center; margin-left: auto; }
-      .sf-search span, .sf-search kbd { display: none; }
+      .sf-search kbd { display: none; }
+      /* The words stay for screen readers, out of sight */
+      .sf-search span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
       .sf-actions { margin-left: 0; width: 100%; flex-wrap: nowrap; }
       .sf-role select { max-width: 144px; }
       .sf-actions [onclick="resetAllDemoData()"], .sf-actions [onclick="downloadStandaloneHTML()"] { display: none; }

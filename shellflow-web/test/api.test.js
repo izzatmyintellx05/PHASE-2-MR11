@@ -276,8 +276,93 @@ test('security headers are sent, and the health check reveals nothing', async ()
   assert.strictEqual(res.headers.get('x-powered-by'), null);
 });
 
+test('MR11 line tracking: each department keeps its own figures per line, and nobody else can', async () => {
+  const production = await signedInUser('production.lines@example.com', ['PRODUCTION']);
+  const finance = await signedInUser('finance.track@example.com', ['FINANCE']);
+  const base = ((await production.call('GET', '/api/state/versions')).data.versions || {}).lineProduction || 0;
+  const data = { lineProduction: { L1: { processedM2: 450, producedM2: 450, producedDate: '2026-11-14' }, L2: { producedM2: null } } };
+  assert.deepStrictEqual((await finance.call('PUT', '/api/state', { changes: { lineProduction: { baseVersion: base, data } } })).data.denied, ['lineProduction']);
+  assert.deepStrictEqual((await production.call('PUT', '/api/state', { changes: { lineProduction: { baseVersion: base, data } } })).data.saved, ['lineProduction']);
+  for (const wrong of [{ 'L1': { producedM2: -1 } }, { 'bad id!': { producedM2: 1 } }, { L1: { producedM2: 'x'.repeat(41) } }]) {
+    const res = await production.call('PUT', '/api/state', { changes: { lineProduction: { baseVersion: base + 1, data: { lineProduction: wrong } } } });
+    assert.ok((res.data.invalid || []).some(x => x.section === 'lineProduction'), JSON.stringify(wrong));
+  }
+  const state = await production.call('GET', '/api/state');
+  assert.strictEqual(state.data.sections.lineProduction.data.lineProduction.L1.producedM2, 450);
+});
+
+test('the page goes out compressed, and its scripts need no eval and no style or icon CDN', async () => {
+  const res = await fetch(`${base}/`, { headers: { 'accept-encoding': 'gzip' } });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.headers.get('content-encoding'), 'gzip');
+  const csp = res.headers.get('content-security-policy');
+  assert.ok(!csp.includes("'unsafe-eval'"), csp);
+  assert.ok(!csp.includes('cdn.tailwindcss.com') && !csp.includes('unpkg.com'), csp);
+  const page = await res.text();
+  assert.ok(!page.includes('cdn.tailwindcss.com') && !page.includes('unpkg.com/lucide'), 'the page still loads a CDN script');
+});
+
 test('production refuses to start without a real secret or first admin', async () => {
   assert.throws(() => createApp({ store, env: { NODE_ENV: 'production' } }), /JWT_SECRET must be set/);
   assert.throws(() => createApp({ store, env: { JWT_SECRET: 'too-short' } }), /at least 32/);
   assert.throws(() => createApp({ store, env: { VERCEL: '1', JWT_SECRET: crypto.randomBytes(32).toString('hex') } , }) && createApp({ env: { VERCEL: '1', JWT_SECRET: crypto.randomBytes(32).toString('hex') } }), /DATABASE_URL must be set/);
+});
+
+// Starts a second, separate server with its own settings and store
+async function startOther(env) {
+  const own = fs.mkdtempSync(path.join(os.tmpdir(), 'shellflow-other-'));
+  const app = createApp({ store: new FileStore(own), loginLimit: 1000, env: { JWT_SECRET: crypto.randomBytes(32).toString('hex'), ADMIN_EMAIL: 'main@example.com', ADMIN_PASSWORD: crypto.randomBytes(12).toString('base64url'), ...env } });
+  await app.locals.ready();
+  const srv = await new Promise(resolve => { const s = app.listen(0, '127.0.0.1', () => resolve(s)); });
+  const url = `http://127.0.0.1:${srv.address().port}`;
+  return { url, close: async () => { await new Promise(r => srv.close(r)); fs.rmSync(own, { recursive: true, force: true }); } };
+}
+const post = (url, body) => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+
+test('demo quick login is off unless switched on, and never in production', async () => {
+  assert.strictEqual((await new Client().call('POST', '/api/demo-login', {})).status, 404);
+  assert.doesNotMatch(await (await fetch(`${base}/config.js`)).text(), /SHELLFLOW_DEMO_LOGIN/);
+
+  const prod = await startOther({ NODE_ENV: 'production', DEMO_QUICK_LOGIN: 'true' });
+  try {
+    assert.strictEqual((await post(`${prod.url}/api/demo-login`, {})).status, 404);
+    assert.doesNotMatch(await (await fetch(`${prod.url}/config.js`)).text(), /SHELLFLOW_DEMO_LOGIN/);
+  } finally { await prod.close(); }
+
+  const demo = await startOther({ DEMO_QUICK_LOGIN: 'true' });
+  try {
+    assert.match(await (await fetch(`${demo.url}/config.js`)).text(), /SHELLFLOW_DEMO_LOGIN = true/);
+    const res = await post(`${demo.url}/api/demo-login`, {});
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.user.email, 'main@example.com');
+    assert.deepStrictEqual(data.user.roles, ['ADMIN']);
+    assert.ok(!('passwordHash' in data.user));
+    assert.match(res.headers.get('set-cookie') || '', /HttpOnly/i);
+    // Each department has its own quick login, with that one role
+    const fin = await (await post(`${demo.url}/api/demo-login`, { role: 'FINANCE' })).json();
+    assert.deepStrictEqual(fin.user.roles, ['FINANCE']);
+    assert.strictEqual((await post(`${demo.url}/api/demo-login`, { role: 'NOBODY' })).status, 400);
+  } finally { await demo.close(); }
+});
+
+test('MR11 lines: only BD and administrators may change them, and bad lines are refused', async () => {
+  const bd = await signedInUser('bd.lines@example.com', ['BD']);
+  const finance = await signedInUser('finance.lines@example.com', ['FINANCE']);
+  const versions = (await bd.call('GET', '/api/state/versions')).data.versions || {};
+  const base = versions.lines || 0;
+  const good = { mr11Lines: [{ id: 'L1', stream: 'Stream 1', blocks: 'Block A', formwork: 'MIVAN/MONOLITIC FORMWORK', product: 'MFE New', m2: 600, price: null, terms: '' }, { id: 'L2', stream: 'Stream 2', blocks: 'Core', formwork: 'QUICK DECK / LIGHTDECK', product: 'MFE New', m2: 250, price: 132.5, terms: '30% Advance / 70% CAD' }] };
+  assert.deepStrictEqual((await finance.call('PUT', '/api/state', { changes: { lines: { baseVersion: base, data: good } } })).data.denied, ['lines']);
+  assert.deepStrictEqual((await bd.call('PUT', '/api/state', { changes: { lines: { baseVersion: base, data: good } } })).data.saved, ['lines']);
+  const bad = await bd.call('PUT', '/api/state', { changes: { lines: { baseVersion: base + 1, data: { mr11Lines: [{ id: 'L1', stream: 'Stream 1', m2: -5 }] } } } });
+  assert.ok((bad.data.invalid || []).some(x => x.section === 'lines'), JSON.stringify(bad.data));
+  // A line's own price must be a number from 0 up, and its terms short text
+  for (const wrong of [{ price: -1 }, { price: '150' }, { terms: 'x'.repeat(81) }]) {
+    const res = await bd.call('PUT', '/api/state', { changes: { lines: { baseVersion: base + 1, data: { mr11Lines: [{ ...good.mr11Lines[1], ...wrong }] } } } });
+    assert.ok((res.data.invalid || []).some(x => x.section === 'lines'), JSON.stringify(wrong));
+  }
+  const state = await bd.call('GET', '/api/state');
+  assert.strictEqual(state.data.sections.lines.data.mr11Lines.length, 2);
+  assert.strictEqual(state.data.sections.lines.data.mr11Lines[1].price, 132.5);
+  assert.strictEqual(state.data.sections.lines.data.mr11Lines[1].terms, '30% Advance / 70% CAD');
 });

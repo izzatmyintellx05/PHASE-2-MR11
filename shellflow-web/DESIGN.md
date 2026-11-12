@@ -230,6 +230,12 @@ Each workflow step shows one 6px hole per gate condition, in a two-row grid. A m
 ### Collapsible sections
 Every boxed section with a heading folds: a 24px chevron button sits at the start of the heading, turns a quarter when folded, and leaves only the heading row visible. Pages with two or more sections add Collapse all / Expand all beside Print. Choices are remembered per section in the browser. The MR11 ledger also folds its filters and column choices behind one button.
 
+### Motion and small comforts
+Motion is short and quiet, and only ever confirms what just happened. A page eases in when opened (0.26s, 6px rise, ease-out); a section eases its content in when reopened (0.22s); dialogs fade in with their box rising. Messages slide in at the bottom right, fade out after 3.5s (errors 5.5s), and close on a click. Fields darken their joint on hover and turn verdigris on focus; buttons and tabs press down 1px. While a page is scrolled on a desktop, the pinned menu slims down (the tie holes step aside and tabs drop to 36px), with two thresholds so it never flickers. After a long scroll a round carbon-ink button leads back to the top. Reduced-motion settings turn all of this off. Wide tables scroll inside their own box, so no page ever scrolls sideways on a phone.
+
+### Readable contrast
+Text meets WCAG AA (4.5 to 1). The pale concrete greys (300, 400, 500) stay for lines and fills, but as text they read as #625F5A on concrete and #C9C6BF on formwork steel. Ochre text, and ochre behind white text, is one shade deeper (#8A560E). On phones, print under 12px grows to 12px. Every field has a name a screen reader can say (its visible label, or a name of its own), icons are hidden from screen readers unless labelled, and lists that scroll on their own can take keyboard focus. The one agreed exception is the MR11 Excel colour code.
+
 ### Readiness gate checks
 The five gate checks are columns of one slab, each under a 2px joint, with the GREEN or RED badge carrying the state.
 
@@ -237,7 +243,7 @@ The five gate checks are columns of one slab, each under a 2px joint, with the G
 A centred dialog on a dimmed ground: a 54px search field, grouped results (Recent, Pages, Actions, Projects, NCA versions, Lorries, Approvals, Alerts), the active result on a verdigris tint, and a key guide at the foot. Opened with Ctrl K or /.
 
 ### MR11 ledger
-The Phase 1 ledger layout: an uppercase ledger title with a contract count, one tool row (search with clear, a segmented zoom control, toggle buttons that turn carbon ink when on, two menus for saved views and export), quick-view chips with counts (verdigris tint when chosen), an ochre summary bar when anything narrows the table, and the table with two light uppercase header rows that stay on screen. Every column heading is a sort button with a small arrow that turns verdigris. The row number and project name can stay frozen while scrolling sideways. A carbon-ink totals row stays at the bottom. The Options panel (288px, form face, sticky beside the table) holds View, Highlight columns and Filters, each section folding on its chevron. A project's name opens a 440px details drawer from the right with its gate state, attention flags and every field by group.
+The Phase 1 ledger layout: an uppercase ledger title with a contract count, one tool row (search with clear, a segmented zoom control, toggle buttons that turn carbon ink when on, two menus for saved views and export), quick-view chips with counts (verdigris tint when chosen), an ochre summary bar when anything narrows the table, and the table with two light uppercase header rows that stay on screen. Every column heading is a sort button with a small arrow that turns verdigris. The row number and project name can stay frozen while scrolling sideways. A carbon-ink totals row stays at the bottom. The Options panel (288px, form face, sticky beside the table) holds View, Highlight columns and Filters, each section folding on its chevron. A project's name opens a 440px details drawer from the right with its gate state, attention flags and every field by group. The ledger has one line per stream with its blocks and formwork type; Shell Plan and Design cells that merge across lines of the same stream and fill sit on a pale concrete wash with a joint outline, vertically centred.
 
 ## Do's and Don'ts
 

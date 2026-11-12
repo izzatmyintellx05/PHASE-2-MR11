@@ -74,7 +74,7 @@
       rules: {
         productionCapacity: 110000, designCapacity: 110000, complexWeight: 1.5, reconTolerancePct: 2, paymentMatchTolerancePct: 1,
         accessoriesSlaHours: 48, shellPlanClockDays: 14, designToProductionDays: 7, productionToSailingDays: 14, reminderLeadDays: 7,
-        lorryCapacityM2: 450, autoConfirmPayments: false, enforceGateOnLorries: true, paymentLocksDesign: true, weeklyReport: true,
+        lorryCapacityM2: 450, autoConfirmPayments: false, enforceGateOnLorries: true, paymentLocksDesign: true, weeklyReport: true, sampleProjects: false,
         reportRecipients: 'MR11 owner, department heads',
         importOpen: false,
         evidenceRequiredFor: ['PRODUCED', 'DISPATCHED', 'DELIVERED'],
@@ -310,12 +310,21 @@
         ? 'bg-emerald-600 text-white border-emerald-700'
         : 'bg-slate-900 text-white border-slate-700';
 
-      toast.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-lg text-xs font-semibold flex items-center justify-between gap-3 transition-all ${bg}`;
+      toast.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-lg text-xs font-semibold flex items-center justify-between gap-3 ${bg}`;
+      toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+      toast.title = 'Click to close';
       toast.textContent = message;
       container.appendChild(toast);
-      setTimeout(() => {
-        toast.remove();
-      }, 3500);
+      // Fades out, then goes; errors stay a little longer so they can be read
+      let gone = false;
+      const leave = () => {
+        if (gone) return;
+        gone = true;
+        toast.classList.add('sf-leaving');
+        setTimeout(() => toast.remove(), 220);
+      };
+      toast.addEventListener('click', leave);
+      setTimeout(leave, type === 'error' ? 5500 : 3500);
     }
 
     function downloadStandaloneHTML() {
@@ -949,6 +958,8 @@
       const clock = appState.rules.shellPlanClockDays;
       const used = daysBetween(s, a || DEMO_TODAY);
       $('sp-clock-pill').textContent = `Shell-plan clock: ${used} of ${clock} days${a ? ' (approved)' : ''}`;
+      // Green once approved in time, amber while the clock runs, red when it has run out
+      $('sp-clock-pill').dataset.state = used > clock ? 'late' : a ? 'ok' : 'running';
       refreshAll();
     }
     function addShellRevision() {
@@ -1328,7 +1339,7 @@
         badge.className = 'px-3 py-1.5 rounded-full text-xs font-extrabold bg-rose-100 text-rose-800';
         badge.textContent = `HARD STOP: ${passedCount} / 5 GREEN — BOOKING BLOCKED`;
       }
-      $('gate-matrix').innerHTML = table(['MR11 Row', ...GATE_DEFS.map(d => d.name.slice(3)), 'Result', 'Production Release', 'Stock Waiting (m²)', ''], allMr11Rows().map(r => {
+      $('gate-matrix').innerHTML = table(['MR11 Row', ...GATE_DEFS.map(d => d.name.slice(3)), 'Result', 'Production Release', 'Stock Waiting (m²)', '<span class="sr-only">Actions</span>'], allMr11Rows().map(r => {
         const g = gateFor(r.key);
         return [`<strong>${esc(r.customerProject)}</strong>`,
           ...g.checks.map(c => c.na ? pill('N/A', 'slate') : c.off ? pill('OFF', 'slate') : c.pass ? pill('GREEN', 'emerald') : pill('RED', 'rose')),
@@ -1878,7 +1889,7 @@
         ]
       ];
 
-      allRows.forEach((r, idx) => {
+      (typeof mr11Lines === 'function' ? mr11Lines(allRows) : allRows).forEach((r, idx) => {
         const monthsUSD = r.monthsM2.map(m => Number((m * r.finalPrice).toFixed(2)));
         const totalUSD = Number((r.totalForecastM2 * r.finalPrice).toFixed(2));
         mr11Data.push([
@@ -2251,6 +2262,7 @@
       ['enforceGateOnLorries', 'Refuse lorries for rows that are not green'],
       ['paymentLocksDesign', 'Advance payment also locks Design (management ruling, task 19)', true],
       ['weeklyReport', 'Save the weekly report every Monday'],
+      ['sampleProjects', 'Show the four sample projects beside the BD project (for demonstrations)'],
       ['importOpen', 'Open the one-time go-live workbook import', true]
     ];
     function renderRules() {
@@ -2397,7 +2409,7 @@
         col('yard', 'Pending Delivery (m²)', r => td(physical(r, r.pendingM2.toFixed(2)), 'text-right font-bold'))
       ];
     }
-    const MR11_FILTERS = [['customerProject', 'Project'], ['country', 'Country'], ['location', 'Location'], ['pic', 'PIC'], ['status', 'Status'], ['product', 'Product Type'], ['formworkSystem', 'Formwork Type'], ['_stream', 'Stream'], ['shellStatus', 'Shell Plan Status'], ['_design', 'Design Status'], ['_payment', 'Payment Status'], ['lmeType', 'LME Type'], ['_dispatch', 'Dispatch Stage']];
+    const MR11_FILTERS = [['customerProject', 'Project'], ['country', 'Country'], ['location', 'Location'], ['pic', 'PIC'], ['status', 'Status'], ['product', 'Product Type'], ['formworkSystem', 'Formwork Type'], ['_stream', 'Stream'], ['shellStatus', 'Shell Plan Status'], ['_design', 'Design Status'], ['_payment', 'Payment Status'], ['paymentTerm', 'Payment Term'], ['lmeType', 'LME Type'], ['_dispatch', 'Dispatch Stage']];
     function mr11FilterValue(r, field) {
       if (field === '_stream') return `Stream ${rowStreamNo(r)}`;
       if (field === '_payment') return /CLEARED/.test(r.advStatus) ? 'Advance Received' : 'Awaiting Advance';
@@ -2603,8 +2615,9 @@
       const future = MONTH_KEYS.map((key, i) => ({ actual: null, forecast: rows.reduce((a, r) => a + (r.monthsM2[i] || 0), 0), key }));
       return [...history.map((h, i) => ({ label: CEO_HISTORY_LABELS[i], ...h })), ...future.map((f, i) => ({ label: MONTH_LABELS[i], ...f }))];
     }
-    const CHART_SERIES = { blue: '#2a78d6', orange: '#eb6834', aqua: '#1baf7a' };
-    const CHART_INK = { primary: '#0b0b0b', secondary: '#52514e', muted: '#6b6b6b', grid: '#e7e6e2' };
+    // Charts speak the same materials: verdigris for what happened, formwork steel (dashed) for the forecast, ochre for the third series
+    const CHART_SERIES = { blue: '#2F6B5E', orange: '#3A3D40', aqua: '#A86A12' };
+    const CHART_INK = { primary: '#1C1C1A', secondary: '#55534E', muted: '#625F5A', grid: '#DDDAD3' };
     function ceoChart(series) {
       const W = 760, H = 250, L = 52, R = 72, T = 30, B = 30;
       const max = Math.max(100, ...series.map(s => Math.max(s.actual || 0, s.forecast || 0)));
@@ -2751,7 +2764,7 @@
       root.innerHTML = `
         <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4 flex flex-wrap items-center justify-between gap-3">
           <div><h2 class="text-base font-bold text-slate-900">CEO Executive Intelligence Overview</h2><p class="text-xs text-slate-500">Worked out from the latest MR11. It reads MR11 without approved edits in the built system. History before Nov 26 is sample data.</p></div>
-          <div class="flex items-center gap-2 text-xs">
+          <div class="flex flex-wrap items-center gap-2 text-xs">
             <select onchange="setCeoRegion(this.value)" aria-label="Region" class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg font-semibold"><option value="">All regions</option>${Object.entries(CEO_REGIONS).map(([k, n]) => `<option value="${k}" ${appState.ceoRegion === k ? 'selected' : ''}>${n}</option>`).join('')}</select>
             <select onchange="setCeoMonth(this.value)" aria-label="Month" class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg font-semibold"><option value="">All months</option>${MONTH_KEYS.map((k, i) => `<option value="${k}" ${month === k ? 'selected' : ''}>${MONTH_LABELS[i]}</option>`).join('')}</select>
             <button onclick="appState.ceoRegion = ''; appState.ceoMonth = ''; renderCeo()" class="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white font-semibold">Clear</button>
@@ -2902,7 +2915,8 @@
     const columnLetter = n => { let s = ''; n += 1; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
     function rowStreamNo(r) { return r.isLive ? (/^\d{6,7}$/.test(r.projectNo) ? String(parseInt(r.projectNo.slice(5), 10)) : '1') : r.stream; }
     function buildDeptSheet(dept, part) {
-      const rows = allMr11Rows();
+      // One row per MR11 line, each with its own figures
+      const rows = typeof mr11Lines === 'function' ? mr11Lines(allMr11Rows()) : allMr11Rows();
       const defs = {
         BD: [['Customer & Project Name', r => r.customerProject.trim()], ['Project No', r => r.projectNo], ['Project Shortname', r => r.shortName], ['Stream', rowStreamNo], ['Countries', r => r.country], ['Location', r => r.location], ['PIC', r => r.pic], ['Status', r => r.status], ['Product Type', r => r.product], ['Formwork Type', r => r.formworkSystem]],
         FINANCE: [['Customer & Project Name', r => r.customerProject.trim()], ['Project No', r => r.projectNo], ['Stream', rowStreamNo], ['Payment Term', r => r.paymentTerm], ['Advance Received / Payment Status', r => r.advStatus], ['Actual Received', r => formatUSD(r.actualReceived)], ['Payment Date', r => r.paymentDate || '']],
@@ -3121,6 +3135,8 @@
       logActivity(`${user.name} signed in`);
       if (user.usingDefault) notify('You are using the default password. Please change it with the key icon.', 'info');
       renderUserChip();
+      // Signing in opens the MR11 Master Schedule first
+      if (tabAllowed(9)) switchTab(9);
     }
     function openPasswordModal() {
       ['pw-current', 'pw-new', 'pw-confirm'].forEach(id => { $(id).value = ''; });
@@ -3181,14 +3197,15 @@
       renderSite();
       renderIncidents();
       renderMarket();
-      renderMR11PipelineTab();
+      // The two heaviest views are drawn only while their page is open; switchTab draws them on arrival
+      if (appState.activeTab === 9) renderMR11PipelineTab();
       renderNotes();
       renderReminders();
       renderAlerts();
       renderApprovals();
       renderValidation();
       renderReports();
-      renderCeo();
+      if (appState.activeTab === 15) renderCeo();
       renderAdminUsers();
       renderWorkbook();
       renderUserChip();

@@ -43,13 +43,16 @@
     activity: ['activity'],
     updates: ['updates'],
     notes: ['notes'],
-    comments: ['comments']
+    comments: ['comments'],
+    lines: ['mr11Lines'],
+    lineFinance: ['lineFinance'], lineDesign: ['lineDesign'], lineProduction: ['lineProduction'], lineDispatch: ['lineDispatch'], lineSite: ['lineSite']
   };
   const WRITERS = {
     form_bd: ['BD'], form_design: ['SHELLPLAN', 'DESIGN'], form_gate: ['PLANNING', 'PRODUCTION', 'DISPATCH'], finance: ['FINANCE'], bankLines: null,
     nca: ['BD'], shell: ['SHELLPLAN', 'DESIGN'], items: ['DESIGN', 'PRODUCTION'], panels: ['PLANNING', 'PRODUCTION', 'DISPATCH'], yard: ['PRODUCTION', 'DISPATCH'],
     logistics: ['DISPATCH'], site: null, incidents: ['DISPATCH', 'FINANCE'], releases: [], rules: [], referenceRows: ['FINANCE', 'DISPATCH'],
-    approvals: null, reminders: null, reports: null, activity: null, updates: null, notes: null, comments: null
+    approvals: null, reminders: null, reports: null, activity: null, updates: null, notes: null, comments: null, lines: ['BD'],
+    lineFinance: ['FINANCE'], lineDesign: ['SHELLPLAN', 'DESIGN'], lineProduction: ['PLANNING', 'PRODUCTION'], lineDispatch: ['DISPATCH'], lineSite: ['DISPATCH']
   };
   const mayWrite = name => {
     if (appState.roles.includes('ADMIN')) return true;
@@ -106,6 +109,17 @@
   function applySections(sections) {
     applying = true;
     try {
+      // Everything below is drawn once at the end, not once per step
+      (window.sfBatch || (work => work()))(() => applyAll(sections));
+    } finally {
+      applying = false;
+    }
+    // Only what was just loaded counts as saved; any edit still waiting stays waiting
+    const now = snapshotStrings();
+    Object.keys(sections).forEach(name => { sentSnapshot[name] = now[name]; });
+  }
+  function applyAll(sections) {
+    {
       Object.entries(sections).forEach(([name, s]) => {
         applySection(name, s.data);
         versions[name] = s.version;
@@ -122,12 +136,7 @@
       applyDesignLock();
       renderRules();
       baseRefreshAll();
-    } finally {
-      applying = false;
     }
-    // Only what was just loaded counts as saved; any edit still waiting stays waiting
-    const now = snapshotStrings();
-    Object.keys(sections).forEach(name => { sentSnapshot[name] = now[name]; });
   }
 
   // ----- Saving -----
@@ -206,9 +215,22 @@
     $id('signin-error').textContent = message || '';
     $id('signin-screen').classList.remove('hidden');
     $id('signin-screen').classList.add('flex');
+    // The quick login only shows when the server has it switched on for a local demonstration
+    ['signin-quick', 'signin-quick-note'].forEach(id => { if ($id(id)) $id(id).classList.toggle('hidden', !window.SHELLFLOW_DEMO_LOGIN); });
     document.documentElement.style.visibility = 'visible';
     $id('signin-email').focus();
   }
+  window.quickLoginAdmin = () => window.quickLogin('ADMIN');
+  window.quickLogin = async function (role) {
+    const error = $id('signin-error');
+    error.textContent = '';
+    try {
+      const { user } = await api('/demo-login', { method: 'POST', body: { role } });
+      await startSession(user, true);
+    } catch (err) {
+      error.textContent = err.status === 404 ? 'Quick login is switched off on this site.' : err.message;
+    }
+  };
   window.signOut = async function () {
     await api('/logout', { method: 'POST', body: {} }).catch(() => {});
     location.reload();
@@ -219,7 +241,7 @@
     try {
       const { user } = await api('/login', { method: 'POST', body: { email: $id('signin-email').value, password: $id('signin-password').value } });
       $id('signin-password').value = '';
-      await startSession(user);
+      await startSession(user, true);
     } catch (err) {
       error.textContent = err.message;
       $id('signin-password').value = '';
@@ -411,7 +433,7 @@
       }
     }
   }
-  async function startSession(user) {
+  async function startSession(user, signedInNow) {
     appState.me = user;
     appState.roles = user.roles;
     appState.role = user.roles.includes('ADMIN') ? 'ADMIN' : user.roles[0];
@@ -420,9 +442,10 @@
     $id('signin-screen').classList.add('hidden');
     $id('signin-screen').classList.remove('flex');
     applyRoleNav();
-    const first = user.roles.includes('CEO') ? 15 : 9;
-    // A page link (for example #timeline) opens that page when this person may see it
-    const asked = typeof startPage === 'function' ? startPage() : null;
+    // Everyone starts at the MR11 Master Schedule. A reload, or a page link such as #timeline,
+    // keeps that page; signing in always opens MR11.
+    const first = 9;
+    const asked = !signedInNow && typeof startPage === 'function' ? startPage() : null;
     switchTab(asked && tabAllowed(asked) ? asked : tabAllowed(first) ? first : 9);
     renderUserChip();
     document.documentElement.style.visibility = 'visible';

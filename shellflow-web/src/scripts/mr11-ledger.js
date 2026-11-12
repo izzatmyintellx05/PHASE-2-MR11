@@ -28,7 +28,7 @@
     };
     // Quick views: the questions people ask of MR11 most often, one click each
     const MR11_QUICK = [
-      ['', 'All contracts', () => true],
+      ['', 'All lines', () => true],
       ['attention', 'Needs attention', (r, alerts) => rowAttention(r, alerts).length > 0],
       ['payment', 'Waiting on advance', r => !/CLEARED/.test(r.advStatus)],
       ['design', 'Design not released', r => !/^\d{4}-\d{2}-\d{2}$/.test(r.designDate)],
@@ -59,7 +59,8 @@
     function ledgerView(allRows) {
       const alerts = computeAlerts();
       const cols = mr11Columns().filter(c => !appState.hiddenGroups.includes(c.group));
-      const all = allRows || allMr11Rows();
+      const projects = allRows || allMr11Rows();
+      const all = typeof mr11Lines === 'function' ? mr11Lines(projects) : projects;
       let rows = mr11ShownRows(all, alerts);
       const sort = LEDGER.sort;
       const sortCol = sort && cols.find(c => colKey(c) === sort.key);
@@ -73,13 +74,14 @@
         });
         rows = keyed.map(k => k[1]);
       }
-      return { cols, rows, all, alerts };
+      return { cols, rows, all, alerts, projects };
     }
+    const lineKeyOf = r => r.lineKey || r.key;
     // Identifiers stay text in Excel, so a project number is never turned into a sum or loses a zero
     const TEXT_COLUMNS = /^(Project No|Short Name|PO|NCA|Stream|Incoterms)$/;
     function ledgerCellValue(c, r, all) {
       const key = colKey(c);
-      if (key === 'Row') return r.isLive ? '1 (LIVE)' : all.indexOf(r) + 1;
+      if (key === 'Row') return r.isLive ? `${all.indexOf(r) + 1} LIVE` : all.indexOf(r) + 1;
       const text = htmlText(c.cell(r, all.indexOf(r)));
       if (TEXT_COLUMNS.test(key)) return text;
       const n = asNumber(text);
@@ -89,7 +91,7 @@
       return cols.map((c, i) => {
         const key = colKey(c);
         if (i === 0) return 'Total';
-        if (key === 'Customer & Project Name') return plural(rows.length, 'contract');
+        if (key === 'Customer & Project Name') return plural(rows.length, 'line');
         if (!SUMMABLE.test(key)) return '';
         let money = false, sum = 0, any = false;
         rows.forEach(r => {
@@ -108,8 +110,20 @@
     };
 
     function renderMr11Table(allRows) {
-      const { cols, rows, all } = ledgerView(allRows);
+      const { cols, rows, all, projects } = ledgerView(allRows);
       const term = ledgerSearchTerm();
+      // As in Phase 1, Shell Plan and Design cells merge across lines of the same project, stream and fill
+      const spans = new Map();
+      if (!LEDGER.sort) {
+        for (let i = 0; i < rows.length;) {
+          const a = rows[i];
+          let span = 1;
+          while (i + span < rows.length && rows[i + span].key === a.key && rowStreamNo(rows[i + span]) === rowStreamNo(a) && (FORMWORK_FILL[rows[i + span].formworkSystem] || '') === (FORMWORK_FILL[a.formworkSystem] || '')) span++;
+          spans.set(i, span);
+          for (let j = 1; j < span; j++) spans.set(i + j, 0);
+          i += span;
+        }
+      }
       const lit = group => LEDGER.highlights.some(d => (MR11_GROUPS[group].depts || []).includes(d));
       const groupRow = [];
       cols.forEach(c => {
@@ -120,19 +134,26 @@
       const ariaSort = key => (LEDGER.sort && LEDGER.sort.key === key ? (LEDGER.sort.dir === 'asc' ? 'ascending' : 'descending') : 'none');
       $('mr11-head').innerHTML = `<tr class="sf-mr11-groups">${groupRow.map(g => `<th colspan="${g.span}" class="${lit(g.group) ? 'hl-col' : ''}">${esc(MR11_GROUPS[g.group].label)}</th>`).join('')}</tr>
         <tr class="sf-mr11-cols">${cols.map(c => { const key = colKey(c); return `<th class="${lit(c.group) ? 'hl-col' : ''}" aria-sort="${ariaSort(key)}"><button type="button" class="sf-th-btn${LEDGER.sort && LEDGER.sort.key === key ? ' is-sorted' : ''}" data-mr11="sort" data-key="${esc(key)}" title="Sort by ${esc(key)}"><span>${c.head}</span><span class="sf-sort">${sortIcon(key)}</span></button></th>`; }).join('')}</tr>`;
-      $('mr11-master-tbody').innerHTML = rows.map(r => {
+      $('mr11-master-tbody').innerHTML = rows.map((r, rowIndex) => {
         const fill = FORMWORK_FILL[r.formworkSystem];
         const rowBg = r.isLive ? `${fill ? '' : 'bg-sky-50'} font-semibold` : `${fill ? '' : 'bg-white'}`;
         const position = all.indexOf(r);
         const cells = cols.map(c => {
           const key = colKey(c);
           let html = key === 'Customer & Project Name'
-            ? `<td class="font-bold"><button type="button" class="sf-row-open" data-mr11="open" data-key="${esc(r.key)}" title="Open the details of ${esc(r.customerProject.trim())}">${markTerm(`>${esc(r.customerProject)}<`, term).slice(1, -1)}</button></td>`
+            ? `<td class="font-bold"><button type="button" class="sf-row-open" data-mr11="open" data-key="${esc(lineKeyOf(r))}" title="Open the details of ${esc(r.customerProject.trim())}">${markTerm(`>${esc(r.customerProject)}<`, term).slice(1, -1)}</button></td>`
             : c.cell(r, position);
           if (term && ['Project No', 'Short Name', 'Building / Stream / Block', 'PIC', 'Countries'].includes(key)) html = markTerm(html, term);
-          return lit(c.group) ? html.replace('<td class="', '<td class="hl-col ') : html;
+          if (key === 'Row' && r.isLive) html = html.replace('1 (LIVE)', `${position + 1} · LIVE`);
+          if (lit(c.group)) html = html.replace('<td class="', '<td class="hl-col ');
+          if (c.group === 'design' && spans.has(rowIndex)) {
+            const span = spans.get(rowIndex);
+            if (span === 0) return '';
+            if (span > 1) html = html.replace(/^<td/, `<td rowspan="${span}" data-merged`);
+          }
+          return html;
         }).join('');
-        return `<tr class="${rowBg}${LEDGER.drawerKey === r.key ? ' is-open' : ''}" data-row="${esc(r.key)}" style="color:${PRODUCT_FONT[r.product] || '#000000'};${fill ? `background:${fill};` : ''}">${cells}</tr>`;
+        return `<tr class="${rowBg}${LEDGER.drawerKey === lineKeyOf(r) ? ' is-open' : ''}" data-row="${esc(lineKeyOf(r))}" style="color:${PRODUCT_FONT[r.product] || '#000000'};${fill ? `background:${fill};` : ''}">${cells}</tr>`;
       }).join('') || `<tr><td colspan="${cols.length}" class="sf-ledger-empty">No contracts match. Clear the search, a filter or the quick view to see more.</td></tr>`;
       const table = $('mr11-head').closest('table');
       let foot = table.querySelector('tfoot');
@@ -141,7 +162,7 @@
       table.classList.toggle('is-frozen', !!LEDGER.freeze);
       table.classList.toggle('is-compact', LEDGER.density === 'compact');
       requestAnimationFrame(() => { const first = table.querySelector('thead tr.sf-mr11-cols th'); if (first && first.offsetWidth) table.style.setProperty('--mr11-col1', `${first.offsetWidth}px`); });
-      if ($('mr11-count')) $('mr11-count').textContent = rows.length === all.length ? `${all.length} contracts` : `${rows.length} of ${all.length} contracts`;
+      if ($('mr11-count')) $('mr11-count').textContent = `${rows.length === all.length ? plural(all.length, 'line') : `${rows.length} of ${plural(all.length, 'line')}`} · ${plural(projects.length, 'contract')}`;
       renderMr11Tools(all, rows);
       if (LEDGER.drawerKey && !$('mr11-drawer').hidden) renderMr11Drawer();
     }
@@ -175,7 +196,7 @@
       if (LEDGER.sort) parts.push(`Sorted by ${LEDGER.sort.key}, ${LEDGER.sort.dir === 'asc' ? 'lowest first' : 'highest first'}`);
       const summary = $('mr11-summary');
       summary.classList.toggle('hidden', !parts.length);
-      summary.innerHTML = parts.length ? `<span><b>Showing ${shown.length} of ${plural(allRows.length, 'contract')}</b> · ${parts.map(esc).join(' · ')}</span><button type="button" class="sf-btn sf-btn-sm" data-mr11="reset-view">Clear all</button>` : '';
+      summary.innerHTML = parts.length ? `<span><b>Showing ${shown.length} of ${plural(allRows.length, 'line')}</b> · ${parts.map(esc).join(' · ')}</span><button type="button" class="sf-btn sf-btn-sm" data-mr11="reset-view">Clear all</button>` : '';
       // Deleted rows (administrators), as before
       const deleted = referenceMR11Projects.filter(r => r.deleted);
       $('mr11-deleted-btn').textContent = `Deleted rows (${deleted.length})`;
@@ -303,7 +324,7 @@
     }
     function renderMr11Drawer() {
       const { rows, all, alerts } = ledgerView();
-      const r = all.find(x => x.key === LEDGER.drawerKey);
+      const r = all.find(x => lineKeyOf(x) === LEDGER.drawerKey);
       if (!r) { closeMr11Drawer(); return; }
       const cols = mr11Columns();
       const at = rows.indexOf(r);
@@ -315,7 +336,7 @@
         return items.length ? `<section><h3>${esc(g.short || 'Project')}</h3><dl>${items.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v || '—')}</dd></div>`).join('')}</dl></section>` : '';
       }).join('');
       $('mr11-drawer').innerHTML = `<div class="sf-drawer-head">
-          <div><h2 id="mr11-drawer-title">${esc(r.customerProject.trim())}</h2><p>${esc(r.projectNo)} · ${esc(r.country)} · ${esc(r.pic)} · ${esc(r.status)}</p></div>
+          <div><h2 id="mr11-drawer-title">${esc(r.customerProject.trim())}</h2><p>${esc(r.projectNo)} · ${esc(r.country)} · ${esc(r.pic)} · ${esc(r.status)}</p>${r._line ? `<p class="sf-drawer-line">Line ${r._lineIndex + 1} of ${r._lineCount}: ${esc(r.buildingStream)} · ${esc(r.formworkSystem)} · ${fmtNum(r.ncaQty)} m²</p><p class="sf-drawer-line">Selling price ${formatUSD(r.basePrice)} / m²${r._ownPrice ? ' (own)' : ''}, final ${formatUSD(r.finalPrice)} / m² · ${esc(r.paymentTerm)}${r._ownTerms ? ' (own)' : ''} · line value ${formatUSD(r._value || 0)}</p>` : ''}</div>
           <button type="button" class="sf-drawer-close" data-mr11="drawer-close" aria-label="Close the project details">${LEDGER_ICONS.x}</button>
         </div>
         <div class="sf-drawer-status">
@@ -365,8 +386,8 @@
         case 'drawer-timeline': closeMr11Drawer(); switchTab(19); break;
         case 'drawer-nav': {
           const { rows } = ledgerView();
-          const at = rows.findIndex(r => r.key === LEDGER.drawerKey) + Number(t.dataset.dir);
-          if (rows[at]) openMr11Drawer(rows[at].key);
+          const at = rows.findIndex(r => lineKeyOf(r) === LEDGER.drawerKey) + Number(t.dataset.dir);
+          if (rows[at]) openMr11Drawer(lineKeyOf(rows[at]));
           break;
         }
         case 'view-save':

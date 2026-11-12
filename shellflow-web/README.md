@@ -24,6 +24,7 @@ The server enforces all of this, so it holds even if someone edits the page in t
 - **Tie holes on each step.** The dots on each step in the menu fill in as that step's gate conditions are met. Hover or focus a step to see which conditions are met; the page heading lists them too.
 - **Page links.** Every page has its own address, for example `#timeline` or `#my-work`, so links can be shared and the browser's Back and Forward buttons work.
 - **Collapsible sections.** Every section with a heading folds with the arrow at the start of its heading, and pages with several sections have Collapse all / Expand all. The browser remembers what each person folded. On the MR11 Master Schedule, the filters and column choices fold away too.
+- **MR11 lines.** As in Phase 1, every project has one MR11 line for each stream with its blocks and formwork type (and product type). BD keeps the live project's lines in section 1 of the BD page, under **Streams, blocks, formwork and product: one MR11 line each**. This is the only place to set them: the stream and block lists that Steps 2–7 use, and the project's main formwork and product type (from the line with the most m²), are filled in from the lines. The lines' m² must add up to the NCA (step 1 has this as a gate condition). Each line has its own NCA m², **selling price** (USD/m²) and **payment terms** (for example "30% Advance / 70% CAD"); a blank price or blank terms means the project's. A line's final price is its selling price plus the project's add-ons (props, LME, aluminium, freight), so it still moves with the LME. The project's contract value, its advance and its payment milestones on the Finance page are what its lines add up to; a payment type that only a line uses (such as LC) is added as an extra milestone. The forecast, processed, produced, shipped and sailed m² are split by each line's share of the project, because departments report them per project. Shell Plan and Design cells merge across lines of the same stream and fill colour. The MR11 ledger can filter by Payment Term, the row details show each line's price and terms, and the MR11 Excel export has one row per line. Alerts, gates, the CEO hub and reports still count whole projects.
 - **MR11 ledger.** The MR11 Master Schedule opens with the full MR11 table, laid out as in Phase 1: its two header rows and the project columns stay on screen while scrolling. Around it:
   - **As in Phase 1:** an Options panel (show or hide column groups, highlight several departments' columns, and filters where you tick several values, with counts and a search box), a Rates & LME strip, a bar saying what is narrowing the table, search with a clear button, zoom in 5% steps, full screen, sync, export and deleted rows.
   - **New:** click any column heading to sort; a totals row for the contracts on screen; Freeze project to keep the name in view; Compact rows; quick views (Needs attention, Waiting on advance, Design not released, Ready to dispatch, Dispatched); saved views; export or copy exactly what is on screen for Excel; print the view on A4 landscape; and a details panel for each contract (click its name) with Previous and Next.
@@ -40,6 +41,24 @@ Open the `shellflow-web` folder in VS Code. The page is edited in `src/`, never 
 | Run the tests | Terminal > Run Task > "ShellFlow: Run tests", or `npm test` |
 
 One source makes two versions. Where they differ, the source marks it: `<!--@if hosted-->...<!--@else-->...<!--@endif-->` in HTML, and `/*@if hosted*/.../*@else*/.../*@endif*/` in CSS and JavaScript. `<!--@include path-->` pulls in a file from `src/`.
+
+The build does the work the browser used to do. It compiles the Tailwind CSS the page uses (with `src/scripts/tailwind.config.js`), and builds an icon script with only the Lucide icons the source names, into both versions. The Excel library (SheetJS) loads the first time someone exports or imports a workbook (`src/scripts/lazy-libs.js`). `src/scripts/perf.js` makes redraws work the MR11 rows out once and folds several redraws into one. The server sends everything gzip-compressed. Run `npm install` once first, since the build needs the development packages (tailwindcss, postcss, lucide).
+
+### Speed and accessibility
+
+Measured with Lighthouse on the signed-in BD page, and axe on all 18 pages:
+
+| | Before | After |
+|---|---|---|
+| Lighthouse desktop: speed / accessibility / best practices | 45 / 96 / 96 | 94 / 96 / 100 |
+| Lighthouse phone: speed / accessibility / best practices | 28 / 91 / 93 | 78 / 96 / 96 |
+| Sent over the network | 1,012 KB | 190 KB |
+| Desktop: first paint / main content / main thread blocked | 1.5 s / 3.4 s / 1,930 ms | 0.6 s / 0.9 s / 170 ms |
+| Phone (slow 4G, slow CPU): first paint / main content / blocked | 7.0 s / 12.2 s / 5,390 ms | 2.3 s / 3.2 s / 490 ms |
+| One redraw / commercial recalculation (desktop) | 100 ms / 194 ms | 14 ms / 19 ms |
+| axe WCAG A and AA problems | 7 kinds, over 400 elements | none, apart from the MR11 Excel colour code |
+
+The MR11 ledger keeps the Phase 1 workbook's colours (green or red product text on the formwork fill), as agreed, although some of those pairs are below the 4.5 to 1 contrast that WCAG asks for text.
 
 The look is set in two places: `src/scripts/tailwind.config.js` maps every colour the page uses onto the five ShellFlow ramps, and `src/styles/base.css` holds the design tokens and components. `DESIGN.md` describes the design system.
 
@@ -62,6 +81,8 @@ npm start
 ```
 
 Open http://localhost:3000. The first time it starts, the server prints a temporary administrator password in its log. You'll be asked to choose your own when you first sign in. Data is kept in the `data/` folder.
+
+For a demonstration on your own computer, add `DEMO_QUICK_LOGIN=true` to `.env` and restart. The sign-in screen then shows **Quick login as Administrator**, which signs in as the main administrator with one click. The server refuses it in production and from any other computer, and logs a warning while it is on. Leave it off anywhere other people can reach the site. The single-file version always has this button, because its accounts exist only in that page.
 
 To run the tests:
 
@@ -104,6 +125,7 @@ Set `NODE_ENV=production` in `.env`, along with `JWT_SECRET` and `ADMIN_PASSWORD
 - [ ] The site is served over HTTPS
 - [ ] `JWT_SECRET` is long and random, and is not shared
 - [ ] `ADMIN_PASSWORD` has been removed from the settings after the first sign-in
+- [ ] `DEMO_QUICK_LOGIN` is blank or not set
 - [ ] The repository is private
 - [ ] Each person has their own account, and nobody shares one
 - [ ] Database backups are switched on
@@ -121,7 +143,7 @@ Set `NODE_ENV=production` in `.env`, along with `JWT_SECRET` and `ADMIN_PASSWORD
 ## Known limits
 
 - **Demonstration data model.** It tracks one live project plus sample rows. Supporting many live projects would be the MFE Phase 2 application's job.
-- **Page styling comes from CDNs.** Tailwind, Lucide and SheetJS load from public CDNs at pinned versions, so the page needs internet access. For a long-term production site, build these into the project, which also allows a stricter content security policy.
+- **Fonts and the Excel library come from CDNs.** Tailwind and the icons are built into the page, but the Albert Sans font loads from Google Fonts and SheetJS from cdnjs (only when a workbook is exported or imported), so those need internet access.
 - **Evidence files.** File names are recorded, but the files themselves are not uploaded to the server.
 - **Email.** The site does not send email, so alerts and reports show inside the site only.
 - **Rate limits on Vercel.** The limit by address applies per server instance, so the account lockout is the stronger protection there.

@@ -6,11 +6,7 @@ const path = require('path');
 const { build, SRC } = require('./build');
 
 function safeBuild() {
-  try {
-    build();
-  } catch (err) {
-    console.error(`[build] ${err.message}`);
-  }
+  return build().catch(err => console.error(`[build] ${err.message}`));
 }
 
 safeBuild();

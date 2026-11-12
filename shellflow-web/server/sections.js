@@ -10,6 +10,13 @@ const SECTION_WRITERS = {
   finance: ['FINANCE'],
   bankLines: ANYONE,
   nca: ['BD'],
+  lines: ['BD'],
+  // Each department keeps its own figures for each MR11 line
+  lineFinance: ['FINANCE'],
+  lineDesign: ['SHELLPLAN', 'DESIGN'],
+  lineProduction: ['PLANNING', 'PRODUCTION'],
+  lineDispatch: ['DISPATCH'],
+  lineSite: ['DISPATCH'],
   shell: ['SHELLPLAN', 'DESIGN'],
   items: ['DESIGN', 'PRODUCTION'],
   panels: ['PLANNING', 'PRODUCTION', 'DISPATCH'],
@@ -63,6 +70,22 @@ const VALIDATORS = {
       if (!isText(v.ref, 200) || !isText(v.reason, 1000) || !isText(v.rejectReason, 1000)) fail('NCA text is not valid');
     });
   },
+  lines(d) {
+    const lines = list(d, 'mr11Lines');
+    if (lines.length > 60) fail('There are too many MR11 lines');
+    lines.forEach(l => {
+      if (!l || typeof l !== 'object' || Array.isArray(l)) fail('An MR11 line is not valid');
+      if (!SAFE_KEY.test(String(l.id || '')) || !isNum(l.m2) || l.m2 < 0 || l.m2 > 10000000) fail('An MR11 line is not valid');
+      if (!isText(l.stream, 60) || !isText(l.blocks, 300) || !isText(l.formwork, 80) || !isText(l.product, 80) || !isText(l.terms, 80)) fail('MR11 line text is not valid');
+      // A line's own selling price in USD per m²; none means the project's price
+      if (l.price !== undefined && l.price !== null && (!isNum(l.price) || l.price < 0 || l.price > 1000000)) fail('An MR11 line price is not valid');
+    });
+  },
+  lineFinance: d => checkLineTrack(d, 'lineFinance'),
+  lineDesign: d => checkLineTrack(d, 'lineDesign'),
+  lineProduction: d => checkLineTrack(d, 'lineProduction'),
+  lineDispatch: d => checkLineTrack(d, 'lineDispatch'),
+  lineSite: d => checkLineTrack(d, 'lineSite'),
   shell(d) {
     list(d, 'shellRevisions').forEach(r => {
       if (!Number.isInteger(r.rev) || !isText(r.status, 60) || !isText(r.date, 20) || !isText(r.remarks, 500)) fail('A Shell Plan revision is not valid');
@@ -130,6 +153,21 @@ const VALIDATORS = {
 function checkEntry(e) {
   if (!e || typeof e !== 'object' || Array.isArray(e)) fail('A log entry is not valid');
   Object.values(e).forEach(value => { if (!['string', 'boolean', 'number'].includes(typeof value) && value !== null) fail('A log entry is not valid'); if (typeof value === 'string' && value.length > 2000) fail('A log entry is too long'); });
+}
+
+// A department's figures per MR11 line: { lineId: { field: number, date, short text, true/false or null } }
+function checkLineTrack(d, key) {
+  const v = d[key];
+  if (v === undefined) return;
+  const lines = object(v);
+  if (Object.keys(lines).length > 60) fail('There are too many MR11 lines');
+  Object.entries(lines).forEach(([id, entry]) => {
+    if (!SAFE_KEY.test(id)) fail('An MR11 line is not valid');
+    Object.entries(object(entry)).forEach(([field, x]) => {
+      const ok = x === null || typeof x === 'boolean' || (isNum(x) && x >= 0 && x <= 10000000) || (typeof x === 'string' && x.length <= 40);
+      if (!/^[a-zA-Z][a-zA-Z0-9]{0,29}$/.test(field) || !ok) fail('A line figure is not valid');
+    });
+  });
 }
 
 function checkForm(d) {

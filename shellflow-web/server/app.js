@@ -2,6 +2,7 @@ const path = require('path');
 const crypto = require('crypto');
 const express = require('express');
 const helmet = require('helmet');
+const compression = require('compression');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
@@ -35,6 +36,10 @@ function createApp(options = {}) {
   if (onVercel && !(env.DATABASE_URL || env.POSTGRES_URL)) throw new Error('DATABASE_URL must be set on Vercel, because its disk does not last between requests');
   const secret = env.JWT_SECRET || crypto.randomBytes(48).toString('hex');
   if (!env.JWT_SECRET) console.warn('[shellflow] JWT_SECRET is not set: using a temporary one, so everyone is signed out when the server restarts.');
+  // Demo quick login: one click signs in as the main administrator. Only for a demonstration on your
+  // own computer: it must be switched on, it is refused in production, and only this computer may use it.
+  const demoQuickLogin = !production && String(env.DEMO_QUICK_LOGIN || '').toLowerCase() === 'true';
+  if (demoQuickLogin) console.warn('[shellflow] DEMO_QUICK_LOGIN is on: anyone using this computer can sign in as the main administrator with one click. Switch it off before sharing the site.');
 
   const store = options.store || createStore(env);
 
@@ -66,12 +71,15 @@ function createApp(options = {}) {
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', 1);
+  // Pages and API answers go out compressed (the page is about 80% smaller)
+  app.use(compression());
   app.use(helmet({
     contentSecurityPolicy: {
       useDefaults: false,
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://cdn.tailwindcss.com', 'https://unpkg.com', 'https://cdnjs.cloudflare.com'],
+        // Tailwind and the icons are built into the page; only the Excel library still loads from a CDN, when first used
+        scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdnjs.cloudflare.com'],
         scriptSrcAttr: ["'unsafe-inline'"],
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
@@ -90,7 +98,7 @@ function createApp(options = {}) {
   // Optional fixed date for demonstrations on the sample data; blank means the real date
   app.get('/config.js', (req, res) => {
     const demoDate = /^\d{4}-\d{2}-\d{2}$/.test(env.DEMO_DATE || '') ? `${env.DEMO_DATE}T09:00:00` : '';
-    res.type('application/javascript').set('Cache-Control', 'no-store').send(`window.SHELLFLOW_HOSTED = true;${demoDate ? ` window.SHELLFLOW_NOW = ${JSON.stringify(demoDate)};` : ' window.SHELLFLOW_NOW = new Date().toISOString();'}`);
+    res.type('application/javascript').set('Cache-Control', 'no-store').send(`window.SHELLFLOW_HOSTED = true;${demoDate ? ` window.SHELLFLOW_NOW = ${JSON.stringify(demoDate)};` : ' window.SHELLFLOW_NOW = new Date().toISOString();'}${demoQuickLogin ? ' window.SHELLFLOW_DEMO_LOGIN = true;' : ''}`);
   });
 
   const api = express.Router();
@@ -156,6 +164,38 @@ function createApp(options = {}) {
       if (!user.active) return res.status(403).json({ error: 'This account is suspended. Ask your administrator.', code: 'SUSPENDED' });
       const fresh = await store.updateUser(user.id, { failedLogins: 0, lockedUntil: 0 });
       setSession(res, fresh);
+      return res.json({ user: publicUser(fresh) });
+    } catch (err) { return next(err); }
+  });
+
+  // Demo quick login (see DEMO_QUICK_LOGIN above): signs in the protected main administrator
+  const fromThisComputer = req => ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.socket.remoteAddress);
+  api.post('/demo-login', loginLimiter, async (req, res, next) => {
+    try {
+      if (!demoQuickLogin || !fromThisComputer(req)) return res.status(404).json({ error: 'Not found.' });
+      const role = String((req.body && req.body.role) || 'ADMIN');
+      if (!ROLES.includes(role)) return res.status(400).json({ error: 'Choose a valid role.' });
+      let account;
+      if (role === 'ADMIN') {
+        account = (await store.listUsers()).find(u => u.isProtected && u.roles.includes('ADMIN') && u.active);
+        if (!account) return res.status(404).json({ error: 'There is no main administrator yet.' });
+      } else {
+        // One demo account per department, made the first time it is used. Its password is random
+        // and never shown, so it can only be reached through this quick login.
+        const email = `demo.${role.toLowerCase()}@shellflow.test`;
+        account = await store.getUserByEmail(email);
+        if (!account) {
+          const name = `${role.charAt(0)}${role.slice(1).toLowerCase()} demo`.replace('Bd demo', 'BD demo').replace('Ceo demo', 'CEO demo').replace('Shellplan demo', 'Shell Plan demo');
+          account = await store.createUser({
+            id: crypto.randomUUID(), name, email, passwordHash: await bcrypt.hash(crypto.randomBytes(32).toString('hex'), BCRYPT_COST), roles: [role],
+            mustChangePassword: false, active: true, isProtected: false, sessionVersion: 1, failedLogins: 0, lockedUntil: 0
+          }).catch(async err => { if (err.code === 'DUPLICATE') return store.getUserByEmail(email); throw err; });
+        }
+        if (!account.active) return res.status(403).json({ error: 'An administrator has switched this demo account off.' });
+      }
+      const fresh = await store.updateUser(account.id, { failedLogins: 0, lockedUntil: 0 });
+      setSession(res, fresh);
+      console.warn(`[shellflow] Demo quick login used for ${fresh.email}`);
       return res.json({ user: publicUser(fresh) });
     } catch (err) { return next(err); }
   });

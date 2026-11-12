@@ -33,6 +33,23 @@
     const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
     function myRoles() { return Array.isArray(appState.roles) && appState.roles.length ? appState.roles : [appState.role]; }
     function roleIsAdmin() { return myRoles().includes('ADMIN'); }
+    // Single file: one click signs in as the main administrator (demo accounts live only in this page)
+    // Quick login for any department in the single file: signs in that role's demo account
+    function quickLogin(role) {
+      if (role === 'ADMIN') return quickLoginAdmin();
+      const user = appState.users.find(u => u.roles.length === 1 && u.roles[0] === role) || appState.users.find(u => u.roles.includes(role));
+      if (!user) { $('signin-error').textContent = 'There is no demo account for that department.'; return; }
+      $('signin-email').value = user.email;
+      $('signin-password').value = user.password;
+      performLogin();
+    }
+    function quickLoginAdmin() {
+      const user = appState.users.find(u => u.email === MAIN_ADMIN) || appState.users.find(u => u.roles.includes('ADMIN'));
+      if (!user) { $('signin-error').textContent = 'There is no administrator account in this demo.'; return; }
+      $('signin-email').value = user.email;
+      $('signin-password').value = user.password;
+      performLogin();
+    }
     function goHome() {
       const first = [18, 15, 9].find(t => tabAllowed(t));
       switchTab(first || 9);
@@ -51,7 +68,8 @@
           check('Project details complete', () => [appState.projectName, appState.buildingName, appState.countryName, appState.picName, appState.projectNo].every(v => String(v || '').trim())),
           check('An NCA version is approved', () => latestNca()),
           check('Selling price calculated', () => appState.finalUnitRate > 0 && Number.isFinite(appState.totalContractValue)),
-          check('Monthly forecast matches the NCA', () => Math.abs(forecastInputs().reduce((a, b) => a + b, 0) - appState.ncaArea) < 0.01)
+          check('Monthly forecast matches the NCA', () => Math.abs(forecastInputs().reduce((a, b) => a + b, 0) - appState.ncaArea) < 0.01),
+          check('MR11 lines add up to the NCA', () => Math.abs(liveLinesTotal() - appState.ncaArea) < 0.01)
         ];
         case 2: return [
           check('Payment terms add up to 100%', () => Math.abs(termsList().reduce((a, t) => a + t.pct, 0) - 100) < 0.01),
@@ -123,7 +141,7 @@
       if (!head || !page) return;
       const folds = [...($(`step-panel-${tab}`)?.querySelectorAll('.sf-collapsible') || [])];
       const allShut = folds.length && folds.every(c => c.classList.contains('sf-collapsed'));
-      const foldBtn = folds.length > 1 ? `<button type="button" class="sf-btn" onclick="setAllCollapsed(${!allShut})" aria-label="${allShut ? 'Expand' : 'Collapse'} every section on this page">${icon(allShut ? 'chevrons-up-down' : 'chevrons-down-up')}${allShut ? 'Expand all' : 'Collapse all'}</button>` : '';
+      const foldBtn = folds.length > 1 ? `<button type="button" class="sf-btn" onclick="setAllCollapsed(${!allShut})" aria-label="${allShut ? 'Expand all' : 'Collapse all'} sections on this page">${icon(allShut ? 'chevrons-up-down' : 'chevrons-down-up')}${allShut ? 'Expand all' : 'Collapse all'}</button>` : '';
       const conds = page.step ? stepConditions(tab, alerts) : [];
       const met = conds.filter(c => c.met).length;
       const sub = page.step
@@ -287,7 +305,7 @@
         '<span class="sf-key"><span class="sf-ms" data-kind="hold"></span>On hold today</span>',
         '<span class="sf-key"><span class="sf-ms" data-kind="ship"></span>Dispatch</span>'
       ].join('');
-      const cell = v => (isDate(v) ? fmtDate(v) : v ? `<span style="color:var(--ochre);font-weight:600">${esc(v)}</span>` : '<span style="color:var(--ink-3)">Not yet</span>');
+      const cell = v => (isDate(v) ? fmtDate(v) : v ? `<span style="color:#8A560E;font-weight:600">${esc(v)}</span>` : '<span style="color:var(--ink-3)">Not yet</span>');
       $('tl-table').innerHTML = `<thead><tr><th>Project</th><th>Advance</th><th>Shell plan</th><th>Design</th><th>Produced</th><th>Dispatch</th><th class="text-right">Forecast m²</th><th>Needs attention</th></tr></thead><tbody>${list.map(({ r, flags }) => `<tr>
         <td><strong>${esc(r.customerProject.trim())}</strong><div style="color:var(--ink-3)">${esc(r.projectNo)}</div></td>
         <td>${cell(r.paymentDate)}</td><td>${cell(r.shellDate)}</td><td>${cell(r.designDate)}</td><td>${cell(r.producedDate)}</td><td>${cell(r.dispatchDate || r.etd)}</td>
@@ -502,7 +520,84 @@
       saveCollapsed();
       enhanceCollapsibles();
       renderPageHead();
+      // The opened content eases in once
+      if (!shut) {
+        card.classList.add('sf-just-opened');
+        setTimeout(() => card.classList.remove('sf-just-opened'), 320);
+      }
     }
+
+    // ---- Sidebar: the tools sit in a left column on a desktop, and fold down to icons ----
+    (function () {
+      const tools = document.querySelector('.sf-tools');
+      if (!tools) return;
+      const head = document.createElement('div');
+      head.className = 'sf-side-head';
+      head.innerHTML = '<span>Workspace</span><button type="button" class="sf-side-toggle" aria-label="Collapse the sidebar" aria-expanded="true" title="Collapse the sidebar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>';
+      tools.prepend(head);
+      const btn = head.querySelector('button');
+      const apply = shut => {
+        document.body.classList.toggle('sf-side-collapsed', shut);
+        btn.setAttribute('aria-expanded', String(!shut));
+        btn.setAttribute('aria-label', shut ? 'Expand the sidebar' : 'Collapse the sidebar');
+        btn.title = btn.getAttribute('aria-label');
+        tools.querySelectorAll('.sf-tool').forEach(t => { t.title = shut ? t.textContent.trim().replace(/\s+\d+$/, '') : ''; });
+      };
+      let shut = false;
+      try { shut = localStorage.getItem('sf.sideCollapsed') === '1'; } catch {}
+      apply(shut);
+      btn.addEventListener('click', () => { shut = !shut; apply(shut); try { localStorage.setItem('sf.sideCollapsed', shut ? '1' : '0'); } catch {} });
+    })();
+
+    // ---- Each step card shows how many of its gate conditions are met, as a bar ----
+    function renderStepProgress() {
+      document.querySelectorAll('.sf-steps .sf-tab').forEach(tab => {
+        const holes = tab.querySelectorAll('.sf-ties .sf-hole');
+        const met = tab.querySelectorAll('.sf-ties .sf-hole.is-met').length;
+        tab.style.setProperty('--p', holes.length ? (met / holes.length).toFixed(3) : '0');
+      });
+    }
+
+    // ---- The project pills in the header open the field they show, on the BD page ----
+    (function () {
+      const FIELD = { Project: 'bd-project-name', Building: 'bd-building-name', 'Country / PIC': 'bd-country-name' };
+      document.querySelectorAll('.sf-ribbon .sf-kv').forEach(kv => {
+        const label = kv.querySelector('dt')?.textContent.trim();
+        kv.setAttribute('role', 'button');
+        kv.tabIndex = 0;
+        kv.setAttribute('aria-label', `${label}: ${kv.querySelector('dd')?.textContent.trim()}. Open it on the BD page`);
+        const open = () => {
+          if (typeof switchTab !== 'function') return;
+          switchTab(1);
+          const target = FIELD[label] ? $(FIELD[label]) : document.querySelector('#bd-lines [data-field="stream"]');
+          if (target) { target.scrollIntoView({ block: 'center' }); target.focus({ preventScroll: true }); }
+        };
+        kv.addEventListener('click', open);
+        kv.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+      });
+    })();
+
+    // ---- While scrolling: the pinned menu slims down, and a button leads back to the top ----
+    (function () {
+      const top = document.createElement('button');
+      top.type = 'button';
+      top.className = 'sf-top';
+      top.title = 'Back to the top';
+      top.setAttribute('aria-label', 'Back to the top');
+      top.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>';
+      top.addEventListener('click', () => window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }));
+      document.body.appendChild(top);
+      let queued = false;
+      const update = () => {
+        queued = false;
+        const y = window.scrollY, body = document.body;
+        // Two thresholds, so the menu does not flicker when its own height changes
+        if (y > 240) body.classList.add('sf-scrolled'); else if (y < 120) body.classList.remove('sf-scrolled');
+        body.classList.toggle('sf-show-top', y > 700);
+      };
+      window.addEventListener('scroll', () => { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
+      update();
+    })();
     function setAllCollapsed(shut) {
       const panel = $(`step-panel-${appState.activeTab}`);
       if (!panel) return;
@@ -538,7 +633,9 @@
     // ---------------- Called from refreshAll ----------------
     function renderFeatures() {
       const alerts = computeAlerts();
+      if (typeof renderBdLines === 'function') renderBdLines();
       renderTies(alerts);
+      renderStepProgress();
       if (appState.activeTab === 18) renderMyWork(alerts);
       if (appState.activeTab === 19) renderTimeline(alerts);
       enhanceCollapsibles();
@@ -553,6 +650,43 @@
           if (on) row.scrollLeft += on.getBoundingClientRect().left - row.getBoundingClientRect().left - 16;
         });
       }
+      // Naming fields for screen readers waits until the browser is idle, so it never slows typing
+      clearTimeout(labelTimer);
+      labelTimer = setTimeout(() => labelControls(document.getElementById(`step-panel-${appState.activeTab}`)), 120);
+    }
+    let labelTimer = null;
+
+    // ---- Every field has a name a screen reader can say, and every scrolling list can be reached by keyboard ----
+    let autoId = 0;
+    const CONTROL = 'input:not([type="hidden"]), select, textarea';
+    function labelControls(root) {
+      if (!root) return;
+      // A visible label next to its field is joined to it (the label sits just before the field or its wrapper)
+      root.querySelectorAll('label:not([for])').forEach(label => {
+        if (label.querySelector(CONTROL)) return;
+        let next = label.nextElementSibling;
+        const control = next && (next.matches(CONTROL) ? next : next.querySelector(CONTROL));
+        if (!control || control.labels?.length) return;
+        if (!control.id) control.id = `sf-field-${++autoId}`;
+        label.htmlFor = control.id;
+      });
+      // A field with no label at all is named from its title or placeholder
+      root.querySelectorAll(CONTROL).forEach(c => {
+        if (c.labels?.length || c.hasAttribute('aria-label') || c.hasAttribute('aria-labelledby')) return;
+        const name = c.getAttribute('title') || c.getAttribute('placeholder');
+        if (name) c.setAttribute('aria-label', name);
+      });
+      // A list that scrolls on its own can take keyboard focus, so it can be scrolled with the arrow keys
+      root.querySelectorAll('[class*="overflow-y-auto"], [class*="overflow-auto"], [class*="max-h-"]').forEach(box => {
+        const scrolls = box.scrollHeight > box.clientHeight + 1 || box.scrollWidth > box.clientWidth + 1;
+        if (box.hasAttribute('tabindex') || !scrolls || box.querySelector('a, button, input, select, textarea, [tabindex]')) return;
+        box.tabIndex = 0;
+        if (!box.hasAttribute('role')) box.setAttribute('role', 'region');
+        if (!box.hasAttribute('aria-label')) {
+          const head = box.closest('.sf-collapsible, .bg-white, section')?.querySelector('h2, h3, h4');
+          box.setAttribute('aria-label', head ? head.textContent.trim().replace(/\s+/g, ' ') : 'Scrolling list');
+        }
+      });
     }
     function toggleRibbon(btn) {
       const open = $('sf-ribbon').classList.toggle('is-open');
