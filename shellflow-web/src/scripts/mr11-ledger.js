@@ -354,7 +354,7 @@
     // ---- Every control in the ledger and its details panel goes through one listener ----
     document.addEventListener('click', e => {
       const t = e.target.closest('[data-mr11]');
-      if (!t || !t.closest('#mr11-card, #mr11-drawer')) return;
+      if (!t || !t.closest('#mr11-card, #mr11-drawer, #mr11-side')) return;
       const act = t.dataset.mr11;
       const menu = t.closest('details');
       if (menu && t.tagName !== 'SUMMARY') menu.removeAttribute('open');
