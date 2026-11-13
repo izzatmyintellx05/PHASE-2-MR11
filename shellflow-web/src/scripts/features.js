@@ -424,7 +424,7 @@
     function printShell(title, subtitle, body) {
       const u = typeof currentUser === 'function' ? currentUser() : null;
       const who = (appState.me && appState.me.name) || (u && u.name) || ROLES[appState.role];
-      return `<div class="sf-print-cover"><div><h1>${esc(title)}</h1><p>${esc(subtitle)}</p></div><div class="sf-print-brand"><img class="sf-logo sf-print-mark" src="@@LOGO_128@@" alt="" width="40" height="40"><b>MR11 System</b>MFE · A company of Doka<br>Prepared for ${esc(who)} · ${fmtDate(DEMO_TODAY)}</div></div>
+      return `<div class="sf-print-cover"><div><h1>${esc(title)}</h1><p>${esc(subtitle)}</p></div><div class="sf-print-brand"><img class="sf-logo sf-print-mark" src="@@LOGO_FULL@@" alt="Doka and MFE, a company of Doka" width="113" height="60"><b>MR11 System</b>Prepared for ${esc(who)} · ${fmtDate(DEMO_TODAY)}</div></div>
         ${body}<div class="sf-print-foot"><span>MR11 System · ${fmtDate(DEMO_TODAY)} · demonstration data</span><span>Figures in m² and US dollars</span></div>`;
     }
     function weeklyPrint() {
