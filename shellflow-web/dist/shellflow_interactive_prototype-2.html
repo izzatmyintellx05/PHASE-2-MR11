@@ -707,6 +707,58 @@
     @keyframes sf-flash { from { background-color: #FED7AA; } to { background-color: transparent; } }
     .sf-flash > td, tr.sf-flash { animation: sf-flash 1.8s ease-out; }
 
+
+    /* =====================================================================
+       Calm forms: every field on the steps has the same height, corner, label and
+       spacing; fields inside tables stay compact.
+       ===================================================================== */
+    main .step-panel :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]), select, textarea):not(td *):not(th *) {
+      min-height: 40px; padding: 8px 12px; border: 1px solid var(--joint); border-radius: 8px; background: var(--face); color: var(--ink); font-size: 14px; line-height: 1.4; box-shadow: 0 1px 1px rgba(28, 29, 26, 0.03);
+    }
+    main .step-panel textarea:not(td *) { min-height: 96px; resize: vertical; }
+    main .step-panel :is(input, select, textarea):disabled { background: var(--panel); color: var(--ink-3); cursor: not-allowed; }
+    main .step-panel :is(input, select, textarea)::placeholder { color: #9A9B95; }
+    main .step-panel label.block, main .step-panel .sf-collapsible label:not(:has(input[type="checkbox"])):not(:has(input[type="radio"])):not(.sf-step-label) {
+      font-size: 12.5px; font-weight: 600; color: var(--ink-2); margin-bottom: 6px; letter-spacing: 0;
+    }
+    main .step-panel .sf-collapsible .grid { row-gap: 16px; }
+    main .step-panel td :is(input, select) { min-height: 34px; border-radius: 6px; }
+
+    /* ---- Step by step: the guide bar, step numbers, waiting steps and Back / Next ---- */
+    .sf-step-no { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; margin-right: 8px; border-radius: 999px; background: var(--panel); color: var(--ink-2); font-size: 12px; font-weight: 700; vertical-align: 1px; }
+    .sf-stepguide { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--joint); border-radius: 10px; background: var(--face); }
+    .sf-stepguide ol { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+    .sf-stepguide li button { display: inline-flex; align-items: center; padding: 6px 12px 6px 6px; border-radius: 999px; border: 1px solid transparent; font-size: 13px; font-weight: 500; color: var(--ink-2); }
+    .sf-stepguide li button:hover { background: var(--panel); color: var(--ink); }
+    .sf-stepguide li button[aria-current="step"] { background: var(--steel); color: #fff; }
+    .sf-stepguide li button[aria-current="step"] .sf-step-no { background: var(--accent); color: #1C1D1A; }
+    .sf-stepguide li button.is-done .sf-step-no { background: #D1FAE5; color: #065F46; }
+    .sf-stepmode .sf-stepcard:not(.sf-step-current) > :not(.sf-collapse-head) { display: none !important; }
+    .sf-stepmode .sf-stepcard:not(.sf-step-current) { padding-top: 14px !important; padding-bottom: 14px !important; cursor: pointer; opacity: 0.85; }
+    .sf-stepmode .sf-stepcard:not(.sf-step-current):hover { opacity: 1; border-color: #C9C9C3; }
+    .sf-stepmode .sf-stepcard:not(.sf-step-current) > .sf-collapse-head { border-bottom-width: 0; padding-bottom: 0; margin-bottom: 0; }
+    .sf-stepmode .sf-stepcard:not(.sf-step-current) > .sf-collapse-head p { display: none; }
+    .sf-stepmode .sf-step-done .sf-collapse-head .sf-step-no { background: #D1FAE5; color: #065F46; }
+    .sf-stepmode .sf-step-current { border-color: var(--steel) !important; box-shadow: 0 0 0 1px var(--steel), 0 12px 28px -18px rgba(28, 29, 26, 0.45) !important; }
+    .sf-stepmode .sf-step-current .sf-collapse-head .sf-step-no { background: var(--accent); color: #1C1D1A; }
+    .sf-stepnav { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--joint-soft); }
+    .sf-stepnav-count { font-size: 12.5px; color: var(--ink-3); }
+    .sf-stepcard:not(.sf-step-current) > .sf-stepnav { display: none; }
+
+    /* ---- Payment confirmation, free form ---- */
+    .sf-paypaste { display: grid; gap: 12px; }
+    .sf-step-label { display: flex; align-items: center; font-size: 13.5px; font-weight: 600; color: var(--ink); margin: 4px 0 0; }
+    main .step-panel #bank-paste { min-height: 110px; font-size: 14px; }
+    .sf-paydraft { border: 1px solid var(--joint); border-radius: 10px; background: var(--face); overflow: hidden; }
+    .sf-paydraft-head { display: flex; align-items: center; gap: 4px; padding: 10px 14px; border-bottom: 1px solid var(--joint-soft); font-size: 13px; }
+    .sf-paydraft-head .sf-link { margin-left: auto; font-size: 12.5px; color: var(--ink-3); text-decoration: underline; }
+    .sf-paydraft-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; padding: 14px; }
+    .sf-paydraft-fields label { display: grid; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
+    .sf-paydraft-match { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; font-size: 13px; background: var(--panel); border-top: 1px solid var(--joint-soft); }
+    .sf-paydraft-match[data-tone="ok"] { background: #ECFDF5; color: #065F46; }
+    .sf-paydraft-match[data-tone="warn"] { background: #FFFBEB; color: #92400E; }
+    .sf-paydraft-actions { display: inline-flex; gap: 8px; }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
     }
@@ -1475,15 +1527,21 @@
           <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
               <div>
-                <h3 class="text-sm font-bold text-slate-900">Semi-Automated Payment Confirmation</h3>
-                <p class="text-xs text-slate-500">Amount within tolerance +60 | Project named +30 | Payment type +10. Score ≥ 60 suggested to Finance; ≥ 90 from the mailbox can auto-confirm.</p>
+                <h3 class="text-sm font-bold text-slate-900">Confirm a payment</h3>
+                <p class="text-xs text-slate-500">Paste anything the bank sent. The site finds the amount, date and reference and suggests the payment it belongs to (amount within tolerance +60, project named +30, payment type +10; 60 or more is suggested, 90 or more from the mailbox can confirm itself).</p>
               </div>
               <span id="fin-auto-pill" class="text-xs font-mono bg-slate-100 px-2.5 py-1 rounded text-slate-700">Auto-confirm: OFF</span>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
-              <textarea id="bank-paste" rows="2" placeholder="Paste bank lines: date, reference, amount, description" class="sm:col-span-2 px-3 py-2 border border-slate-300 rounded-lg font-mono text-[11px]"></textarea>
-              <button onclick="importBankLines()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold">Match Pasted Lines</button>
-              <button onclick="simulateMailboxAdvice()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 rounded-lg font-semibold">Simulate Mailbox Bank Advice</button>
+            <div class="sf-paypaste">
+              <label for="bank-paste" class="sf-step-label"><span class="sf-step-no">1</span>Paste what the bank sent</label>
+              <textarea id="bank-paste" rows="4" placeholder="A bank advice email, an SMS or a statement line, for example: Credit advice. USD 29,959.10 received on 16 Nov 2026 from Skyline Tower Phase 2, Ref HSBC-TT-4471, advance payment. Several payments? Leave a blank line between them."></textarea>
+              <div class="flex flex-wrap gap-2">
+                <button type="button" onclick="readPastedPayments()" class="sf-btn sf-primary">Read the payment</button>
+                <button type="button" onclick="simulateMailboxAdvice()" class="sf-btn">Try a sample bank advice</button>
+              </div>
+              <p class="sf-step-label"><span class="sf-step-no">2</span>Check what was read, then confirm</p>
+              <div id="pay-paste-preview" class="space-y-3"><p class="text-xs text-slate-500">What the site reads appears here.</p></div>
+              <p class="sf-step-label"><span class="sf-step-no">3</span>Bank lines so far</p>
             </div>
             <div id="bank-lines-list" class="space-y-2.5 text-xs"></div>
           </div>
@@ -7651,6 +7709,204 @@
       logActivity(`${t.title}: line ${n} ${label} ${value === null ? 'set back to the project figure' : `set to ${value === true ? 'received' : value === false ? 'waiting' : value}`}`);
       refreshAll();
     });
+</script>
+  <script>    // =========================================================================
+    // Payment confirmation, free form. Finance pastes whatever arrived (a bank advice email,
+    // an SMS, a statement line, several of them) and the site reads the amount, date and
+    // reference, shows what it read so it can be corrected, suggests the matching Finance
+    // line with its score, and confirms with one click.
+    // =========================================================================
+    const MONTHS = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+    const iso = (y, m, d) => (y > 1900 && m >= 1 && m <= 12 && d >= 1 && d <= 31 ? `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}` : '');
+    function readDate(text) {
+      let m = text.match(/\b(20\d{2})[-/.](\d{1,2})[-/.](\d{1,2})\b/);
+      if (m) return iso(+m[1], +m[2], +m[3]);
+      m = text.match(/\b(\d{1,2})[-/.](\d{1,2})[-/.](20\d{2})\b/);
+      if (m) return iso(+m[3], +m[2], +m[1]);
+      m = text.match(/\b(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]{3})[a-z]*\.?,?\s+(20\d{2})\b/);
+      if (m && MONTHS[m[2].toLowerCase()]) return iso(+m[3], MONTHS[m[2].toLowerCase()], +m[1]);
+      m = text.match(/\b([A-Za-z]{3})[a-z]*\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(20\d{2})\b/);
+      if (m && MONTHS[m[1].toLowerCase()]) return iso(+m[3], MONTHS[m[1].toLowerCase()], +m[2]);
+      return '';
+    }
+    function readAmount(text) {
+      // Money first: a figure next to a currency or labelled as an amount; otherwise the largest figure with cents or thousands
+      const money = [...text.matchAll(/(?:USD|US\$|\$|MYR|RM|SGD|S\$|PHP|₱|INR|Rs\.?|amount|amt|credit(?:ed)?|paid|received|sum)\s*:?\s*([0-9]{1,3}(?:,[0-9]{3})+(?:\.\d{1,2})?|[0-9]+(?:\.\d{1,2})?)/gi)].map(m => m[1]);
+      const plain = [...text.matchAll(/\b([0-9]{1,3}(?:,[0-9]{3})+(?:\.\d{1,2})?|[0-9]+\.\d{2})\b/g)].map(m => m[1]);
+      const figures = (money.length ? money : plain).map(v => parseFloat(v.replace(/,/g, ''))).filter(n => Number.isFinite(n) && n > 0);
+      return figures.length ? Math.max(...figures) : NaN;
+    }
+    function readRef(text) {
+      let m = text.match(/\b(?:ref(?:erence)?|txn|transaction|trx|tt|id)\s*(?:no\.?|number|#)?\s*[:#-]?\s*([A-Z0-9][A-Z0-9/-]{4,})/i);
+      if (m) return m[1].toUpperCase();
+      m = text.match(/\b([A-Z]{2,}[-/][A-Z0-9-]{3,})\b/);
+      return m ? m[1] : '';
+    }
+    // Several payments: blocks split by blank lines, or one payment per line when every line has its own amount
+    function splitAdvices(text) {
+      // Blank lines only separate payments when more than one part has its own amount (an email's
+      // greeting and sign-off belong to the one payment it describes)
+      const blocks = text.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
+      const paying = blocks.filter(b => Number.isFinite(readAmount(b)));
+      if (paying.length > 1) return paying;
+      if (blocks.length > 1) return [text.trim()];
+      const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+      return lines.length > 1 && lines.every(l => Number.isFinite(readAmount(l))) ? lines : [text.trim()].filter(Boolean);
+    }
+    function readAdvice(text) {
+      const desc = text.replace(/\s+/g, ' ').trim();
+      return { text, date: readDate(text) || DEMO_TODAY, ref: readRef(text) || 'NO-REF', amount: readAmount(text), desc: desc.slice(0, 300) };
+    }
+    let pasteDrafts = [];
+
+    function renderPaymentPaste() {
+      const box = $('pay-paste-preview');
+      if (!box) return;
+      if (!pasteDrafts.length) { box.innerHTML = ''; return; }
+      box.innerHTML = pasteDrafts.map((d, i) => {
+        const match = Number.isFinite(d.amount) ? scoreBankLine({ ...d, status: 'OPEN' }) : { score: 0, target: null, parts: [] };
+        const ok = Number.isFinite(d.amount) && d.date <= DEMO_TODAY;
+        const tone = match.score >= 90 ? 'ok' : match.score >= 60 ? 'warn' : 'none';
+        return `<div class="sf-paydraft" data-draft="${i}">
+          <div class="sf-paydraft-head"><span class="sf-step-no">${i + 1}</span><span class="font-semibold">Payment ${pasteDrafts.length > 1 ? i + 1 : ''} read from your text</span>
+            <button type="button" class="sf-link" data-pay="drop" aria-label="Remove payment ${i + 1}">Remove</button></div>
+          <div class="sf-paydraft-fields">
+            <label>Amount (USD)<input type="number" min="0" step="0.01" data-field="amount" value="${Number.isFinite(d.amount) ? d.amount : ''}" placeholder="Not found: type it"></label>
+            <label>Date received<input type="date" data-field="date" value="${esc(d.date)}" max="${DEMO_TODAY}"></label>
+            <label>Bank reference<input type="text" data-field="ref" value="${esc(d.ref)}"></label>
+          </div>
+          <div class="sf-paydraft-match" data-tone="${tone}">${match.target
+            ? `<span><strong>Best match:</strong> ${esc(match.target.label)} · expected ${formatUSD(match.target.amount)} · score <strong>${match.score}</strong> (${esc(match.parts.join(', '))})</span>`
+            : `<span>${!ok ? 'Add the amount (and a date that is not in the future) to look for a match.' : !openFinanceLines().length ? 'Every payment line is already paid, so there is nothing to match. Keep it for the record if you want.' : 'No open payment line matches yet. Check the amount, or add the project name to the text.'}</span>`}
+            <span class="sf-paydraft-actions">${match.target && match.score >= 60 && ok ? `<button type="button" class="sf-btn sf-btn-sm sf-primary" data-pay="confirm">Confirm payment</button>` : ''}<button type="button" class="sf-btn sf-btn-sm" data-pay="keep" ${ok ? '' : 'disabled'}>Keep for later</button></span>
+          </div>
+        </div>`;
+      }).join('');
+    }
+    function readPastedPayments() {
+      if (!guard(['FINANCE'], 'confirm payments')) return;
+      const text = $('bank-paste').value;
+      if (!text.trim()) { notify('Paste the bank advice, SMS or statement line first.', 'error'); return; }
+      pasteDrafts = splitAdvices(text).map(readAdvice);
+      renderPaymentPaste();
+      const missing = pasteDrafts.filter(d => !Number.isFinite(d.amount)).length;
+      notify(`${plural(pasteDrafts.length, 'payment')} read${missing ? `; ${missing} without an amount, type it in` : ''}. Check them, then confirm.`, missing ? 'info' : 'success');
+    }
+    // The old button name keeps working
+    window.importBankLines = readPastedPayments;
+    window.readPastedPayments = readPastedPayments;
+
+    document.addEventListener('input', e => {
+      const el = e.target.closest && e.target.closest('#pay-paste-preview [data-field]');
+      if (!el) return;
+      const i = Number(el.closest('[data-draft]').dataset.draft);
+      const f = el.dataset.field;
+      pasteDrafts[i][f] = f === 'amount' ? parseFloat(el.value) : el.value.trim();
+      clearTimeout(window.__payTimer);
+      window.__payTimer = setTimeout(() => { const focus = document.activeElement?.dataset?.field; renderPaymentPaste(); if (focus) document.querySelector(`#pay-paste-preview [data-draft="${i}"] [data-field="${focus}"]`)?.focus(); }, 500);
+    });
+    document.addEventListener('click', e => {
+      const b = e.target.closest && e.target.closest('#pay-paste-preview [data-pay]');
+      if (!b) return;
+      const i = Number(b.closest('[data-draft]').dataset.draft);
+      const d = pasteDrafts[i];
+      if (b.dataset.pay === 'drop') { pasteDrafts.splice(i, 1); renderPaymentPaste(); return; }
+      if (!guard(['FINANCE'], 'confirm payments')) return;
+      if (!Number.isFinite(d.amount) || !d.date || d.date > DEMO_TODAY) { notify('Add the amount and a date that is not in the future.', 'error'); return; }
+      const line = addBankLine({ date: d.date, ref: d.ref || 'NO-REF', amount: d.amount, desc: d.desc, source: 'Paste' });
+      if (b.dataset.pay === 'confirm' && line.status === 'OPEN') confirmBankLine(line.id);
+      pasteDrafts.splice(i, 1);
+      if (!pasteDrafts.length) $('bank-paste').value = '';
+      renderPaymentPaste();
+      refreshAll();
+    });
+</script>
+  <script>    // =========================================================================
+    // Step by step. On each workflow page the sections you fill in become numbered steps,
+    // shown one at a time: a guide bar at the top lists them, and each step ends with Back
+    // and Next (the last one leads to the next page). Read-only summaries stay in view.
+    // "Show all" brings back the whole page; the choice is remembered in this browser.
+    // =========================================================================
+    (function () {
+      const STEP_PAGES = [1, 2, 3, 4, 6, 7, 8];
+      const NEXT_PAGE = { 1: 2, 2: 3, 3: 4, 4: 6, 6: 7, 7: 8, 8: 9 };
+      const current = {};
+      let on = true;
+      try { on = localStorage.getItem('sf.stepMode') !== '0'; } catch {}
+      // The heading's words without its step badge, and without an old "3. " number in front
+      const titleOf = card => {
+        const h = card.querySelector('.sf-collapse-head h2, .sf-collapse-head h3, .sf-collapse-head h4, h2, h3');
+        if (!h) return 'Step';
+        const copy = h.cloneNode(true);
+        copy.querySelectorAll('.sf-step-no').forEach(b => b.remove());
+        return copy.textContent.replace(/^\s*\d+[.)]\s*/, '').replace(/\s+/g, ' ').trim();
+      };
+      const stepsOf = panel => [...panel.querySelectorAll('.sf-collapsible')]
+        .filter(c => !c.parentElement.closest('.sf-collapsible') && c.querySelector('input:not([type="hidden"]), select, textarea, table'));
+
+      function apply() {
+        const page = appState.activeTab;
+        const panel = $(`step-panel-${page}`);
+        document.querySelectorAll('.step-panel.sf-stepmode').forEach(p => { if (p !== panel || !on) p.classList.remove('sf-stepmode'); });
+        if (!panel || !STEP_PAGES.includes(page)) return;
+        const steps = stepsOf(panel);
+        let guide = panel.querySelector(':scope > .sf-stepguide');
+        if (steps.length < 2) { guide?.remove(); panel.classList.remove('sf-stepmode'); return; }
+        const at = Math.min(current[page] || 0, steps.length - 1);
+        panel.classList.toggle('sf-stepmode', on);
+        steps.forEach((card, i) => {
+          card.classList.add('sf-stepcard');
+          card.classList.toggle('sf-step-current', on && i === at);
+          card.classList.toggle('sf-step-done', on && i < at);
+          const h = card.querySelector('.sf-collapse-head h2, .sf-collapse-head h3, .sf-collapse-head h4');
+          // Old hand-written numbers in headings ("3. Forecast ...") give way to the step number
+          if (h && !h.dataset.sfNum) { const t = [...h.childNodes].find(n => n.nodeType === 3 && n.textContent.trim()); if (t) t.textContent = t.textContent.replace(/^\s*\d+[.)]\s*/, ''); h.dataset.sfNum = '1'; }
+          if (h && !h.querySelector('.sf-step-no')) h.insertAdjacentHTML('afterbegin', `<span class="sf-step-no" aria-hidden="true">${i + 1}</span>`);
+          else if (h) h.querySelector('.sf-step-no').textContent = String(i + 1);
+          let nav = card.querySelector(':scope > .sf-stepnav');
+          if (on && i === at) {
+            if (card.classList.contains('sf-collapsed')) toggleCollapsed(card, false);
+            const next = steps[i + 1];
+            const nextPage = NEXT_PAGE[page];
+            const html = `${i > 0 ? `<button type="button" class="sf-btn" data-guide-go="${i - 1}">Back</button>` : '<span></span>'}
+              <span class="sf-stepnav-count">Step ${i + 1} of ${steps.length}</span>
+              ${next ? `<button type="button" class="sf-btn sf-primary" data-guide-go="${i + 1}">Next: ${esc(titleOf(next))}</button>`
+                : nextPage && tabAllowed(nextPage) ? `<button type="button" class="sf-btn sf-primary" data-guide-page="${nextPage}">Done here: go to ${esc(PAGES[nextPage]?.name || 'the next page')}</button>` : '<span></span>'}`;
+            if (!nav) { nav = document.createElement('div'); nav.className = 'sf-stepnav'; card.appendChild(nav); }
+            if (nav.innerHTML !== html) nav.innerHTML = html;
+          } else nav?.remove();
+        });
+        const html = `<ol>${steps.map((card, i) => `<li><button type="button" data-guide-go="${i}" ${on && i === at ? 'aria-current="step"' : ''} class="${on && i < at ? 'is-done' : ''}"><span class="sf-step-no">${i + 1}</span>${esc(titleOf(card))}</button></li>`).join('')}</ol>
+          <button type="button" class="sf-btn sf-btn-sm" data-guide-mode>${on ? 'Show all' : 'Step by step'}</button>`;
+        if (!guide) { guide = document.createElement('nav'); guide.className = 'sf-stepguide'; guide.setAttribute('aria-label', 'Steps on this page'); panel.prepend(guide); }
+        if (guide.innerHTML !== html) guide.innerHTML = html;
+      }
+      function go(i) {
+        const page = appState.activeTab;
+        current[page] = i;
+        if (!on) { on = true; try { localStorage.setItem('sf.stepMode', '1'); } catch {} }
+        apply();
+        const card = stepsOf($(`step-panel-${page}`))[i];
+        if (card) {
+          const y = card.getBoundingClientRect().top + window.scrollY - 130;
+          window.scrollTo({ top: Math.max(0, y), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+          card.querySelector('.sf-stepnav')?.previousElementSibling && card.querySelector('input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled])')?.focus({ preventScroll: true });
+        }
+      }
+      document.addEventListener('click', e => {
+        const t = e.target.closest && e.target.closest('[data-guide-go], [data-guide-page], [data-guide-mode], .sf-stepmode .sf-stepcard:not(.sf-step-current) > .sf-collapse-head');
+        if (!t) return;
+        if (t.matches('[data-guide-mode]')) { on = !on; try { localStorage.setItem('sf.stepMode', on ? '1' : '0'); } catch {} apply(); return; }
+        if (t.matches('[data-guide-page]')) { switchTab(Number(t.dataset.guidePage)); return; }
+        if (t.matches('[data-guide-go]')) { go(Number(t.dataset.guideGo)); return; }
+        // Clicking a waiting step's heading opens that step (but not when the click was on its own fold button)
+        if (e.target.closest('.sf-collapse-btn')) return;
+        const card = t.parentElement;
+        const i = stepsOf(card.closest('.step-panel')).indexOf(card);
+        if (i >= 0) go(i);
+      });
+      window.renderFeatures = (orig => function () { const out = orig.apply(this, arguments); apply(); return out; })(window.renderFeatures);
+    })();
 </script>
   <script>    // =========================================================================
     // One project. Every page follows the one project BD keeps on the BD page. The four

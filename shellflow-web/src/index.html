@@ -683,15 +683,21 @@
           <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
               <div>
-                <h3 class="text-sm font-bold text-slate-900">Semi-Automated Payment Confirmation</h3>
-                <p class="text-xs text-slate-500">Amount within tolerance +60 | Project named +30 | Payment type +10. Score ≥ 60 suggested to Finance; ≥ 90 from the mailbox can auto-confirm.</p>
+                <h3 class="text-sm font-bold text-slate-900">Confirm a payment</h3>
+                <p class="text-xs text-slate-500">Paste anything the bank sent. The site finds the amount, date and reference and suggests the payment it belongs to (amount within tolerance +60, project named +30, payment type +10; 60 or more is suggested, 90 or more from the mailbox can confirm itself).</p>
               </div>
               <span id="fin-auto-pill" class="text-xs font-mono bg-slate-100 px-2.5 py-1 rounded text-slate-700">Auto-confirm: OFF</span>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
-              <textarea id="bank-paste" rows="2" placeholder="Paste bank lines: date, reference, amount, description" class="sm:col-span-2 px-3 py-2 border border-slate-300 rounded-lg font-mono text-[11px]"></textarea>
-              <button onclick="importBankLines()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold">Match Pasted Lines</button>
-              <button onclick="simulateMailboxAdvice()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 rounded-lg font-semibold">Simulate Mailbox Bank Advice</button>
+            <div class="sf-paypaste">
+              <label for="bank-paste" class="sf-step-label"><span class="sf-step-no">1</span>Paste what the bank sent</label>
+              <textarea id="bank-paste" rows="4" placeholder="A bank advice email, an SMS or a statement line, for example: Credit advice. USD 29,959.10 received on 16 Nov 2026 from Skyline Tower Phase 2, Ref HSBC-TT-4471, advance payment. Several payments? Leave a blank line between them."></textarea>
+              <div class="flex flex-wrap gap-2">
+                <button type="button" onclick="readPastedPayments()" class="sf-btn sf-primary">Read the payment</button>
+                <button type="button" onclick="simulateMailboxAdvice()" class="sf-btn">Try a sample bank advice</button>
+              </div>
+              <p class="sf-step-label"><span class="sf-step-no">2</span>Check what was read, then confirm</p>
+              <div id="pay-paste-preview" class="space-y-3"><p class="text-xs text-slate-500">What the site reads appears here.</p></div>
+              <p class="sf-step-label"><span class="sf-step-no">3</span>Bank lines so far</p>
             </div>
             <div id="bank-lines-list" class="space-y-2.5 text-xs"></div>
           </div>
@@ -1916,6 +1922,8 @@
   <script><!--@include scripts/mr11-lines.js--></script>
   <script><!--@include scripts/mr11-ledger.js--></script>
   <script><!--@include scripts/line-tracking.js--></script>
+  <script><!--@include scripts/payment-paste.js--></script>
+  <script><!--@include scripts/step-guide.js--></script>
   <script><!--@include scripts/one-project.js--></script>
   <script><!--@include scripts/lazy-libs.js--></script>
   <script><!--@include scripts/perf.js--></script>

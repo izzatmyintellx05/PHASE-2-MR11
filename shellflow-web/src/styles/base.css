@@ -632,6 +632,58 @@
     @keyframes sf-flash { from { background-color: #FED7AA; } to { background-color: transparent; } }
     .sf-flash > td, tr.sf-flash { animation: sf-flash 1.8s ease-out; }
 
+
+    /* =====================================================================
+       Calm forms: every field on the steps has the same height, corner, label and
+       spacing; fields inside tables stay compact.
+       ===================================================================== */
+    main .step-panel :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]), select, textarea):not(td *):not(th *) {
+      min-height: 40px; padding: 8px 12px; border: 1px solid var(--joint); border-radius: 8px; background: var(--face); color: var(--ink); font-size: 14px; line-height: 1.4; box-shadow: 0 1px 1px rgba(28, 29, 26, 0.03);
+    }
+    main .step-panel textarea:not(td *) { min-height: 96px; resize: vertical; }
+    main .step-panel :is(input, select, textarea):disabled { background: var(--panel); color: var(--ink-3); cursor: not-allowed; }
+    main .step-panel :is(input, select, textarea)::placeholder { color: #9A9B95; }
+    main .step-panel label.block, main .step-panel .sf-collapsible label:not(:has(input[type="checkbox"])):not(:has(input[type="radio"])):not(.sf-step-label) {
+      font-size: 12.5px; font-weight: 600; color: var(--ink-2); margin-bottom: 6px; letter-spacing: 0;
+    }
+    main .step-panel .sf-collapsible .grid { row-gap: 16px; }
+    main .step-panel td :is(input, select) { min-height: 34px; border-radius: 6px; }
+
+    /* ---- Step by step: the guide bar, step numbers, waiting steps and Back / Next ---- */
+    .sf-step-no { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; margin-right: 8px; border-radius: 999px; background: var(--panel); color: var(--ink-2); font-size: 12px; font-weight: 700; vertical-align: 1px; }
+    .sf-stepguide { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--joint); border-radius: 10px; background: var(--face); }
+    .sf-stepguide ol { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+    .sf-stepguide li button { display: inline-flex; align-items: center; padding: 6px 12px 6px 6px; border-radius: 999px; border: 1px solid transparent; font-size: 13px; font-weight: 500; color: var(--ink-2); }
+    .sf-stepguide li button:hover { background: var(--panel); color: var(--ink); }
+    .sf-stepguide li button[aria-current="step"] { background: var(--steel); color: #fff; }
+    .sf-stepguide li button[aria-current="step"] .sf-step-no { background: var(--accent); color: #1C1D1A; }
+    .sf-stepguide li button.is-done .sf-step-no { background: #D1FAE5; color: #065F46; }
+    .sf-stepmode .sf-stepcard:not(.sf-step-current) > :not(.sf-collapse-head) { display: none !important; }
+    .sf-stepmode .sf-stepcard:not(.sf-step-current) { padding-top: 14px !important; padding-bottom: 14px !important; cursor: pointer; opacity: 0.85; }
+    .sf-stepmode .sf-stepcard:not(.sf-step-current):hover { opacity: 1; border-color: #C9C9C3; }
+    .sf-stepmode .sf-stepcard:not(.sf-step-current) > .sf-collapse-head { border-bottom-width: 0; padding-bottom: 0; margin-bottom: 0; }
+    .sf-stepmode .sf-stepcard:not(.sf-step-current) > .sf-collapse-head p { display: none; }
+    .sf-stepmode .sf-step-done .sf-collapse-head .sf-step-no { background: #D1FAE5; color: #065F46; }
+    .sf-stepmode .sf-step-current { border-color: var(--steel) !important; box-shadow: 0 0 0 1px var(--steel), 0 12px 28px -18px rgba(28, 29, 26, 0.45) !important; }
+    .sf-stepmode .sf-step-current .sf-collapse-head .sf-step-no { background: var(--accent); color: #1C1D1A; }
+    .sf-stepnav { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--joint-soft); }
+    .sf-stepnav-count { font-size: 12.5px; color: var(--ink-3); }
+    .sf-stepcard:not(.sf-step-current) > .sf-stepnav { display: none; }
+
+    /* ---- Payment confirmation, free form ---- */
+    .sf-paypaste { display: grid; gap: 12px; }
+    .sf-step-label { display: flex; align-items: center; font-size: 13.5px; font-weight: 600; color: var(--ink); margin: 4px 0 0; }
+    main .step-panel #bank-paste { min-height: 110px; font-size: 14px; }
+    .sf-paydraft { border: 1px solid var(--joint); border-radius: 10px; background: var(--face); overflow: hidden; }
+    .sf-paydraft-head { display: flex; align-items: center; gap: 4px; padding: 10px 14px; border-bottom: 1px solid var(--joint-soft); font-size: 13px; }
+    .sf-paydraft-head .sf-link { margin-left: auto; font-size: 12.5px; color: var(--ink-3); text-decoration: underline; }
+    .sf-paydraft-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; padding: 14px; }
+    .sf-paydraft-fields label { display: grid; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
+    .sf-paydraft-match { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; font-size: 13px; background: var(--panel); border-top: 1px solid var(--joint-soft); }
+    .sf-paydraft-match[data-tone="ok"] { background: #ECFDF5; color: #065F46; }
+    .sf-paydraft-match[data-tone="warn"] { background: #FFFBEB; color: #92400E; }
+    .sf-paydraft-actions { display: inline-flex; gap: 8px; }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
     }
