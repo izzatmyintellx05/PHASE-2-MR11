@@ -270,18 +270,33 @@
     .sf-row-open { font: inherit; color: inherit; text-align: left; text-decoration: underline; text-decoration-color: rgba(28, 28, 26, 0.25); text-underline-offset: 3px; }
     .sf-row-open:hover { text-decoration-color: currentColor; }
 
-    /* The side panel beside the table: the tools on top, then View, Highlight and Filters. Hide tools folds it away. */
-    .sf-mr11-side { width: 300px; flex-shrink: 0; position: sticky; top: 112px; max-height: calc(100vh - 140px); overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-    .sf-mr11-side.hidden { display: none; }
+    /* MR11 tools: a drawer on the very right of the site (like the left sidebar), apart from the filters.
+       The Tools tab on its edge, the Tools button or the arrow opens and closes it. */
+    .sf-mr11-side { position: fixed; z-index: 42; top: 0; right: 0; bottom: 0; width: 300px; max-width: 88vw; display: flex; flex-direction: column; background: var(--face); border-left: 1px solid var(--joint); box-shadow: var(--lift-2); transition: transform 0.22s var(--ease-out); }
+    .sf-mr11-side[hidden] { display: none; }
+    .sf-mr11-side.is-shut { transform: translateX(100%); box-shadow: none; }
+    .sf-rtools-body { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 12px; display: flex; flex-direction: column; gap: 10px; }
+    .sf-rtools-tab { position: absolute; left: -34px; top: 50%; transform: translateY(-50%); width: 34px; padding: 12px 0; display: flex; flex-direction: column; align-items: center; gap: 8px; border-radius: 8px 0 0 8px; background: var(--steel); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; box-shadow: var(--lift-2); }
+    .sf-rtools-tab span { writing-mode: vertical-rl; transform: rotate(180deg); }
+    .sf-rtools-tab svg { transition: transform 0.22s var(--ease-out); transform: rotate(180deg); }
+    .sf-mr11-side.is-shut .sf-rtools-tab svg { transform: none; }
+    .sf-rtools-tab:hover { background: var(--ink); }
+    .sf-full-btn { display: inline-flex; align-items: center; gap: 6px; }
+    @media (min-width: 1024px) {
+      body.sf-rtools-open { padding-right: 300px; }
+      body { transition: padding-left 0.22s var(--ease-out), padding-right 0.22s var(--ease-out); }
+    }
+    body.sf-rtools-open .sf-top { right: 320px; }
+    #mr11-card:fullscreen.sf-has-tools { padding-right: 320px; }
+    @media print { .sf-mr11-side { display: none !important; } }
     .sf-side-top { display: flex; align-items: center; justify-content: space-between; padding: 0 2px; font-size: var(--fs-small); font-weight: 700; color: var(--ink); }
-    .sf-mr11-side .sf-ledger-tools { padding: 10px; border: 1px solid var(--joint); border-radius: var(--radius); background: var(--face); }
+    .sf-mr11-side .sf-ledger-tools { padding: 0; border: 0; }
     .sf-mr11-side .sf-ledger-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
     .sf-mr11-side .sf-ledger-search, .sf-mr11-side .sf-seg, .sf-mr11-side #mr11-sync-label, .sf-mr11-side .sf-ledger-bar > .sf-primary { grid-column: 1 / -1; max-width: none; }
     .sf-mr11-side .sf-seg { display: flex; } .sf-mr11-side .sf-seg > button { flex: 1; }
     .sf-mr11-side .sf-ledger-bar > .sf-btn, .sf-mr11-side .sf-menu > summary { width: 100%; justify-content: center; text-align: center; }
     .sf-mr11-side .sf-menu-pop { position: static; min-width: 0; margin-top: 4px; box-shadow: none; }
     .sf-mr11-side .sf-menu[open] { grid-column: 1 / -1; }
-    .sf-mr11-side .sf-mr11-panel { width: auto; position: static; max-height: none; overflow: visible; }
     .sf-mr11-panel { width: 288px; flex-shrink: 0; position: sticky; top: 112px; max-height: calc(100vh - 140px); overflow-y: auto; border: 1px solid var(--joint); border-radius: var(--radius); background: var(--face); font-size: 12px; }
     .sf-pp-top { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--joint); background: var(--panel); font-size: var(--fs-small); font-weight: 700; }
     .sf-pp-close { width: 26px; height: 26px; display: grid; place-items: center; border-radius: var(--radius); color: var(--ink-3); }
@@ -347,7 +362,6 @@
     @media (max-width: 1023px) {
       .sf-ledger-body { flex-direction: column-reverse; align-items: stretch; }
       .sf-mr11-panel { width: auto; position: static; max-height: none; }
-      .sf-mr11-side { width: auto; position: static; max-height: none; }
     }
     @media (max-width: 639px) {
       .sf-ledger-search { max-width: none; flex-basis: 100%; }

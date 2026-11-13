@@ -176,8 +176,7 @@
       press('mr11-freeze-btn', LEDGER.freeze);
       press('mr11-density-btn', LEDGER.density === 'compact');
       $('mr11-rates').classList.toggle('hidden', !LEDGER.rates);
-      $('mr11-side')?.classList.toggle('hidden', !LEDGER.panel);
-      if ($('mr11-panel-btn')) $('mr11-panel-btn').textContent = LEDGER.panel ? 'Hide tools' : 'Show tools';
+      $('mr11-panel').classList.toggle('hidden', !LEDGER.panel);
       $('mr11-search-clear').classList.toggle('hidden', !ledgerSearchTerm());
       $('mr11-zoom-label').textContent = `${appState.mr11Zoom}%`;
       $('mr11-table-wrap').style.zoom = `${appState.mr11Zoom}%`;
@@ -238,7 +237,7 @@
           ${!open && selected.length ? `<p class="sf-pp-picked">${esc(selected.join(', '))}</p>` : ''}
           ${open ? `${values.length > 8 ? `<input type="search" class="sf-pp-find" placeholder="Find ${esc(label.toLowerCase())}" aria-label="Find a ${esc(label.toLowerCase())}" oninput="filterMr11Values(this)">` : ''}<ul class="sf-pp-values">${list}</ul>` : ''}</div>`;
       }).join('');
-      panel.innerHTML = `<div class="sf-pp-top"><span>View, highlight &amp; filters</span></div>
+      panel.innerHTML = `<div class="sf-pp-top"><span>View, highlight &amp; filters</span><button type="button" class="sf-pp-close" data-mr11="panel" aria-label="Close the view and filters panel">${LEDGER_ICONS.x}</button></div>
         ${section('view', 'View', hidden ? `<em class="sf-pp-badge is-warn">${hidden} hidden</em>` : '', view)}
         ${section('highlight', 'Highlight columns', LEDGER.highlights.length ? `<em class="sf-pp-badge">${LEDGER.highlights.length}</em>` : '', highlight)}
         ${section('filters', 'Filters', active ? `<em class="sf-pp-badge">${active}</em>` : '', filters, active ? '<button type="button" class="sf-pp-link is-danger" data-mr11="fclear">Clear</button>' : '')}`;

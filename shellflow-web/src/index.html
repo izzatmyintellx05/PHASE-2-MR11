@@ -1342,7 +1342,8 @@
           <div class="flex items-center gap-2 text-xs">
             <button id="mr11-edit-btn" onclick="toggleEditMode()" class="px-2.5 py-1 rounded border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 font-semibold">Edit in MR11: Off</button>
             <span class="px-2.5 py-1 rounded bg-sky-50 border border-sky-200 text-sky-800 font-semibold">LIVE lines = steps 1–7</span>
-            <button type="button" class="sf-btn sf-btn-sm" data-mr11="panel" id="mr11-panel-btn" aria-controls="mr11-side" aria-pressed="true">Hide tools</button>
+            <button type="button" class="sf-btn sf-btn-sm" data-tools="toggle" id="mr11-tools-btn" aria-controls="mr11-side" aria-pressed="true">Tools</button>
+            <button type="button" class="sf-btn sf-btn-sm sf-full-btn" id="mr11-full-btn" onclick="toggleMr11Fullscreen()" title="Show the MR11 table on the whole screen"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg><span>Full screen</span></button>
           </div>
         </div>
 
@@ -1534,7 +1535,9 @@
         </div>
           </div>
           <aside id="mr11-side" class="sf-mr11-side" aria-label="MR11 tools">
-            <div class="sf-side-top"><span>Tools</span><button type="button" class="sf-pp-close" data-mr11="panel" aria-label="Hide the tools panel" title="Hide tools"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></div>
+            <button type="button" class="sf-rtools-tab" data-tools="toggle" aria-controls="mr11-side" aria-label="Show or hide the MR11 tools"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg><span>Tools</span></button>
+            <div class="sf-rtools-body">
+            <div class="sf-side-top"><span>MR11 tools</span><button type="button" class="sf-pp-close" data-tools="toggle" aria-label="Hide the tools" title="Hide tools"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></div>
             <!-- MR11 tools: search, zoom, the tool buttons and quick views, in the side panel -->
             <div class="sf-ledger-tools text-xs space-y-2.5">
               <div class="sf-ledger-bar">
@@ -1548,6 +1551,7 @@
                   <button type="button" onclick="setMr11Zoom(0)" id="mr11-zoom-label" title="Back to 100%">100%</button>
                   <button type="button" onclick="setMr11Zoom(5)" aria-label="Zoom in">+</button>
                 </div>
+                <button type="button" class="sf-btn sf-btn-sm" data-mr11="panel" id="mr11-panel-btn" aria-controls="mr11-panel" aria-pressed="true">View &amp; filters</button>
                 <button type="button" class="sf-btn sf-btn-sm" data-mr11="rates" id="mr11-rates-btn" aria-controls="mr11-rates" aria-pressed="false">Rates &amp; LME</button>
                 <button type="button" class="sf-btn sf-btn-sm" data-mr11="freeze" id="mr11-freeze-btn" aria-pressed="true" title="Keep the project name on screen while scrolling sideways">Freeze project</button>
                 <button type="button" class="sf-btn sf-btn-sm" data-mr11="density" id="mr11-density-btn" aria-pressed="false" title="Fit more rows on screen">Compact rows</button>
@@ -1566,8 +1570,9 @@
               <div id="mr11-quick" class="sf-chips" role="group" aria-label="Quick views"></div>
               <div id="mr11-deleted" class="hidden space-y-1.5"></div>
             </div>
-            <div id="mr11-panel" class="sf-mr11-panel"></div>
+            </div>
           </aside>
+          <aside id="mr11-panel" class="sf-mr11-panel" aria-label="MR11 view, highlight and filters"></aside>
         </div>
       </div>
 
@@ -1922,6 +1927,7 @@
   <script><!--@include scripts/features.js--></script>
   <script><!--@include scripts/mr11-lines.js--></script>
   <script><!--@include scripts/mr11-ledger.js--></script>
+  <script><!--@include scripts/mr11-tools.js--></script>
   <script><!--@include scripts/line-tracking.js--></script>
   <script><!--@include scripts/payment-paste.js--></script>
   <script><!--@include scripts/step-guide.js--></script>
