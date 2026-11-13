@@ -1874,7 +1874,7 @@
         ['Export Timestamp:', new Date().toISOString(), 'Active Project:', liveRow.customerProject, 'Contract Value:', liveRow.ncaQty * liveRow.finalPrice],
         [],
         [
-          'Row', 'Customer & Project Name', 'Building / Stream / Block', 'Project No', 'Countries', 'PIC', 'Status',
+          'Row', 'Customer & Project Name', 'Stream / Building / Block', 'Project No', 'Countries', 'PIC', 'Status',
           'Products', 'PO', 'NCA', 'NCA Qty (m²)', 'Payment Term', 'Advance Received / Status',
           'Shell Plan Completion Date', 'Design Completion Date', 'LME Base ($/MT)', 'Incoterms',
           'Selling Price ($/m²)', 'Props/WPB/Waler/Acc ($/m²)', 'Aluminium Weight ($/m²)', 'LME Adjusted ($/m²)', 'Freight Adjusted ($/m²)',
@@ -2358,7 +2358,7 @@
           return td(`${r.isLive ? '1 (LIVE)' : n + 1} <button onclick="openComments('${r.key}')" title="Comments on this row" aria-label="Comments on this row${count ? `: ${count}` : ''}" class="inline-flex items-center gap-0.5 align-middle"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"/></svg>${count || ''}</button>${del}`, `text-center font-bold ${r.isLive ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-900'}`);
         }),
         col('project', 'Customer &amp; Project Name', r => td(esc(r.customerProject), 'font-bold')),
-        col('project', 'Building / Stream / Block', r => td(esc(r.buildingStream))),
+        col('project', 'Stream / Building / Block', r => td(esc(r.buildingStream))),
         col('project', 'Project No', r => td(esc(r.projectNo))),
         col('project', 'Short Name', r => td(esc(r.shortName))),
         col('project', 'Stream', r => td(esc(rowStreamNo(r)), 'text-center')),

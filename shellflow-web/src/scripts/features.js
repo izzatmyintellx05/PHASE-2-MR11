@@ -150,7 +150,7 @@
       head.innerHTML = `<div class="sf-pagehead-main"><div><h1 id="sf-page-title">${esc(page.name)}</h1><p class="sf-sub">${sub}</p></div>
           <div class="sf-headside">${foldBtn}<button type="button" class="sf-btn" onclick="printFor(${tab})">${icon('printer')}${printLabel(tab)}</button></div></div>
         ${conds.length ? `<div class="sf-conds" aria-label="Gate conditions">${condList(conds)}</div>` : ''}`;
-      document.title = `${page.name} · ShellFlow`;
+      document.title = `${page.name} · MR11 System`;
     }
 
     // ---------------- My Work ----------------
@@ -424,8 +424,8 @@
     function printShell(title, subtitle, body) {
       const u = typeof currentUser === 'function' ? currentUser() : null;
       const who = (appState.me && appState.me.name) || (u && u.name) || ROLES[appState.role];
-      return `<div class="sf-print-cover"><div><h1>${esc(title)}</h1><p>${esc(subtitle)}</p></div><div class="sf-print-brand"><span class="sf-mark sf-print-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><b>ShellFlow · MR11</b>MFE Phase 2 operations<br>Prepared for ${esc(who)} · ${fmtDate(DEMO_TODAY)}</div></div>
-        ${body}<div class="sf-print-foot"><span>ShellFlow MR11 · ${fmtDate(DEMO_TODAY)} · demonstration data</span><span>Figures in m² and US dollars</span></div>`;
+      return `<div class="sf-print-cover"><div><h1>${esc(title)}</h1><p>${esc(subtitle)}</p></div><div class="sf-print-brand"><img class="sf-logo sf-print-mark" src="@@LOGO_128@@" alt="" width="40" height="40"><b>MR11 System</b>MFE · A company of Doka<br>Prepared for ${esc(who)} · ${fmtDate(DEMO_TODAY)}</div></div>
+        ${body}<div class="sf-print-foot"><span>MR11 System · ${fmtDate(DEMO_TODAY)} · demonstration data</span><span>Figures in m² and US dollars</span></div>`;
     }
     function weeklyPrint() {
       const sheets = reportSheets();

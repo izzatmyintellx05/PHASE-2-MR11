@@ -4,8 +4,8 @@
   <script src="/config.js"></script><!--@endif-->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#3A3D40">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%233A3D40'/%3E%3Cg fill='%239FC9BD'%3E%3Ccircle cx='10' cy='10' r='3'/%3E%3Ccircle cx='22' cy='10' r='3'/%3E%3Ccircle cx='10' cy='22' r='3'/%3E%3Ccircle cx='22' cy='22' r='3'/%3E%3C/g%3E%3C/svg%3E">
-  <title>ShellFlow — MFE MR11 Phase 2 Operations<!--@if single--> Prototype<!--@endif--></title>
+  <link rel="icon" type="image/png" href="@@LOGO_64@@">
+  <title>MR11 System — MFE Phase 2 Operations<!--@if single--> Prototype<!--@endif--></title>
   <script><!--@include scripts/tailwind.config.js--></script>
   <script><!--@icons--></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,8 +45,9 @@
   <div id="signin-screen" class="fixed inset-0 bg-slate-50 z-40 hidden items-center justify-center p-4">
     <div class="max-w-sm w-full space-y-4">
       <div class="text-center">
-        <span class="sf-mark sf-mark-lg mx-auto" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-        <h1 class="mt-3 text-base font-extrabold tracking-wide text-slate-900">MR11 PROJECT TRACKING &amp; MASTER LEDGER</h1>
+        <img class="sf-logo sf-logo-lg mx-auto" src="@@LOGO_256@@" alt="MFE, a company of Doka" width="72" height="72">
+        <h1 class="mt-3 text-xl font-bold text-slate-900">MR11 System</h1>
+        <p class="text-xs text-slate-500">MFE · A company of Doka</p>
       </div>
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-3 text-xs">
         <h2 class="text-sm font-bold text-slate-900">Sign in to workspace</h2>
@@ -108,9 +109,9 @@
   <header class="sf-header lg:sticky top-0 z-30">
     <div class="sf-bar">
       <div class="sf-wrap">
-        <a href="#" class="sf-brand" onclick="goHome(); return false;" aria-label="ShellFlow, go to your first page">
-          <span class="sf-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-          <span class="sf-brand-name">ShellFlow</span>
+        <a href="#" class="sf-brand" onclick="goHome(); return false;" aria-label="MR11 System, go to your first page">
+          <img class="sf-logo" src="@@LOGO_128@@" alt="" width="34" height="34">
+          <span class="sf-brand-name">MR11 System</span>
           <span class="sf-brand-tag"><span class="sf-tag-long">MR11 · Phase 2 </span><!--@if single-->prototype<!--@endif--></span>
         </a>
         <button type="button" id="sf-search-btn" class="sf-search" onclick="openCommand()" aria-haspopup="dialog" aria-keyshortcuts="Control+K Meta+K">
@@ -145,10 +146,10 @@
       <div class="sf-wrap">
         <dl>
           <div class="sf-kv"><dt>Project</dt><dd id="ctx-project">Skyline Tower Phase 2</dd></div>
-          <div class="sf-kv"><dt>Building</dt><dd id="ctx-building">Tower A - Podium &amp; Core</dd></div>
+          <div class="sf-kv hidden"><dt>Building</dt><dd id="ctx-building">Tower A - Podium &amp; Core</dd></div>
           <div class="sf-kv"><dt>Country / PIC</dt><dd id="ctx-country-pic">Malaysia (MY) / Alex Tan</dd></div>
           <div class="sf-kv"><dt>Streams</dt><dd id="ctx-streams">Stream 1, Stream 2, Stream 3</dd></div>
-          <div class="sf-kv"><dt>Blocks</dt><dd id="ctx-blocks">Block A, Block B, Central Core</dd></div>
+          <div class="sf-kv"><dt>Building / Block</dt><dd id="ctx-blocks">Block A, Block B, Central Core</dd></div>
         </dl>
         <div class="sf-tags">
           <span class="sf-tag" id="ctx-formwork">MIVAN/MONOLITIC FORMWORK</span>
@@ -232,7 +233,7 @@
                 <label class="block font-semibold text-slate-700 mb-1">Project Name</label>
                 <input type="text" id="bd-project-name" value="Skyline Tower Phase 2" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500 outline-none">
               </div>
-              <div>
+              <div class="hidden" aria-hidden="true">
                 <label class="block font-semibold text-slate-700 mb-1">Building Name / Zone</label>
                 <input type="text" id="bd-building-name" value="Tower A - Podium &amp; Core" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500 outline-none">
               </div>
@@ -764,7 +765,7 @@
             <select id="des-stream-select" class="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg font-semibold text-slate-800"><option value="Stream 1">Stream 1</option><option value="Stream 2">Stream 2</option><option value="Stream 3">Stream 3</option></select>
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Active Block (from BD)</label>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Active building / block (from BD)</label>
             <select id="des-block-select" class="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg font-semibold text-slate-800"><option value="Block A">Block A</option><option value="Block B">Block B</option><option value="Central Core">Central Core</option></select>
           </div>
         </div>
@@ -951,7 +952,7 @@
                 <select id="prod-stream-select" class="w-full px-2.5 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white font-semibold"></select>
               </div>
               <div>
-                <label class="block text-[10px] text-slate-400 uppercase mb-1">Block (From BD)</label>
+                <label class="block text-[10px] text-slate-400 uppercase mb-1">Building / block (from BD)</label>
                 <select id="prod-block-select" class="w-full px-2.5 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white font-semibold"></select>
               </div>
             </div>
@@ -1906,7 +1907,7 @@
     </section>
   </main>
 
-  <div id="sf-cmdk" class="sf-cmdk" role="dialog" aria-modal="true" aria-label="Search ShellFlow" onclick="if (event.target === this) closeCommand()">
+  <div id="sf-cmdk" class="sf-cmdk" role="dialog" aria-modal="true" aria-label="Search MR11 System" onclick="if (event.target === this) closeCommand()">
     <div class="sf-cmdk-box">
       <div class="sf-cmdk-input"><i data-lucide="search"></i><input id="sf-cmdk-input" type="text" role="combobox" aria-expanded="true" aria-controls="sf-cmdk-list" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search pages, projects, NCAs, lorries and alerts"></div>
       <div id="sf-cmdk-list" class="sf-cmdk-list" role="listbox" aria-label="Results"></div>

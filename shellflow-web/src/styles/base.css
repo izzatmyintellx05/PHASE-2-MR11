@@ -729,6 +729,11 @@
     .sf-edit-menu-btn > summary { margin-top: 0; padding: 0 12px; height: 32px; border-radius: 6px; border: 1px solid var(--joint); color: var(--ink); background: var(--face); font-size: 12.5px; }
     .sf-edit-menu-btn > summary:hover { background: var(--panel); border-color: var(--joint); color: var(--ink); }
 
+    /* ---- MFE logo ---- */
+    .sf-logo { display: block; flex: none; width: 34px; height: 34px; border-radius: 6px; }
+    .sf-logo.sf-logo-lg { width: 72px; height: 72px; border-radius: 10px; }
+    .sf-print-mark.sf-logo { width: 40px; height: 40px; }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
     }

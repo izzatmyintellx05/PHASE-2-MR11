@@ -80,7 +80,7 @@
             ...p,
             _line: l, _share: share, _lineIndex: i, _lineCount: lines.length,
             lineKey: `${p.key}~${l.id || i}`,
-            buildingStream: [building, l.stream, l.blocks].filter(Boolean).join(' / '),
+            buildingStream: [l.stream, l.blocks].filter(Boolean).join(' / '),
             stream: streamNumber(l.stream),
             formworkSystem: l.formwork || p.formworkSystem,
             product: l.product || p.product,
@@ -267,7 +267,7 @@
           <span class="px-2 py-0.5 rounded text-[11px] font-bold ${ok ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'}">${ok ? `Lines match the NCA (${fmtNum(nca)} m²)` : `Lines add up to ${fmtNum(total)} m², the NCA is ${fmtNum(nca)} m²`}</span>
         </div>
         <div class="overflow-x-auto"><table class="w-full text-xs border-collapse sf-lines-table">
-          <thead><tr class="text-left text-slate-500"><th class="py-1.5 pr-2 font-semibold">Line</th><th class="py-1.5 pr-2 font-semibold">Stream</th><th class="py-1.5 pr-2 font-semibold">Blocks</th><th class="py-1.5 pr-2 font-semibold">Formwork type</th><th class="py-1.5 pr-2 font-semibold">Product type</th><th class="py-1.5 pr-2 font-semibold text-right">NCA m²</th><th class="py-1.5"><span class="sr-only">Remove</span></th></tr></thead>
+          <thead><tr class="text-left text-slate-500"><th class="py-1.5 pr-2 font-semibold">Line</th><th class="py-1.5 pr-2 font-semibold">Stream</th><th class="py-1.5 pr-2 font-semibold">Building / Block</th><th class="py-1.5 pr-2 font-semibold">Formwork type</th><th class="py-1.5 pr-2 font-semibold">Product type</th><th class="py-1.5 pr-2 font-semibold text-right">NCA m²</th><th class="py-1.5"><span class="sr-only">Remove</span></th></tr></thead>
           <tbody>${live.rows.map(({ l, money }, i) => `<tr data-line="${i}" class="border-t border-slate-100">
             <td class="py-1.5 pr-2 font-bold text-slate-500">${i + 1}<span class="sf-fill-dot" style="background:${fillOf(l.formwork) || 'transparent'}" title="MR11 fill colour"></span></td>
             <td class="py-1.5 pr-2"><input data-field="stream" list="bd-lines-streams" value="${esc(l.stream)}" aria-label="Stream of line ${i + 1}" class="w-full px-2 py-1.5 border border-slate-300 rounded-lg" ${dis}></td>

@@ -143,7 +143,7 @@
           let html = key === 'Customer & Project Name'
             ? `<td class="font-bold"><button type="button" class="sf-row-open" data-mr11="open" data-key="${esc(lineKeyOf(r))}" title="Open the details of ${esc(r.customerProject.trim())}">${markTerm(`>${esc(r.customerProject)}<`, term).slice(1, -1)}</button></td>`
             : c.cell(r, position);
-          if (term && ['Project No', 'Short Name', 'Building / Stream / Block', 'PIC', 'Countries'].includes(key)) html = markTerm(html, term);
+          if (term && ['Project No', 'Short Name', 'Stream / Building / Block', 'PIC', 'Countries'].includes(key)) html = markTerm(html, term);
           if (key === 'Row' && r.isLive) html = html.replace('1 (LIVE)', `${position + 1} · LIVE`);
           if (lit(c.group)) html = html.replace('<td class="', '<td class="hl-col ');
           if (c.group === 'design' && spans.has(rowIndex)) {

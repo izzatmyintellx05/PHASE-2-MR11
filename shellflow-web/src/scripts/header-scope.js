@@ -69,7 +69,7 @@
         // The dropdowns
         selectFor(kvOf('ctx-project'), 'Choose the project', [...(rows.length > 1 ? [['', `All projects (${rows.length})`]] : []), ...rows.map(r => [r.key, r.customerProject.trim()])], SCOPE.project || (rows.length > 1 ? '' : proj.key), v => { SCOPE.project = v; SCOPE.stream = ''; SCOPE.block = ''; });
         selectFor(kvOf('ctx-streams'), 'Show one stream', [['', 'All streams'], ...streams.map(s => [s, s])], SCOPE.stream, v => { SCOPE.stream = v; });
-        selectFor(kvOf('ctx-blocks'), 'Show one block', [['', 'All blocks'], ...blocks.map(b => [b, b])], SCOPE.block, v => { SCOPE.block = v; });
+        selectFor(kvOf('ctx-blocks'), 'Show one building or block', [['', 'All buildings / blocks'], ...blocks.map(b => [b, b])], SCOPE.block, v => { SCOPE.block = v; });
         [kvOf('ctx-building'), kvOf('ctx-country-pic')].forEach(kv => kv && kv.classList.add('sf-kv-static'));
         [kvOf('ctx-streams'), kvOf('ctx-blocks')].forEach(kv => kv && kv.classList.toggle('is-narrowed', kv === kvOf('ctx-streams') ? !!SCOPE.stream : !!SCOPE.block));
         kvOf('ctx-project')?.classList.toggle('is-narrowed', !!SCOPE.project && rows.length > 1);

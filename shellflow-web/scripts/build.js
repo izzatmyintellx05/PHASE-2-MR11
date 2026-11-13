@@ -114,6 +114,11 @@ async function build() {
   const css = await compileTailwind(page);
   const icons = iconScript(page);
   page = page.replace('<!--@tailwind-->', () => css).replace('<!--@icons-->', () => icons);
+  // The MFE logo, built in as small images
+  for (const size of [64, 128, 256]) {
+    const file = path.join(SRC, 'assets', `mfe-logo-${size}.png`);
+    if (fs.existsSync(file)) page = page.split(`@@LOGO_${size}@@`).join(`data:image/png;base64,${fs.readFileSync(file).toString('base64')}`);
+  }
   for (const [version, file] of Object.entries(TARGETS)) {
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(file, forVersion(page, version));
