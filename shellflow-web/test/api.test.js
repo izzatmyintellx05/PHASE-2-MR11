@@ -302,6 +302,12 @@ test('the page goes out compressed, and its scripts need no eval and no style or
   assert.ok(!page.includes('cdn.tailwindcss.com') && !page.includes('unpkg.com/lucide'), 'the page still loads a CDN script');
 });
 
+test('on Vercel with a database, the session key comes from the database secret', async () => {
+  const url = 'postgres://user:pass@example.invalid:6543/db';
+  assert.doesNotThrow(() => createApp({ store, env: { NODE_ENV: 'production', VERCEL: '1', DATABASE_URL: url } }));
+  assert.throws(() => createApp({ store, env: { NODE_ENV: 'production' } }), /JWT_SECRET must be set/);
+});
+
 test('production refuses to start without a real secret or first admin', async () => {
   assert.throws(() => createApp({ store, env: { NODE_ENV: 'production' } }), /JWT_SECRET must be set/);
   assert.throws(() => createApp({ store, env: { JWT_SECRET: 'too-short' } }), /at least 32/);

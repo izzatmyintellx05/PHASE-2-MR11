@@ -31,10 +31,15 @@ function createApp(options = {}) {
   const production = env.NODE_ENV === 'production';
   const onVercel = !!env.VERCEL;
 
-  if (production && !env.JWT_SECRET) throw new Error('JWT_SECRET must be set in production');
+  const databaseUrl = env.DATABASE_URL || env.POSTGRES_URL || '';
+  // On Vercel with a connected database, the session key can come from the database's own secret
+  // (a one-way hash of it), so nobody has to type a JWT_SECRET. JWT_SECRET still wins when it is set.
+  const derivedSecret = !env.JWT_SECRET && onVercel && databaseUrl
+    ? crypto.createHmac('sha256', databaseUrl).update('shellflow-session-key-v1').digest('hex') : '';
+  if (production && !env.JWT_SECRET && !derivedSecret) throw new Error('JWT_SECRET must be set in production');
   if (env.JWT_SECRET && env.JWT_SECRET.length < 32) throw new Error('JWT_SECRET must be at least 32 characters');
-  if (onVercel && !(env.DATABASE_URL || env.POSTGRES_URL)) throw new Error('DATABASE_URL must be set on Vercel, because its disk does not last between requests');
-  const secret = env.JWT_SECRET || crypto.randomBytes(48).toString('hex');
+  if (onVercel && !databaseUrl) throw new Error('DATABASE_URL must be set on Vercel, because its disk does not last between requests');
+  const secret = env.JWT_SECRET || derivedSecret || crypto.randomBytes(48).toString('hex');
   if (!env.JWT_SECRET) console.warn('[shellflow] JWT_SECRET is not set: using a temporary one, so everyone is signed out when the server restarts.');
   // Demo quick login: one click signs in as the main administrator. Only for a demonstration on your
   // own computer: it must be switched on, it is refused in production, and only this computer may use it.
@@ -57,10 +62,16 @@ function createApp(options = {}) {
       readyPromise = (async () => {
         await store.init();
         if ((await store.countUsers()) > 0) return;
-        const email = cleanEmail(env.ADMIN_EMAIL);
+        // During a live demonstration with public quick login, the first administrator can be made
+        // without an email or password: a random password nobody knows, reached only by quick login.
+        const demoAdmin = publicQuickLogin() && !env.ADMIN_PASSWORD;
+        const email = cleanEmail(env.ADMIN_EMAIL) || (demoAdmin ? 'admin@shellflow.demo' : '');
         let password = env.ADMIN_PASSWORD;
         if (!validEmail(email)) throw new Error('Set ADMIN_EMAIL to create the first administrator');
-        if (!password) {
+        if (!password && demoAdmin) {
+          password = crypto.randomBytes(32).toString('hex');
+          console.warn(`[shellflow] First administrator ${email} was made for the live demonstration; sign in with quick login, and add real administrators before ${publicUntil}.`);
+        } else if (!password) {
           if (production) throw new Error('Set ADMIN_PASSWORD to create the first administrator');
           password = crypto.randomBytes(9).toString('base64url');
           console.log(`[shellflow] First administrator: ${email}  Temporary password: ${password}`);
