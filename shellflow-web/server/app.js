@@ -79,7 +79,8 @@ function createApp(options = {}) {
         if (password.length < MIN_PASSWORD) throw new Error(`ADMIN_PASSWORD must be at least ${MIN_PASSWORD} characters`);
         await store.createUser({
           id: crypto.randomUUID(), name: 'Main Administrator', email, passwordHash: await bcrypt.hash(password, BCRYPT_COST), roles: ['ADMIN'],
-          mustChangePassword: true, active: true, isProtected: true, sessionVersion: 1, failedLogins: 0, lockedUntil: 0
+          // The live-demo administrator's password is random and unknown, so it cannot be asked to change it
+          mustChangePassword: !(demoAdmin && !env.ADMIN_PASSWORD), active: true, isProtected: true, sessionVersion: 1, failedLogins: 0, lockedUntil: 0
         }).catch(err => { if (err.code !== 'DUPLICATE') throw err; });
       })().catch(err => { readyPromise = null; throw err; });
     }
@@ -211,7 +212,8 @@ function createApp(options = {}) {
         }
         if (!account.active) return res.status(403).json({ error: 'An administrator has switched this demo account off.' });
       }
-      const fresh = await store.updateUser(account.id, { failedLogins: 0, lockedUntil: 0 });
+      const demoAdminAccount = account.email === 'admin@shellflow.demo' && publicQuickLogin();
+      const fresh = await store.updateUser(account.id, { failedLogins: 0, lockedUntil: 0, ...(demoAdminAccount ? { mustChangePassword: false } : {}) });
       setSession(res, fresh);
       console.warn(`[shellflow] Demo quick login used for ${fresh.email}`);
       return res.json({ user: publicUser(fresh) });
