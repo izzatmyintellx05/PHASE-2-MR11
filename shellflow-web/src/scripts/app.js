@@ -772,7 +772,7 @@
 
       // Update Global Header Context Ribbon
       document.getElementById('ctx-project').textContent = appState.projectName;
-      document.getElementById('ctx-building').textContent = appState.buildingName;
+      const bEl = document.getElementById('ctx-building'); if (bEl) bEl.textContent = appState.buildingName;
       const cpEl = document.getElementById('ctx-country-pic');
       if (cpEl) cpEl.textContent = `${appState.countryName} / ${appState.picName}`;
       document.getElementById('ctx-streams').textContent = appState.streams.join(', ');

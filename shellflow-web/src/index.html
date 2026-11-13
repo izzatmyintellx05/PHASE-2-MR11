@@ -145,7 +145,6 @@
       <div class="sf-wrap">
         <dl>
           <div class="sf-kv"><dt>Project</dt><dd id="ctx-project">Skyline Tower Phase 2</dd></div>
-          <div class="sf-kv hidden"><dt>Building</dt><dd id="ctx-building">Tower A - Podium &amp; Core</dd></div>
           <div class="sf-kv"><dt>Country / PIC</dt><dd id="ctx-country-pic">Malaysia (MY) / Alex Tan</dd></div>
           <div class="sf-kv"><dt>Streams</dt><dd id="ctx-streams">Stream 1, Stream 2, Stream 3</dd></div>
           <div class="sf-kv"><dt>Building / Block</dt><dd id="ctx-blocks">Block A, Block B, Central Core</dd></div>
@@ -1343,41 +1342,10 @@
           <div class="flex items-center gap-2 text-xs">
             <button id="mr11-edit-btn" onclick="toggleEditMode()" class="px-2.5 py-1 rounded border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 font-semibold">Edit in MR11: Off</button>
             <span class="px-2.5 py-1 rounded bg-sky-50 border border-sky-200 text-sky-800 font-semibold">LIVE lines = steps 1–7</span>
+            <button type="button" class="sf-btn sf-btn-sm" data-mr11="panel" id="mr11-panel-btn" aria-controls="mr11-side" aria-pressed="true">Hide tools</button>
           </div>
         </div>
 
-        <!-- MR11 tools: the Phase 1 tool row, quick views, rates, and what is narrowing the table -->
-        <div class="sf-ledger-tools text-xs space-y-2.5">
-          <div class="sf-ledger-bar">
-            <div class="sf-ledger-search">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-              <input type="search" id="mr11-search" oninput="renderMR11PipelineTab()" placeholder="Search project, number, short name, PIC or country" aria-label="Search the MR11 ledger" autocomplete="off">
-              <button type="button" id="mr11-search-clear" data-mr11="search-clear" class="hidden" aria-label="Clear search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-            </div>
-            <div class="sf-seg" role="group" aria-label="Zoom">
-              <button type="button" onclick="setMr11Zoom(-5)" aria-label="Zoom out">−</button>
-              <button type="button" onclick="setMr11Zoom(0)" id="mr11-zoom-label" title="Back to 100%">100%</button>
-              <button type="button" onclick="setMr11Zoom(5)" aria-label="Zoom in">+</button>
-            </div>
-            <button type="button" class="sf-btn sf-btn-sm" data-mr11="panel" id="mr11-panel-btn" aria-controls="mr11-panel" aria-pressed="true">Options</button>
-            <button type="button" class="sf-btn sf-btn-sm" data-mr11="rates" id="mr11-rates-btn" aria-controls="mr11-rates" aria-pressed="false">Rates &amp; LME</button>
-            <button type="button" class="sf-btn sf-btn-sm" data-mr11="freeze" id="mr11-freeze-btn" aria-pressed="true" title="Keep the project name on screen while scrolling sideways">Freeze project</button>
-            <button type="button" class="sf-btn sf-btn-sm" data-mr11="density" id="mr11-density-btn" aria-pressed="false" title="Fit more rows on screen">Compact rows</button>
-            <details class="sf-menu" id="mr11-views-menu"><summary class="sf-btn sf-btn-sm">Saved views</summary><div class="sf-menu-pop" id="mr11-views"></div></details>
-            <details class="sf-menu"><summary class="sf-btn sf-btn-sm">Export &amp; print</summary><div class="sf-menu-pop">
-              <button type="button" data-mr11="export-view">Export this view (.xlsx)</button>
-              <button type="button" data-mr11="copy-view">Copy this view for Excel</button>
-              <button type="button" data-mr11="print-view">Print this view (A4 landscape)</button>
-              <button type="button" onclick="exportMR11Workbook()">Export the full MR11 workbook</button>
-            </div></details>
-            <button type="button" class="sf-btn sf-btn-sm" onclick="toggleMr11Fullscreen()">Full screen</button>
-            <button type="button" class="sf-btn sf-btn-sm sf-primary" onclick="syncMr11()" title="Rebuild MR11 from every department's latest entries">Sync</button>
-            <button type="button" class="sf-btn sf-btn-sm" onclick="toggleDeletedRows()" id="mr11-deleted-btn">Deleted rows (0)</button>
-            <span id="mr11-sync-label" class="text-[11px] text-slate-500"></span>
-          </div>
-          <div id="mr11-quick" class="sf-chips" role="group" aria-label="Quick views"></div>
-          <div id="mr11-deleted" class="hidden space-y-1.5"></div>
-        </div>
         <div id="mr11-rates" class="hidden"><div id="market-cards" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></div>
         <div id="mr11-summary" class="sf-mr11-summary hidden" role="status"></div>
         <div class="sf-ledger-body">
@@ -1565,7 +1533,41 @@
           </table>
         </div>
           </div>
-          <aside id="mr11-panel" class="sf-mr11-panel" aria-label="MR11 options"></aside>
+          <aside id="mr11-side" class="sf-mr11-side" aria-label="MR11 tools">
+            <div class="sf-side-top"><span>Tools</span><button type="button" class="sf-pp-close" data-mr11="panel" aria-label="Hide the tools panel" title="Hide tools"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></div>
+            <!-- MR11 tools: search, zoom, the tool buttons and quick views, in the side panel -->
+            <div class="sf-ledger-tools text-xs space-y-2.5">
+              <div class="sf-ledger-bar">
+                <div class="sf-ledger-search">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  <input type="search" id="mr11-search" oninput="renderMR11PipelineTab()" placeholder="Search project, number, short name, PIC or country" aria-label="Search the MR11 ledger" autocomplete="off">
+                  <button type="button" id="mr11-search-clear" data-mr11="search-clear" class="hidden" aria-label="Clear search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+                </div>
+                <div class="sf-seg" role="group" aria-label="Zoom">
+                  <button type="button" onclick="setMr11Zoom(-5)" aria-label="Zoom out">−</button>
+                  <button type="button" onclick="setMr11Zoom(0)" id="mr11-zoom-label" title="Back to 100%">100%</button>
+                  <button type="button" onclick="setMr11Zoom(5)" aria-label="Zoom in">+</button>
+                </div>
+                <button type="button" class="sf-btn sf-btn-sm" data-mr11="rates" id="mr11-rates-btn" aria-controls="mr11-rates" aria-pressed="false">Rates &amp; LME</button>
+                <button type="button" class="sf-btn sf-btn-sm" data-mr11="freeze" id="mr11-freeze-btn" aria-pressed="true" title="Keep the project name on screen while scrolling sideways">Freeze project</button>
+                <button type="button" class="sf-btn sf-btn-sm" data-mr11="density" id="mr11-density-btn" aria-pressed="false" title="Fit more rows on screen">Compact rows</button>
+                <details class="sf-menu" id="mr11-views-menu"><summary class="sf-btn sf-btn-sm">Saved views</summary><div class="sf-menu-pop" id="mr11-views"></div></details>
+                <details class="sf-menu"><summary class="sf-btn sf-btn-sm">Export &amp; print</summary><div class="sf-menu-pop">
+                  <button type="button" data-mr11="export-view">Export this view (.xlsx)</button>
+                  <button type="button" data-mr11="copy-view">Copy this view for Excel</button>
+                  <button type="button" data-mr11="print-view">Print this view (A4 landscape)</button>
+                  <button type="button" onclick="exportMR11Workbook()">Export the full MR11 workbook</button>
+                </div></details>
+                <button type="button" class="sf-btn sf-btn-sm" onclick="toggleMr11Fullscreen()">Full screen</button>
+                <button type="button" class="sf-btn sf-btn-sm sf-primary" onclick="syncMr11()" title="Rebuild MR11 from every department's latest entries">Sync</button>
+                <button type="button" class="sf-btn sf-btn-sm" onclick="toggleDeletedRows()" id="mr11-deleted-btn">Deleted rows (0)</button>
+                <span id="mr11-sync-label" class="text-[11px] text-slate-500"></span>
+              </div>
+              <div id="mr11-quick" class="sf-chips" role="group" aria-label="Quick views"></div>
+              <div id="mr11-deleted" class="hidden space-y-1.5"></div>
+            </div>
+            <div id="mr11-panel" class="sf-mr11-panel"></div>
+          </aside>
         </div>
       </div>
 

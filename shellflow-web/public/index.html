@@ -346,7 +346,18 @@
     .sf-row-open { font: inherit; color: inherit; text-align: left; text-decoration: underline; text-decoration-color: rgba(28, 28, 26, 0.25); text-underline-offset: 3px; }
     .sf-row-open:hover { text-decoration-color: currentColor; }
 
-    /* The Options panel beside the table, as in Phase 1 */
+    /* The side panel beside the table: the tools on top, then View, Highlight and Filters. Hide tools folds it away. */
+    .sf-mr11-side { width: 300px; flex-shrink: 0; position: sticky; top: 112px; max-height: calc(100vh - 140px); overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .sf-mr11-side.hidden { display: none; }
+    .sf-side-top { display: flex; align-items: center; justify-content: space-between; padding: 0 2px; font-size: var(--fs-small); font-weight: 700; color: var(--ink); }
+    .sf-mr11-side .sf-ledger-tools { padding: 10px; border: 1px solid var(--joint); border-radius: var(--radius); background: var(--face); }
+    .sf-mr11-side .sf-ledger-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .sf-mr11-side .sf-ledger-search, .sf-mr11-side .sf-seg, .sf-mr11-side #mr11-sync-label, .sf-mr11-side .sf-ledger-bar > .sf-primary { grid-column: 1 / -1; max-width: none; }
+    .sf-mr11-side .sf-seg { display: flex; } .sf-mr11-side .sf-seg > button { flex: 1; }
+    .sf-mr11-side .sf-ledger-bar > .sf-btn, .sf-mr11-side .sf-menu > summary { width: 100%; justify-content: center; text-align: center; }
+    .sf-mr11-side .sf-menu-pop { position: static; min-width: 0; margin-top: 4px; box-shadow: none; }
+    .sf-mr11-side .sf-menu[open] { grid-column: 1 / -1; }
+    .sf-mr11-side .sf-mr11-panel { width: auto; position: static; max-height: none; overflow: visible; }
     .sf-mr11-panel { width: 288px; flex-shrink: 0; position: sticky; top: 112px; max-height: calc(100vh - 140px); overflow-y: auto; border: 1px solid var(--joint); border-radius: var(--radius); background: var(--face); font-size: 12px; }
     .sf-pp-top { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--joint); background: var(--panel); font-size: var(--fs-small); font-weight: 700; }
     .sf-pp-close { width: 26px; height: 26px; display: grid; place-items: center; border-radius: var(--radius); color: var(--ink-3); }
@@ -412,6 +423,7 @@
     @media (max-width: 1023px) {
       .sf-ledger-body { flex-direction: column-reverse; align-items: stretch; }
       .sf-mr11-panel { width: auto; position: static; max-height: none; }
+      .sf-mr11-side { width: auto; position: static; max-height: none; }
     }
     @media (max-width: 639px) {
       .sf-ledger-search { max-width: none; flex-basis: 100%; }
@@ -883,7 +895,7 @@
       body.sf-printing > *:not(#sf-print-root) { display: none !important; }
       body.sf-printing #sf-print-root { display: block !important; }
       /* The MR11 view prints alone, landscape, with the columns and rows on screen */
-      body.sf-print-ledger #sf-pagehead, body.sf-print-ledger #step-panel-9 > :not(#mr11-card), body.sf-print-ledger #mr11-card > :not(.sf-ledger-body):not(:first-child), body.sf-print-ledger .sf-mr11-panel, body.sf-print-ledger .sf-drawer { display: none !important; }
+      body.sf-print-ledger #sf-pagehead, body.sf-print-ledger #step-panel-9 > :not(#mr11-card), body.sf-print-ledger #mr11-card > :not(.sf-ledger-body):not(:first-child), body.sf-print-ledger .sf-mr11-panel, body.sf-print-ledger .sf-mr11-side, body.sf-print-ledger .sf-drawer { display: none !important; }
       body.sf-print-ledger #mr11-card { page: ledger; border: 0 !important; padding: 0 !important; }
       body.sf-print-ledger #mr11-table-wrap { max-height: none !important; min-height: 0 !important; overflow: visible !important; zoom: 0.5 !important; border: 0 !important; }
       body.sf-print-ledger .mr11-table thead th, body.sf-print-ledger .mr11-table tfoot td, body.sf-print-ledger .mr11-table tbody td { position: static !important; }
@@ -1043,7 +1055,6 @@
       <div class="sf-wrap">
         <dl>
           <div class="sf-kv"><dt>Project</dt><dd id="ctx-project">Skyline Tower Phase 2</dd></div>
-          <div class="sf-kv hidden"><dt>Building</dt><dd id="ctx-building">Tower A - Podium &amp; Core</dd></div>
           <div class="sf-kv"><dt>Country / PIC</dt><dd id="ctx-country-pic">Malaysia (MY) / Alex Tan</dd></div>
           <div class="sf-kv"><dt>Streams</dt><dd id="ctx-streams">Stream 1, Stream 2, Stream 3</dd></div>
           <div class="sf-kv"><dt>Building / Block</dt><dd id="ctx-blocks">Block A, Block B, Central Core</dd></div>
@@ -2241,41 +2252,10 @@
           <div class="flex items-center gap-2 text-xs">
             <button id="mr11-edit-btn" onclick="toggleEditMode()" class="px-2.5 py-1 rounded border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 font-semibold">Edit in MR11: Off</button>
             <span class="px-2.5 py-1 rounded bg-sky-50 border border-sky-200 text-sky-800 font-semibold">LIVE lines = steps 1–7</span>
+            <button type="button" class="sf-btn sf-btn-sm" data-mr11="panel" id="mr11-panel-btn" aria-controls="mr11-side" aria-pressed="true">Hide tools</button>
           </div>
         </div>
 
-        <!-- MR11 tools: the Phase 1 tool row, quick views, rates, and what is narrowing the table -->
-        <div class="sf-ledger-tools text-xs space-y-2.5">
-          <div class="sf-ledger-bar">
-            <div class="sf-ledger-search">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-              <input type="search" id="mr11-search" oninput="renderMR11PipelineTab()" placeholder="Search project, number, short name, PIC or country" aria-label="Search the MR11 ledger" autocomplete="off">
-              <button type="button" id="mr11-search-clear" data-mr11="search-clear" class="hidden" aria-label="Clear search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-            </div>
-            <div class="sf-seg" role="group" aria-label="Zoom">
-              <button type="button" onclick="setMr11Zoom(-5)" aria-label="Zoom out">−</button>
-              <button type="button" onclick="setMr11Zoom(0)" id="mr11-zoom-label" title="Back to 100%">100%</button>
-              <button type="button" onclick="setMr11Zoom(5)" aria-label="Zoom in">+</button>
-            </div>
-            <button type="button" class="sf-btn sf-btn-sm" data-mr11="panel" id="mr11-panel-btn" aria-controls="mr11-panel" aria-pressed="true">Options</button>
-            <button type="button" class="sf-btn sf-btn-sm" data-mr11="rates" id="mr11-rates-btn" aria-controls="mr11-rates" aria-pressed="false">Rates &amp; LME</button>
-            <button type="button" class="sf-btn sf-btn-sm" data-mr11="freeze" id="mr11-freeze-btn" aria-pressed="true" title="Keep the project name on screen while scrolling sideways">Freeze project</button>
-            <button type="button" class="sf-btn sf-btn-sm" data-mr11="density" id="mr11-density-btn" aria-pressed="false" title="Fit more rows on screen">Compact rows</button>
-            <details class="sf-menu" id="mr11-views-menu"><summary class="sf-btn sf-btn-sm">Saved views</summary><div class="sf-menu-pop" id="mr11-views"></div></details>
-            <details class="sf-menu"><summary class="sf-btn sf-btn-sm">Export &amp; print</summary><div class="sf-menu-pop">
-              <button type="button" data-mr11="export-view">Export this view (.xlsx)</button>
-              <button type="button" data-mr11="copy-view">Copy this view for Excel</button>
-              <button type="button" data-mr11="print-view">Print this view (A4 landscape)</button>
-              <button type="button" onclick="exportMR11Workbook()">Export the full MR11 workbook</button>
-            </div></details>
-            <button type="button" class="sf-btn sf-btn-sm" onclick="toggleMr11Fullscreen()">Full screen</button>
-            <button type="button" class="sf-btn sf-btn-sm sf-primary" onclick="syncMr11()" title="Rebuild MR11 from every department's latest entries">Sync</button>
-            <button type="button" class="sf-btn sf-btn-sm" onclick="toggleDeletedRows()" id="mr11-deleted-btn">Deleted rows (0)</button>
-            <span id="mr11-sync-label" class="text-[11px] text-slate-500"></span>
-          </div>
-          <div id="mr11-quick" class="sf-chips" role="group" aria-label="Quick views"></div>
-          <div id="mr11-deleted" class="hidden space-y-1.5"></div>
-        </div>
         <div id="mr11-rates" class="hidden"><div id="market-cards" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></div>
         <div id="mr11-summary" class="sf-mr11-summary hidden" role="status"></div>
         <div class="sf-ledger-body">
@@ -2463,7 +2443,41 @@
           </table>
         </div>
           </div>
-          <aside id="mr11-panel" class="sf-mr11-panel" aria-label="MR11 options"></aside>
+          <aside id="mr11-side" class="sf-mr11-side" aria-label="MR11 tools">
+            <div class="sf-side-top"><span>Tools</span><button type="button" class="sf-pp-close" data-mr11="panel" aria-label="Hide the tools panel" title="Hide tools"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></div>
+            <!-- MR11 tools: search, zoom, the tool buttons and quick views, in the side panel -->
+            <div class="sf-ledger-tools text-xs space-y-2.5">
+              <div class="sf-ledger-bar">
+                <div class="sf-ledger-search">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  <input type="search" id="mr11-search" oninput="renderMR11PipelineTab()" placeholder="Search project, number, short name, PIC or country" aria-label="Search the MR11 ledger" autocomplete="off">
+                  <button type="button" id="mr11-search-clear" data-mr11="search-clear" class="hidden" aria-label="Clear search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+                </div>
+                <div class="sf-seg" role="group" aria-label="Zoom">
+                  <button type="button" onclick="setMr11Zoom(-5)" aria-label="Zoom out">−</button>
+                  <button type="button" onclick="setMr11Zoom(0)" id="mr11-zoom-label" title="Back to 100%">100%</button>
+                  <button type="button" onclick="setMr11Zoom(5)" aria-label="Zoom in">+</button>
+                </div>
+                <button type="button" class="sf-btn sf-btn-sm" data-mr11="rates" id="mr11-rates-btn" aria-controls="mr11-rates" aria-pressed="false">Rates &amp; LME</button>
+                <button type="button" class="sf-btn sf-btn-sm" data-mr11="freeze" id="mr11-freeze-btn" aria-pressed="true" title="Keep the project name on screen while scrolling sideways">Freeze project</button>
+                <button type="button" class="sf-btn sf-btn-sm" data-mr11="density" id="mr11-density-btn" aria-pressed="false" title="Fit more rows on screen">Compact rows</button>
+                <details class="sf-menu" id="mr11-views-menu"><summary class="sf-btn sf-btn-sm">Saved views</summary><div class="sf-menu-pop" id="mr11-views"></div></details>
+                <details class="sf-menu"><summary class="sf-btn sf-btn-sm">Export &amp; print</summary><div class="sf-menu-pop">
+                  <button type="button" data-mr11="export-view">Export this view (.xlsx)</button>
+                  <button type="button" data-mr11="copy-view">Copy this view for Excel</button>
+                  <button type="button" data-mr11="print-view">Print this view (A4 landscape)</button>
+                  <button type="button" onclick="exportMR11Workbook()">Export the full MR11 workbook</button>
+                </div></details>
+                <button type="button" class="sf-btn sf-btn-sm" onclick="toggleMr11Fullscreen()">Full screen</button>
+                <button type="button" class="sf-btn sf-btn-sm sf-primary" onclick="syncMr11()" title="Rebuild MR11 from every department's latest entries">Sync</button>
+                <button type="button" class="sf-btn sf-btn-sm" onclick="toggleDeletedRows()" id="mr11-deleted-btn">Deleted rows (0)</button>
+                <span id="mr11-sync-label" class="text-[11px] text-slate-500"></span>
+              </div>
+              <div id="mr11-quick" class="sf-chips" role="group" aria-label="Quick views"></div>
+              <div id="mr11-deleted" class="hidden space-y-1.5"></div>
+            </div>
+            <div id="mr11-panel" class="sf-mr11-panel"></div>
+          </aside>
         </div>
       </div>
 
@@ -3588,7 +3602,7 @@
 
       // Update Global Header Context Ribbon
       document.getElementById('ctx-project').textContent = appState.projectName;
-      document.getElementById('ctx-building').textContent = appState.buildingName;
+      const bEl = document.getElementById('ctx-building'); if (bEl) bEl.textContent = appState.buildingName;
       const cpEl = document.getElementById('ctx-country-pic');
       if (cpEl) cpEl.textContent = `${appState.countryName} / ${appState.picName}`;
       document.getElementById('ctx-streams').textContent = appState.streams.join(', ');
@@ -7290,7 +7304,8 @@
       press('mr11-freeze-btn', LEDGER.freeze);
       press('mr11-density-btn', LEDGER.density === 'compact');
       $('mr11-rates').classList.toggle('hidden', !LEDGER.rates);
-      $('mr11-panel').classList.toggle('hidden', !LEDGER.panel);
+      $('mr11-side')?.classList.toggle('hidden', !LEDGER.panel);
+      if ($('mr11-panel-btn')) $('mr11-panel-btn').textContent = LEDGER.panel ? 'Hide tools' : 'Show tools';
       $('mr11-search-clear').classList.toggle('hidden', !ledgerSearchTerm());
       $('mr11-zoom-label').textContent = `${appState.mr11Zoom}%`;
       $('mr11-table-wrap').style.zoom = `${appState.mr11Zoom}%`;
@@ -7351,7 +7366,7 @@
           ${!open && selected.length ? `<p class="sf-pp-picked">${esc(selected.join(', '))}</p>` : ''}
           ${open ? `${values.length > 8 ? `<input type="search" class="sf-pp-find" placeholder="Find ${esc(label.toLowerCase())}" aria-label="Find a ${esc(label.toLowerCase())}" oninput="filterMr11Values(this)">` : ''}<ul class="sf-pp-values">${list}</ul>` : ''}</div>`;
       }).join('');
-      panel.innerHTML = `<div class="sf-pp-top"><span>Options</span><button type="button" class="sf-pp-close" data-mr11="panel" aria-label="Close the options panel">${LEDGER_ICONS.x}</button></div>
+      panel.innerHTML = `<div class="sf-pp-top"><span>View, highlight &amp; filters</span></div>
         ${section('view', 'View', hidden ? `<em class="sf-pp-badge is-warn">${hidden} hidden</em>` : '', view)}
         ${section('highlight', 'Highlight columns', LEDGER.highlights.length ? `<em class="sf-pp-badge">${LEDGER.highlights.length}</em>` : '', highlight)}
         ${section('filters', 'Filters', active ? `<em class="sf-pp-badge">${active}</em>` : '', filters, active ? '<button type="button" class="sf-pp-link is-danger" data-mr11="fclear">Clear</button>' : '')}`;
@@ -7990,35 +8005,47 @@
         if (SCOPE.project && !rows.some(r => r.key === SCOPE.project)) SCOPE.project = '';
         const proj = rows.find(r => r.key === (SCOPE.project || 'LIVE')) || rows[0];
         if (!proj) return;
-        const lines = mr11Lines([proj]);
-        const streams = uniq(lines.map(r => r._line.stream));
-        const blocks = uniq(lines.flatMap(r => blocksOf(r._line)));
+        // "All projects" covers every project; otherwise the chosen one
+        const all = !SCOPE.project && rows.length > 1;
+        const inView = all ? rows : [proj];
+        const lines = mr11Lines(inView);
+        const streams = uniq(lines.map(r => r._line && r._line.stream));
+        const blocks = uniq(lines.flatMap(r => (r._line ? blocksOf(r._line) : [])));
         if (SCOPE.stream && !streams.includes(SCOPE.stream)) SCOPE.stream = '';
         if (SCOPE.block && !blocks.includes(SCOPE.block)) SCOPE.block = '';
         const shown = lines.filter(lineInScope);
         const narrowed = !!(SCOPE.stream || SCOPE.block);
+        const areaOf = r => (r.isLive ? appState.ncaArea : Number(r.ncaQty) || 0);
+        const valueOf = r => {
+          if (r.isLive) return appState.totalContractValue || 0;
+          const own = lines.filter(l => l.key === r.key).reduce((a, l) => a + (l._value || 0), 0);
+          return own || (Number(r.ncaQty) || 0) * (Number(r.finalPrice) || 0);
+        };
+        const totalArea = inView.reduce((a, r) => a + areaOf(r), 0);
 
         // What the pills say
         const set = (id, text) => { const el = $(id); if (el && el.textContent !== text) el.textContent = text; };
-        set('ctx-project', SCOPE.project || rows.length === 1 ? proj.customerProject.trim() : `All projects (${rows.length})`);
-        set('ctx-building', proj.isLive ? appState.buildingName : String(proj.buildingStream || '').split('/')[0].trim());
-        set('ctx-country-pic', `${proj.country} / ${proj.pic}`);
-        set('ctx-streams', SCOPE.stream || streams.join(', '));
-        set('ctx-blocks', SCOPE.block || blocks.join(', '));
+        set('ctx-project', all ? `All projects (${rows.length})` : proj.customerProject.trim());
+        const countries = uniq(inView.map(r => r.country)), pics = uniq(inView.map(r => r.pic));
+        set('ctx-country-pic', `${countries.join(', ') || '—'} / ${pics.join(', ') || '—'}`);
+        set('ctx-streams', SCOPE.stream || streams.join(', ') || '—');
+        set('ctx-blocks', SCOPE.block || blocks.join(', ') || '—');
         // Formwork and product: every type on the lines in view
         set('ctx-formwork', uniq(shown.map(r => r.formworkSystem)).join(' + ') || proj.formworkSystem);
         set('ctx-product', uniq(shown.map(r => r.product)).join(' + ') || proj.product);
-        // m² and value: the lines in view, or the whole project
-        const area = narrowed ? shown.reduce((a, r) => a + r.ncaQty, 0) : (proj.isLive ? appState.ncaArea : proj.ncaQty);
-        const value = narrowed ? shown.reduce((a, r) => a + (r._value || 0), 0) : (proj.isLive ? appState.totalContractValue : proj.ncaQty * proj.finalPrice);
-        set('ctx-area', `${fmtNum(area)} m²${narrowed ? ` of ${fmtNum(proj.ncaQty)}` : ''}`);
+        // m² and value: the lines in view, or every project in view
+        const area = narrowed ? shown.reduce((a, r) => a + (Number(r.ncaQty) || 0), 0) : totalArea;
+        const value = narrowed ? shown.reduce((a, r) => a + (r._value || 0), 0) : inView.reduce((a, r) => a + valueOf(r), 0);
+        set('ctx-area', `${fmtNum(area)} m²${narrowed ? ` of ${fmtNum(totalArea)}` : ''}`);
         set('ctx-contract', formatUSD(value));
+        const tip = all ? `All ${rows.length} projects together` : `${proj.customerProject.trim()} only`;
+        [$('ctx-area'), $('ctx-contract')].forEach(el => el && el.setAttribute('title', narrowed ? 'The lines in view' : tip));
 
         // The dropdowns
         selectFor(kvOf('ctx-project'), 'Choose the project', [...(rows.length > 1 ? [['', `All projects (${rows.length})`]] : []), ...rows.map(r => [r.key, r.customerProject.trim()])], SCOPE.project || (rows.length > 1 ? '' : proj.key), v => { SCOPE.project = v; SCOPE.stream = ''; SCOPE.block = ''; });
         selectFor(kvOf('ctx-streams'), 'Show one stream', [['', 'All streams'], ...streams.map(s => [s, s])], SCOPE.stream, v => { SCOPE.stream = v; });
         selectFor(kvOf('ctx-blocks'), 'Show one building or block', [['', 'All buildings / blocks'], ...blocks.map(b => [b, b])], SCOPE.block, v => { SCOPE.block = v; });
-        [kvOf('ctx-building'), kvOf('ctx-country-pic')].forEach(kv => kv && kv.classList.add('sf-kv-static'));
+        kvOf('ctx-country-pic')?.classList.add('sf-kv-static');
         [kvOf('ctx-streams'), kvOf('ctx-blocks')].forEach(kv => kv && kv.classList.toggle('is-narrowed', kv === kvOf('ctx-streams') ? !!SCOPE.stream : !!SCOPE.block));
         kvOf('ctx-project')?.classList.toggle('is-narrowed', !!SCOPE.project && rows.length > 1);
       }

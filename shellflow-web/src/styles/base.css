@@ -270,7 +270,18 @@
     .sf-row-open { font: inherit; color: inherit; text-align: left; text-decoration: underline; text-decoration-color: rgba(28, 28, 26, 0.25); text-underline-offset: 3px; }
     .sf-row-open:hover { text-decoration-color: currentColor; }
 
-    /* The Options panel beside the table, as in Phase 1 */
+    /* The side panel beside the table: the tools on top, then View, Highlight and Filters. Hide tools folds it away. */
+    .sf-mr11-side { width: 300px; flex-shrink: 0; position: sticky; top: 112px; max-height: calc(100vh - 140px); overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .sf-mr11-side.hidden { display: none; }
+    .sf-side-top { display: flex; align-items: center; justify-content: space-between; padding: 0 2px; font-size: var(--fs-small); font-weight: 700; color: var(--ink); }
+    .sf-mr11-side .sf-ledger-tools { padding: 10px; border: 1px solid var(--joint); border-radius: var(--radius); background: var(--face); }
+    .sf-mr11-side .sf-ledger-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .sf-mr11-side .sf-ledger-search, .sf-mr11-side .sf-seg, .sf-mr11-side #mr11-sync-label, .sf-mr11-side .sf-ledger-bar > .sf-primary { grid-column: 1 / -1; max-width: none; }
+    .sf-mr11-side .sf-seg { display: flex; } .sf-mr11-side .sf-seg > button { flex: 1; }
+    .sf-mr11-side .sf-ledger-bar > .sf-btn, .sf-mr11-side .sf-menu > summary { width: 100%; justify-content: center; text-align: center; }
+    .sf-mr11-side .sf-menu-pop { position: static; min-width: 0; margin-top: 4px; box-shadow: none; }
+    .sf-mr11-side .sf-menu[open] { grid-column: 1 / -1; }
+    .sf-mr11-side .sf-mr11-panel { width: auto; position: static; max-height: none; overflow: visible; }
     .sf-mr11-panel { width: 288px; flex-shrink: 0; position: sticky; top: 112px; max-height: calc(100vh - 140px); overflow-y: auto; border: 1px solid var(--joint); border-radius: var(--radius); background: var(--face); font-size: 12px; }
     .sf-pp-top { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-bottom: 1px solid var(--joint); background: var(--panel); font-size: var(--fs-small); font-weight: 700; }
     .sf-pp-close { width: 26px; height: 26px; display: grid; place-items: center; border-radius: var(--radius); color: var(--ink-3); }
@@ -336,6 +347,7 @@
     @media (max-width: 1023px) {
       .sf-ledger-body { flex-direction: column-reverse; align-items: stretch; }
       .sf-mr11-panel { width: auto; position: static; max-height: none; }
+      .sf-mr11-side { width: auto; position: static; max-height: none; }
     }
     @media (max-width: 639px) {
       .sf-ledger-search { max-width: none; flex-basis: 100%; }
@@ -807,7 +819,7 @@
       body.sf-printing > *:not(#sf-print-root) { display: none !important; }
       body.sf-printing #sf-print-root { display: block !important; }
       /* The MR11 view prints alone, landscape, with the columns and rows on screen */
-      body.sf-print-ledger #sf-pagehead, body.sf-print-ledger #step-panel-9 > :not(#mr11-card), body.sf-print-ledger #mr11-card > :not(.sf-ledger-body):not(:first-child), body.sf-print-ledger .sf-mr11-panel, body.sf-print-ledger .sf-drawer { display: none !important; }
+      body.sf-print-ledger #sf-pagehead, body.sf-print-ledger #step-panel-9 > :not(#mr11-card), body.sf-print-ledger #mr11-card > :not(.sf-ledger-body):not(:first-child), body.sf-print-ledger .sf-mr11-panel, body.sf-print-ledger .sf-mr11-side, body.sf-print-ledger .sf-drawer { display: none !important; }
       body.sf-print-ledger #mr11-card { page: ledger; border: 0 !important; padding: 0 !important; }
       body.sf-print-ledger #mr11-table-wrap { max-height: none !important; min-height: 0 !important; overflow: visible !important; zoom: 0.5 !important; border: 0 !important; }
       body.sf-print-ledger .mr11-table thead th, body.sf-print-ledger .mr11-table tfoot td, body.sf-print-ledger .mr11-table tbody td { position: static !important; }
