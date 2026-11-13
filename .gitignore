@@ -17,3 +17,14 @@ shellflow-web/data/
 .claude/
 shellflow-web/.impeccable/review/
 shellflow-web/.impeccable/mocks/
+
+.vercel
+.env*
+!.env.example
+
+# Only the website lives in this repository. These stay on the PC:
+/repo/
+/docbuild/
+/MFE_Client_Documents/
+shellflow-web/.impeccable/
+.skills.json
