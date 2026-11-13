@@ -11,6 +11,9 @@ const SECTION_WRITERS = {
   bankLines: ANYONE,
   nca: ['BD'],
   lines: ['BD'],
+  // The list of projects (BD adds them) and each project's MR11 summary (kept by whoever works on it)
+  projects: ['BD'],
+  summary: ANYONE,
   // Each department keeps its own figures for each MR11 line
   lineFinance: ['FINANCE'],
   lineDesign: ['SHELLPLAN', 'DESIGN'],
@@ -40,6 +43,14 @@ const SECTION_WRITERS = {
 const MERGED_LISTS = { activity: 500, updates: 500, notes: 200 };
 
 const SAFE_KEY = /^[A-Za-z0-9][A-Za-z0-9-]{0,40}$/;
+
+// Each project keeps its own copy of these sections, saved as name@projectId (the first project
+// keeps the plain names). They follow the same writers and checks as the plain section.
+const PROJECT_SCOPED = new Set(['form_bd', 'form_design', 'form_gate', 'finance', 'nca', 'shell', 'items', 'panels', 'yard', 'logistics', 'site', 'incidents', 'approvals', 'lines', 'lineFinance', 'lineDesign', 'lineProduction', 'lineDispatch', 'lineSite', 'summary']);
+function baseName(name) {
+  const m = /^([A-Za-z_]+)@([A-Za-z0-9][A-Za-z0-9-]{0,40})$/.exec(String(name));
+  return m && PROJECT_SCOPED.has(m[1]) ? m[1] : name;
+}
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const fail = message => { const e = new Error(message); e.invalid = true; throw e; };
 const isNum = v => typeof v === 'number' && Number.isFinite(v);
@@ -86,6 +97,18 @@ const VALIDATORS = {
   lineProduction: d => checkLineTrack(d, 'lineProduction'),
   lineDispatch: d => checkLineTrack(d, 'lineDispatch'),
   lineSite: d => checkLineTrack(d, 'lineSite'),
+  projects(d) {
+    const list = Array.isArray(d.projects) ? d.projects : d.projects === undefined ? [] : fail('projects must be a list');
+    if (list.length > 200) fail('There are too many projects');
+    list.forEach(p => {
+      if (!p || !SAFE_KEY.test(String(p.id || '')) || !isText(p.name, 120) || !isText(p.createdAt, 40)) fail('A project is not valid');
+    });
+  },
+  summary(d) {
+    if (JSON.stringify(d).length > 400000) fail('The project summary is too large');
+    if (d.lines !== undefined && (!Array.isArray(d.lines) || d.lines.length > 60)) fail('The project summary is not valid');
+    if (!isText(d.name, 160)) fail('The project summary is not valid');
+  },
   shell(d) {
     list(d, 'shellRevisions').forEach(r => {
       if (!Number.isInteger(r.rev) || !isText(r.status, 60) || !isText(r.date, 20) || !isText(r.remarks, 500)) fail('A Shell Plan revision is not valid');
@@ -187,10 +210,11 @@ function canonical(value) {
 const same = (a, b) => canonical(a) === canonical(b);
 
 // Status changes only an administrator may make, even on a list everyone can add to
-function checkRoleRules(name, before, after, user) {
+function checkRoleRules(name, before, after, user, newProject) {
   const admin = user.roles.includes('ADMIN');
   const finance = user.roles.includes('FINANCE');
-  if (name === 'nca' && !admin) {
+  // A new project's first NCA comes with the project itself; after that, revisions wait for approval
+  if (name === 'nca' && !admin && !(newProject && !before && (after.ncaVersions || []).length <= 1)) {
     const old = before?.ncaVersions || [];
     if (!same((after.ncaVersions || []).slice(0, old.length), old)) fail('Only an administrator can decide NCA revisions');
     if ((after.ncaVersions || []).slice(old.length).some(v => v.status !== 'PENDING')) fail('A new NCA revision must wait for approval');
@@ -229,17 +253,19 @@ function mergeComments(stored, incoming, author) {
   return out;
 }
 
-function canWrite(name, user) {
+function canWrite(fullName, user) {
+  const name = baseName(fullName);
   if (!(name in SECTION_WRITERS)) return false;
   if (user.roles.includes('ADMIN')) return true;
   const writers = SECTION_WRITERS[name];
   return writers === ANYONE || writers.some(r => user.roles.includes(r));
 }
 
-function validateSection(name, data, before, user) {
+function validateSection(fullName, data, before, user) {
+  const name = baseName(fullName);
   object(data);
   if (VALIDATORS[name]) VALIDATORS[name](data);
-  checkRoleRules(name, before, data, user);
+  checkRoleRules(name, before, data, user, name !== fullName);
 }
 
 module.exports = { SECTION_WRITERS, MERGED_LISTS, canWrite, validateSection, mergeList, mergeComments };

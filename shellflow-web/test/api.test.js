@@ -291,6 +291,30 @@ test('MR11 line tracking: each department keeps its own figures per line, and no
   assert.strictEqual(state.data.sections.lineProduction.data.lineProduction.L1.producedM2, 450);
 });
 
+test('projects: each project keeps its own data, with the same department rules', async () => {
+  const bd = await signedInUser('bd.projects@example.com', ['BD']);
+  const finance = await signedInUser('finance.projects@example.com', ['FINANCE']);
+  // BD adds a project to the list and saves its lines; Finance cannot do either
+  const list = { projects: [{ id: 'P1', name: 'First', createdAt: '' }, { id: 'P2', name: 'Second', createdAt: '2026-11-18' }] };
+  assert.deepStrictEqual((await finance.call('PUT', '/api/state', { changes: { projects: { baseVersion: 0, data: list } } })).data.denied, ['projects']);
+  assert.deepStrictEqual((await bd.call('PUT', '/api/state', { changes: { projects: { baseVersion: 0, data: list } } })).data.saved, ['projects']);
+  const lines = { mr11Lines: [{ id: 'L1', stream: 'Stream 1', blocks: 'Tower B', formwork: 'MIVAN/MONOLITIC FORMWORK', product: 'MFE New', m2: 1200 }] };
+  assert.deepStrictEqual((await finance.call('PUT', '/api/state', { changes: { 'lines@P2': { baseVersion: 0, data: lines } } })).data.denied, ['lines@P2']);
+  assert.deepStrictEqual((await bd.call('PUT', '/api/state', { changes: { 'lines@P2': { baseVersion: 0, data: lines } } })).data.saved, ['lines@P2']);
+  // A new project's first NCA comes with the project; a second approved version still needs an administrator
+  const nca = { ncaVersions: [{ version: 1, ref: 'NCA v1', date: '2026-11-18', qty: 1200, reason: 'Start', status: 'APPROVED' }] };
+  assert.deepStrictEqual((await bd.call('PUT', '/api/state', { changes: { 'nca@P2': { baseVersion: 0, data: nca } } })).data.saved, ['nca@P2']);
+  const more = { ncaVersions: [...nca.ncaVersions, { version: 2, ref: 'NCA v2', date: '2026-11-18', qty: 1300, reason: 'More', status: 'APPROVED' }] };
+  assert.ok(((await bd.call('PUT', '/api/state', { changes: { 'nca@P2': { baseVersion: 1, data: more } } })).data.invalid || []).some(x => x.section === 'nca@P2'));
+  // Finance keeps its own figures for that project; unknown sections are refused
+  assert.deepStrictEqual((await finance.call('PUT', '/api/state', { changes: { 'lineFinance@P2': { baseVersion: 0, data: { lineFinance: { L1: { advancePaid: true } } } } } })).data.saved, ['lineFinance@P2']);
+  assert.deepStrictEqual((await bd.call('PUT', '/api/state', { changes: { 'nonsense@P2': { baseVersion: 0, data: {} } } })).data.denied, ['nonsense@P2']);
+  // The first project's own sections are untouched
+  const state = await bd.call('GET', '/api/state');
+  assert.strictEqual(state.data.sections['lines@P2'].data.mr11Lines[0].m2, 1200);
+  assert.notStrictEqual((state.data.sections.lines?.data?.mr11Lines || [])[0]?.m2, 1200);
+});
+
 test('the page goes out compressed, and its scripts need no eval and no style or icon CDN', async () => {
   const res = await fetch(`${base}/`, { headers: { 'accept-encoding': 'gzip' } });
   assert.strictEqual(res.status, 200);

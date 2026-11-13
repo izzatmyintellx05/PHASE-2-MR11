@@ -52,12 +52,72 @@
     nca: ['BD'], shell: ['SHELLPLAN', 'DESIGN'], items: ['DESIGN', 'PRODUCTION'], panels: ['PLANNING', 'PRODUCTION', 'DISPATCH'], yard: ['PRODUCTION', 'DISPATCH'],
     logistics: ['DISPATCH'], site: null, incidents: ['DISPATCH', 'FINANCE'], releases: [], rules: [], referenceRows: ['FINANCE', 'DISPATCH'],
     approvals: null, reminders: null, reports: null, activity: null, updates: null, notes: null, comments: null, lines: ['BD'],
-    lineFinance: ['FINANCE'], lineDesign: ['SHELLPLAN', 'DESIGN'], lineProduction: ['PLANNING', 'PRODUCTION'], lineDispatch: ['DISPATCH'], lineSite: ['DISPATCH']
+    lineFinance: ['FINANCE'], lineDesign: ['SHELLPLAN', 'DESIGN'], lineProduction: ['PLANNING', 'PRODUCTION'], lineDispatch: ['DISPATCH'], lineSite: ['DISPATCH'],
+    projects: ['BD'], summary: null
   };
   const mayWrite = name => {
     if (appState.roles.includes('ADMIN')) return true;
     const writers = WRITERS[name];
     return writers === null || (writers || []).some(r => appState.roles.includes(r));
+  };
+
+  // ----- Projects -----
+  // Each project keeps its own copy of the project sections, saved as name@projectId; the first
+  // project (P1) keeps the plain names. Which project this browser works on is its own choice.
+  const SCOPED = new Set(['form_bd', 'form_design', 'form_gate', 'finance', 'nca', 'shell', 'items', 'panels', 'yard', 'logistics', 'site', 'incidents', 'approvals', 'lines', 'lineFinance', 'lineDesign', 'lineProduction', 'lineDispatch', 'lineSite', 'summary']);
+  let PROJECT = 'P1';
+  try { PROJECT = localStorage.getItem('mr11.project') || 'P1'; } catch {}
+  window.MR11_ACTIVE_PROJECT = PROJECT;
+  window.MR11_PROJECTS = [];
+  window.MR11_OTHERS = {};
+  const fullName = n => (SCOPED.has(n) && PROJECT !== 'P1' ? `${n}@${PROJECT}` : n);
+  const seen = {};
+  // From the server's names to this page's: this project's copy, the shared sections, and
+  // the other projects' summaries (which MR11 lists)
+  function localize(all) {
+    const mine = {};
+    let others = false;
+    Object.entries(all || {}).forEach(([key, sec]) => {
+      seen[key] = sec.version;
+      const m = /^([A-Za-z_]+)@(.+)$/.exec(key);
+      const base = m ? m[1] : key, id = m ? m[2] : 'P1';
+      if (base === 'summary') {
+        if (id === PROJECT) versions.summary = sec.version;
+        else { window.MR11_OTHERS[id] = sec.data; others = true; }
+        return;
+      }
+      if (base === 'projects') { window.MR11_PROJECTS = (sec.data && sec.data.projects) || []; versions.projects = sec.version; return; }
+      if (SCOPED.has(base)) { if (id === PROJECT) mine[base] = sec; return; }
+      if (!m) mine[key] = sec;
+    });
+    if (others && typeof window.mr11InjectOthers === 'function') window.mr11InjectOthers();
+    return mine;
+  }
+  // A project that has nothing saved yet starts clean: its name and NCA, one empty line, no history
+  function startNewProject() {
+    let plan = {};
+    try { plan = JSON.parse(sessionStorage.getItem('mr11.newProject') || '{}'); } catch {}
+    sessionStorage.removeItem('mr11.newProject');
+    const listed = (window.MR11_PROJECTS || []).find(x => x.id === PROJECT) || {};
+    const name = plan.name || listed.name || 'New project';
+    const nca = plan.nca > 0 ? plan.nca : 1;
+    const set = (id, v) => { const el = $id(id); if (el) el.value = v; };
+    set('bd-project-name', name); set('bd-short-name', ''); set('bd-project-no', ''); set('bd-po-no', ''); set('bd-nca-no', ''); set('bd-location', '');
+    appState.ncaVersions = [{ version: 1, ref: 'NCA v1', date: DEMO_TODAY, qty: nca, reason: 'Contract NCA when the project was added', status: 'APPROVED', decidedAt: DEMO_TODAY }];
+    appState.mr11Lines = [{ id: 'L1', stream: 'Stream 1', blocks: '', formwork: appState.formworkType, product: appState.productType, m2: nca }];
+    ['lineFinance', 'lineDesign', 'lineProduction', 'lineDispatch', 'lineSite'].forEach(k => { appState[k] = {}; });
+    Object.assign(appState, { advanceCleared: false, advanceReceived: null, advanceDate: '', otherPaid: {}, items: [], panels: [], panelLog: [], planningSeries: [], yardEvidence: [], lorries: [], etdLog: [], sailedM2: 0, siteRegister: [], siteProgressM2: 0, incidents: [], approvals: [] });
+    appState.shellRevisions = [{ rev: 0, status: 'Draft', date: DEMO_TODAY, remarks: 'New project' }];
+    propagateBDData();
+    recalculateCommercial();
+    notify(`New project "${name}" started. Fill in its details here; the other projects are kept.`, 'success');
+  }
+  window.mr11SaveNow = () => saveNow();
+  window.mr11SwitchProject = async (id, after) => {
+    clearTimeout(saveTimer);
+    await saveNow();
+    try { localStorage.setItem('mr11.project', id); if (after) sessionStorage.setItem('mr11.afterSwitch', JSON.stringify(after)); } catch {}
+    location.reload();
   };
 
   function collect() {
@@ -74,7 +134,9 @@
       out[name] = Object.fromEntries(keys.map(k => [k, appState[k]]));
     });
     out.reports = { reports: appState.reports.slice(0, 12) };
-    out.referenceRows = { rows: Object.fromEntries(referenceMR11Projects.map(r => [r.key, { advStatus: r.advStatus, paymentOverdue: !!r.paymentOverdue, readinessState: r.readinessState, shippedM2: r.shippedM2, deleted: !!r.deleted }])) };
+    out.summary = typeof window.mr11Summary === 'function' ? window.mr11Summary() : {};
+    out.projects = { projects: window.MR11_PROJECTS || [] };
+    out.referenceRows = { rows: Object.fromEntries(referenceMR11Projects.filter(r => !r._otherProject).map(r => [r.key, { advStatus: r.advStatus, paymentOverdue: !!r.paymentOverdue, readinessState: r.readinessState, shippedM2: r.shippedM2, deleted: !!r.deleted }])) };
     return out;
   }
 
@@ -152,18 +214,22 @@
     if (saving) { dirtyAgain = true; return; }
     const now = snapshotStrings();
     const changes = {};
+    const back = {};
     Object.keys(now).forEach(name => {
-      if (now[name] !== sentSnapshot[name] && mayWrite(name)) changes[name] = { data: JSON.parse(now[name]), baseVersion: versions[name] || 0 };
+      if (now[name] === sentSnapshot[name] || !mayWrite(name)) return;
+      const key = fullName(name);
+      back[key] = name;
+      changes[key] = { data: JSON.parse(now[name]), baseVersion: versions[name] || 0 };
     });
     if (!Object.keys(changes).length) return;
     saving = true;
     try {
       const res = await api('/state', { method: 'PUT', body: { changes } });
-      Object.keys(changes).forEach(name => { if (res.saved.includes(name)) sentSnapshot[name] = now[name]; });
-      Object.entries(res.versions || {}).forEach(([n, v]) => { if (res.saved.includes(n)) versions[n] = v; });
+      Object.keys(changes).forEach(key => { if (res.saved.includes(key)) sentSnapshot[back[key]] = now[back[key]]; });
+      Object.entries(res.versions || {}).forEach(([n, v]) => { seen[n] = v; if (res.saved.includes(n) && back[n]) versions[back[n]] = v; });
+      res.conflicts = (res.conflicts || []).map(k => back[k] || k);
       // Merged lists come back with everyone's entries
-      const refreshed = {};
-      Object.entries(res.sections || {}).forEach(([name, s]) => { refreshed[name] = s; });
+      const refreshed = localize(res.sections || {});
       if (res.conflicts.length) notify('Someone else just changed the same data, so the latest version has been loaded. Please check it and try again.', 'error');
       if (res.invalid.length) notify(res.invalid[0].error, 'error');
       if (res.denied.length) notify('Your role cannot change that, so it was not saved.', 'error');
@@ -185,16 +251,18 @@
     if (!appState.me || appState.me.mustChangePassword || document.hidden || saving || saveTimer === null) return;
     try {
       const res = await api('/state/versions');
-      const changed = Object.keys(res.versions).some(n => res.versions[n] !== (versions[n] || 0));
-      const removed = Object.keys(versions).some(n => !(n in res.versions));
+      const changedKeys = Object.keys(res.versions).filter(n => res.versions[n] !== seen[n]);
+      const removed = Object.keys(seen).some(n => !(n in res.versions));
       if (removed) { location.reload(); return; }
-      if (!changed) return;
+      if (!changedKeys.length) return;
       const now = snapshotStrings();
       if (Object.keys(now).some(n => mayWrite(n) && now[n] !== sentSnapshot[n])) return;
       const state = await api('/state');
       const fresh = {};
-      Object.entries(state.sections).forEach(([n, s]) => { if (s.version !== (versions[n] || 0)) fresh[n] = s; });
-      if (Object.keys(fresh).length) applySections(fresh);
+      changedKeys.forEach(k => { if (state.sections[k]) fresh[k] = state.sections[k]; });
+      const mine = localize(fresh);
+      if (Object.keys(mine).length) applySections(mine);
+      else if (typeof window.refreshAll === 'function') baseRefreshAll();
     } catch (err) {
       if (err.status === 401) handleApiError(err);
     }
@@ -418,8 +486,19 @@
   let baseRefreshAll = null;
   async function loadSharedData() {
     const state = await api('/state');
-    if (Object.keys(state.sections).length) applySections(state.sections);
+    const mine = localize(state.sections);
+    if (Object.keys(mine).length) applySections(mine);
+    const isNew = PROJECT !== 'P1' && !mine.form_bd;
+    if (isNew) startNewProject();
     sentSnapshot = snapshotStrings();
+    // A new project's fresh start is saved straight away (by BD, who added it)
+    if (isNew) Object.keys(sentSnapshot).forEach(n => { if (SCOPED.has(n)) sentSnapshot[n] = ''; });
+    let after = null;
+    try { after = JSON.parse(sessionStorage.getItem('mr11.afterSwitch') || 'null'); sessionStorage.removeItem('mr11.afterSwitch'); } catch {}
+    if (after && after.page) setTimeout(() => {
+      if (after.line && typeof window.openLineEditor === 'function') window.openLineEditor(after.line, after.page);
+      else if (tabAllowed(after.page)) switchTab(after.page);
+    }, 300);
     applyOwnership();
     if (appState.roles.includes('ADMIN')) await reloadUsers();
     baseRefreshAll();

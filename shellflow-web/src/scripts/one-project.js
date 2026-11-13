@@ -24,8 +24,10 @@
       window.applyProjectScope = function () {
         const on = !!(appState.rules && appState.rules.sampleProjects);
         if (on !== lastOn) {
+          const kept = referenceMR11Projects.filter(r => r._otherProject);
           referenceMR11Projects.length = 0;
           if (on) referenceMR11Projects.push(...stash);
+          referenceMR11Projects.push(...kept);
           Object.keys(CEO_HISTORY).forEach(g => ['actual', 'forecast'].forEach(k => {
             CEO_HISTORY[g][k] = on ? ceoStash[g][k].slice() : ceoStash[g][k].map(() => 0);
           }));
