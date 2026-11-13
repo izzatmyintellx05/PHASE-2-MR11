@@ -80,7 +80,7 @@
         case 3: return [
           check('Shell plan approved', () => val('sp-act-date')),
           check('Design complete', () => designIsComplete()),
-          check('Design m² matches the NCA', () => Math.abs((parseFloat(val('des-final-m2')) || 0) - appState.ncaArea) <= (appState.ncaArea * (appState.rules.designTolerancePct || 0) / 100) + 0.01),
+          check('Design final m² entered', () => (parseFloat(val('des-final-m2')) || 0) > 0),
           check('Accessories inside their SLA', () => !appState.items.some(i => !itemDone(i) && slaOf(i).over))
         ];
         case 4: return [

@@ -971,7 +971,7 @@
               </div>
             </div>
             <div>
-              <label class="block text-[10px] text-slate-400 uppercase mb-1">Panel Codes (Must Be in the Panel Register)</label>
+              <label class="block text-[10px] text-slate-400 uppercase mb-1">Panel codes (pick from the Panel Register)</label>
               <input type="text" id="prod-serial-input" value="W-043" placeholder="W-041 to W-045, or W-041, W-042" class="w-full px-2.5 py-2 rounded-lg bg-slate-800 border border-slate-700 font-mono text-white">
             </div>
             <div class="grid grid-cols-2 gap-2">
@@ -1156,7 +1156,6 @@
           <div id="recon-reference" class="grid grid-cols-3 gap-2 text-xs"></div>
           <div class="flex flex-wrap gap-2 pt-1">
             <button onclick="testShippedGreaterThanProduced()" class="px-3 py-2 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-800 text-xs font-bold cursor-pointer">Test: Set Shipped Above Produced</button>
-            <button onclick="testDesignVariance()" class="px-3 py-2 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold cursor-pointer">Test: Design Final 5% Over NCA</button>
             <button onclick="resetReconValues()" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer">Restore Baseline (842 m² Produced / 450 m² Shipped)</button>
           </div>
       </div>
@@ -1925,6 +1924,7 @@
   <script><!--@include scripts/payment-paste.js--></script>
   <script><!--@include scripts/step-guide.js--></script>
   <script><!--@include scripts/header-scope.js--></script>
+  <script><!--@include scripts/panel-picker.js--></script>
   <script><!--@include scripts/one-project.js--></script>
   <script><!--@include scripts/lazy-libs.js--></script>
   <script><!--@include scripts/perf.js--></script>

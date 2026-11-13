@@ -769,6 +769,29 @@
     .sf-ribbon .sf-kv.is-narrowed { border-color: var(--accent); background: rgba(242, 107, 29, 0.14); }
     .sf-ribbon .sf-kv:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+
+    /* ---- Panel code picker: chips, a search box and a list of the Panel Register ---- */
+    .sf-picker { position: relative; }
+    .sf-picker-control { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 40px; padding: 5px 8px; border-radius: 8px; border: 1px solid #3A3B36; background: #262723; cursor: text; }
+    .sf-picker-control:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(242, 107, 29, 0.25); }
+    .sf-picker-chips { display: contents; }
+    .sf-chip-code { display: inline-flex; align-items: center; gap: 4px; padding: 2px 4px 2px 8px; border-radius: 6px; background: #3A3B36; color: #fff; font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .sf-chip-code button { width: 18px; height: 18px; border-radius: 4px; color: #D4D4CF; line-height: 1; }
+    .sf-chip-code button:hover { background: var(--accent); color: #1C1D1A; }
+    main .step-panel .sf-picker-search { flex: 1; min-width: 140px; min-height: 28px !important; padding: 2px 4px !important; border: 0 !important; background: transparent !important; box-shadow: none !important; color: #fff !important; outline: none; font-size: 14px; }
+    .sf-picker-menu { position: absolute; z-index: 35; left: 0; right: 0; top: calc(100% + 4px); border: 1px solid var(--joint); border-radius: 10px; background: var(--face); box-shadow: var(--lift-2); color: var(--ink); overflow: hidden; }
+    .sf-picker-tools { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--joint-soft); font-size: 12px; color: var(--ink-3); }
+    .sf-picker-tools button { font-weight: 600; color: var(--ink); text-decoration: underline; }
+    .sf-picker-count { margin-right: auto; }
+    .sf-picker-menu ul { max-height: 260px; overflow-y: auto; margin: 0; padding: 4px; list-style: none; }
+    .sf-picker-menu li { display: grid; grid-template-columns: 18px 70px 1fr auto auto; gap: 10px; align-items: center; padding: 7px 8px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+    .sf-picker-menu li:hover { background: var(--panel); }
+    .sf-picker-menu li.is-on { background: #ECFDF5; }
+    .sf-picker-menu li.is-off { opacity: 0.45; cursor: not-allowed; }
+    .sf-picker-menu li.is-empty { display: block; color: var(--ink-3); cursor: default; }
+    .sf-picker-check { color: var(--verd); font-weight: 700; }
+    .sf-picker-stage { font-size: 11.5px; color: var(--ink-3); }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
     }
@@ -1825,7 +1848,7 @@
               </div>
             </div>
             <div>
-              <label class="block text-[10px] text-slate-400 uppercase mb-1">Panel Codes (Must Be in the Panel Register)</label>
+              <label class="block text-[10px] text-slate-400 uppercase mb-1">Panel codes (pick from the Panel Register)</label>
               <input type="text" id="prod-serial-input" value="W-043" placeholder="W-041 to W-045, or W-041, W-042" class="w-full px-2.5 py-2 rounded-lg bg-slate-800 border border-slate-700 font-mono text-white">
             </div>
             <div class="grid grid-cols-2 gap-2">
@@ -2010,7 +2033,6 @@
           <div id="recon-reference" class="grid grid-cols-3 gap-2 text-xs"></div>
           <div class="flex flex-wrap gap-2 pt-1">
             <button onclick="testShippedGreaterThanProduced()" class="px-3 py-2 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-300 text-rose-800 text-xs font-bold cursor-pointer">Test: Set Shipped Above Produced</button>
-            <button onclick="testDesignVariance()" class="px-3 py-2 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 text-xs font-bold cursor-pointer">Test: Design Final 5% Over NCA</button>
             <button onclick="resetReconValues()" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer">Restore Baseline (842 m² Produced / 450 m² Shipped)</button>
           </div>
       </div>
@@ -3958,7 +3980,8 @@
       const tol = appState.rules.reconTolerancePct;
       const issues = [];
       if (!r.ncaQty || r.designFinal === null || r.designFinal === undefined) return { status: 'INCOMPLETE', issues: ['Design final not entered yet'], tol };
-      if (Math.abs(r.designFinal - r.ncaQty) / r.ncaQty * 100 > tol) issues.push(`Design final ${fmtNum(r.designFinal)} m² differs from NCA ${fmtNum(r.ncaQty)} m² by ${fmtNum(Math.abs(r.designFinal - r.ncaQty) / r.ncaQty * 100)}%`);
+      // The design's final m² can be well off the NCA (the design decides it), so that is not a variance;
+      // only what is made and shipped is held to the design
       if (r.producedM2 > r.designFinal * (1 + tol / 100)) issues.push(`Produced ${fmtNum(r.producedM2)} m² runs past design final ${fmtNum(r.designFinal)} m²`);
       if (r.shippedM2 > r.producedM2 * (1 + tol / 100)) issues.push(`Shipped ${fmtNum(r.shippedM2)} m² runs past produced ${fmtNum(r.producedM2)} m²`);
       return { status: issues.length ? 'VARIANCE' : 'RECONCILED', issues, tol };
@@ -4019,11 +4042,6 @@
       document.getElementById('recon-ship-input').value = prod + 48;
       onShippedTyped();
       notify('Refused: Shipped cannot run ahead of Produced without confirmation.', 'error');
-    }
-    function testDesignVariance() {
-      $('des-final-m2').value = Math.round(appState.ncaArea * 1.05);
-      runFourWayRecon();
-      notify('Design final set 5% over NCA: RECON_VARIANCE and NCA_MISMATCH alerts raised.', 'error');
     }
     function clampShippedToProduced() {
       const prod = parseFloat(document.getElementById('recon-prod-input').value) || 0;
@@ -4842,7 +4860,7 @@
         if (r.paymentOverdue) add('PAYMENT_OVERDUE', 'HIGH', r.key, 'Finance', `${label}: the advance is overdue`, 2);
         const recon = reconFor(r);
         if (recon.status === 'VARIANCE') add('RECON_VARIANCE', 'HIGH', r.key, 'Planning & Logistics', `${label}: ${recon.issues.join('; ')}`, 6);
-        if (r.designFinal && Math.abs(r.designFinal - r.ncaQty) > 0.005) add('NCA_MISMATCH', 'MEDIUM', r.key, 'BD & Design', `${label}: latest NCA ${fmtNum(r.ncaQty)} m² differs from design final ${fmtNum(r.designFinal)} m²`, 6);
+        // Design final differing from the NCA is normal, so it raises no alert
       });
       const liveShipped = rows[0].shippedM2;
       if (liveShipped > 0 && !$('sp-act-date').value) add('DISPATCH_BEFORE_SHELLPLAN', 'HIGH', 'LIVE', 'Shell Plan', `${appState.projectName} was dispatched with no shell-plan approval date`, 3);
@@ -6125,7 +6143,7 @@
         case 3: return [
           check('Shell plan approved', () => val('sp-act-date')),
           check('Design complete', () => designIsComplete()),
-          check('Design m² matches the NCA', () => Math.abs((parseFloat(val('des-final-m2')) || 0) - appState.ncaArea) <= (appState.ncaArea * (appState.rules.designTolerancePct || 0) / 100) + 0.01),
+          check('Design final m² entered', () => (parseFloat(val('des-final-m2')) || 0) > 0),
           check('Accessories inside their SLA', () => !appState.items.some(i => !itemDone(i) && slaOf(i).over))
         ];
         case 4: return [
@@ -7983,6 +8001,103 @@
         if (appState.ready) renderHeaderScope();
         return out;
       })(window.refreshAll);
+    })();
+</script>
+  <script>    // =========================================================================
+    // Panel codes: a searchable dropdown instead of a typed list. It shows the panels in the
+    // Panel Register with their block, m² and current stage; panels that already reached the
+    // chosen stage cannot be picked. Picked panels show as chips. Typing a range such as
+    // "W-041 to W-045" and pressing Enter still works. The original field keeps the value,
+    // so recording works exactly as before.
+    // =========================================================================
+    (function () {
+      const field = $('prod-serial-input');
+      if (!field) return;
+      field.type = 'hidden';
+      const box = document.createElement('div');
+      box.className = 'sf-picker';
+      box.innerHTML = `<div class="sf-picker-control" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-owns="sf-picker-list">
+          <div class="sf-picker-chips"></div>
+          <input type="text" class="sf-picker-search" placeholder="Search panel codes, e.g. W-04" aria-label="Search panel codes" autocomplete="off">
+        </div>
+        <div class="sf-picker-menu" hidden>
+          <div class="sf-picker-tools"><span class="sf-picker-count"></span><button type="button" data-pick="all">Pick all shown</button><button type="button" data-pick="none">Clear</button></div>
+          <ul id="sf-picker-list" role="listbox" aria-multiselectable="true"></ul>
+        </div>`;
+      field.insertAdjacentElement('afterend', box);
+      const search = box.querySelector('.sf-picker-search');
+      const menu = box.querySelector('.sf-picker-menu');
+      const list = box.querySelector('ul');
+      const control = box.querySelector('.sf-picker-control');
+      const picked = () => expandCodes(field.value);
+      const setPicked = codes => { field.value = [...new Set(codes)].join(', '); drawChips(); drawList(); };
+      const targetStage = () => $('prod-state-select')?.value || 'PRODUCED';
+      const blocked = p => PANEL_STAGES.indexOf(p.stage) >= PANEL_STAGES.indexOf(targetStage());
+
+      function drawChips() {
+        const codes = picked();
+        box.querySelector('.sf-picker-chips').innerHTML = codes.map(c => `<span class="sf-chip-code">${esc(c)}<button type="button" data-unpick="${esc(c)}" aria-label="Remove ${esc(c)}">×</button></span>`).join('');
+        search.placeholder = codes.length ? 'Add more…' : 'Search panel codes, e.g. W-04';
+      }
+      function shownPanels() {
+        const q = search.value.trim().toUpperCase();
+        return appState.panels.filter(p => !q || p.code.includes(q) || String(p.block || '').toUpperCase().includes(q))
+          .sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }));
+      }
+      function drawList() {
+        const codes = picked();
+        const rows = shownPanels();
+        box.querySelector('.sf-picker-count').textContent = `${rows.length} panel${rows.length === 1 ? '' : 's'}${codes.length ? ` · ${codes.length} picked` : ''}`;
+        list.innerHTML = rows.slice(0, 200).map(p => {
+          const on = codes.includes(p.code), off = blocked(p) && !on;
+          return `<li role="option" aria-selected="${on}" aria-disabled="${off}" data-code="${esc(p.code)}" class="${on ? 'is-on' : ''} ${off ? 'is-off' : ''}">
+            <span class="sf-picker-check" aria-hidden="true">${on ? '✓' : ''}</span><strong>${esc(p.code)}</strong>
+            <span>${esc(p.block || '')}</span><span>${fmtNum(p.m2)} m²</span><span class="sf-picker-stage">${off ? `already ${esc(p.stage)}` : esc(p.stage)}</span></li>`;
+        }).join('') || '<li class="is-empty">No panel matches. Add it to the Panel Register first.</li>';
+      }
+      const open = () => { menu.hidden = false; control.setAttribute('aria-expanded', 'true'); drawList(); };
+      const close = () => { menu.hidden = true; control.setAttribute('aria-expanded', 'false'); };
+
+      control.addEventListener('click', () => { search.focus(); open(); });
+      search.addEventListener('input', () => { open(); drawList(); });
+      search.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { close(); return; }
+        if (e.key === 'Backspace' && !search.value) { const c = picked(); c.pop(); setPicked(c); return; }
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        const typed = search.value.trim();
+        if (!typed) return;
+        // A typed code or range ("W-041 to W-045") is added when every code is in the register
+        const codes = expandCodes(typed);
+        const known = codes.filter(c => appState.panels.some(p => p.code === c));
+        if (known.length === codes.length) { setPicked([...picked(), ...known]); search.value = ''; drawList(); }
+        else {
+          const rows = shownPanels().filter(p => !blocked(p));
+          if (rows.length === 1) { setPicked([...picked(), rows[0].code]); search.value = ''; drawList(); }
+          else notify(`Not in the Panel Register: ${codes.filter(c => !known.includes(c)).join(', ')}`, 'error');
+        }
+      });
+      box.addEventListener('click', e => {
+        const un = e.target.closest('[data-unpick]');
+        if (un) { e.stopPropagation(); setPicked(picked().filter(c => c !== un.dataset.unpick)); return; }
+        const tool = e.target.closest('[data-pick]');
+        if (tool) {
+          e.stopPropagation();
+          if (tool.dataset.pick === 'none') setPicked([]);
+          else setPicked([...picked(), ...shownPanels().filter(p => !blocked(p)).map(p => p.code)]);
+          return;
+        }
+        const li = e.target.closest('li[data-code]');
+        if (!li || li.classList.contains('is-off')) return;
+        e.stopPropagation();
+        const code = li.dataset.code;
+        setPicked(picked().includes(code) ? picked().filter(c => c !== code) : [...picked(), code]);
+      });
+      document.addEventListener('click', e => { if (!box.contains(e.target)) close(); });
+      $('prod-state-select')?.addEventListener('change', drawList);
+      // Keep the chips in step when the page clears or fills the field itself
+      window.refreshAll = (orig => function () { const out = orig.apply(this, arguments); drawChips(); if (!menu.hidden) drawList(); return out; })(window.refreshAll);
+      drawChips();
     })();
 </script>
   <script>    // =========================================================================

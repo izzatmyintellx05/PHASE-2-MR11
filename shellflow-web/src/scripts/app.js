@@ -1185,7 +1185,8 @@
       const tol = appState.rules.reconTolerancePct;
       const issues = [];
       if (!r.ncaQty || r.designFinal === null || r.designFinal === undefined) return { status: 'INCOMPLETE', issues: ['Design final not entered yet'], tol };
-      if (Math.abs(r.designFinal - r.ncaQty) / r.ncaQty * 100 > tol) issues.push(`Design final ${fmtNum(r.designFinal)} m² differs from NCA ${fmtNum(r.ncaQty)} m² by ${fmtNum(Math.abs(r.designFinal - r.ncaQty) / r.ncaQty * 100)}%`);
+      // The design's final m² can be well off the NCA (the design decides it), so that is not a variance;
+      // only what is made and shipped is held to the design
       if (r.producedM2 > r.designFinal * (1 + tol / 100)) issues.push(`Produced ${fmtNum(r.producedM2)} m² runs past design final ${fmtNum(r.designFinal)} m²`);
       if (r.shippedM2 > r.producedM2 * (1 + tol / 100)) issues.push(`Shipped ${fmtNum(r.shippedM2)} m² runs past produced ${fmtNum(r.producedM2)} m²`);
       return { status: issues.length ? 'VARIANCE' : 'RECONCILED', issues, tol };
@@ -1246,11 +1247,6 @@
       document.getElementById('recon-ship-input').value = prod + 48;
       onShippedTyped();
       notify('Refused: Shipped cannot run ahead of Produced without confirmation.', 'error');
-    }
-    function testDesignVariance() {
-      $('des-final-m2').value = Math.round(appState.ncaArea * 1.05);
-      runFourWayRecon();
-      notify('Design final set 5% over NCA: RECON_VARIANCE and NCA_MISMATCH alerts raised.', 'error');
     }
     function clampShippedToProduced() {
       const prod = parseFloat(document.getElementById('recon-prod-input').value) || 0;
@@ -2069,7 +2065,7 @@
         if (r.paymentOverdue) add('PAYMENT_OVERDUE', 'HIGH', r.key, 'Finance', `${label}: the advance is overdue`, 2);
         const recon = reconFor(r);
         if (recon.status === 'VARIANCE') add('RECON_VARIANCE', 'HIGH', r.key, 'Planning & Logistics', `${label}: ${recon.issues.join('; ')}`, 6);
-        if (r.designFinal && Math.abs(r.designFinal - r.ncaQty) > 0.005) add('NCA_MISMATCH', 'MEDIUM', r.key, 'BD & Design', `${label}: latest NCA ${fmtNum(r.ncaQty)} m² differs from design final ${fmtNum(r.designFinal)} m²`, 6);
+        // Design final differing from the NCA is normal, so it raises no alert
       });
       const liveShipped = rows[0].shippedM2;
       if (liveShipped > 0 && !$('sp-act-date').value) add('DISPATCH_BEFORE_SHELLPLAN', 'HIGH', 'LIVE', 'Shell Plan', `${appState.projectName} was dispatched with no shell-plan approval date`, 3);
