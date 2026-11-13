@@ -792,6 +792,18 @@
     .sf-picker-check { color: var(--verd); font-weight: 700; }
     .sf-picker-stage { font-size: 11.5px; color: var(--ink-3); }
 
+
+    /* ---- MR11 first: no department tab row; a slim bar says where you are and leads back ---- */
+    .sf-steps { display: none !important; }
+    .sf-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-height: 40px; }
+    .sf-crumb-page { font-weight: 700; font-size: 15px; color: var(--ink); }
+    .sf-crumb-sep { color: var(--ink-3); }
+    .sf-crumb-hint { font-size: 12.5px; color: var(--ink-3); }
+    .sf-crumb-hint b { color: var(--ink-2); }
+    .sf-edit-project { margin-left: 6px; display: inline-flex; }
+    .sf-edit-menu-btn > summary { margin-top: 0; padding: 0 12px; height: 32px; border-radius: 6px; border: 1px solid var(--joint); color: var(--ink); background: var(--face); font-size: 12.5px; }
+    .sf-edit-menu-btn > summary:hover { background: var(--panel); border-color: var(--joint); color: var(--ink); }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
     }
@@ -7684,6 +7696,14 @@
       const head = document.querySelector('#mr11-card .sf-ledger-title')?.parentElement;
       if (head && !head.querySelector('.sf-add-project')) head.insertAdjacentHTML('beforeend', '<button type="button" class="sf-btn sf-btn-sm sf-primary sf-add-project" onclick="openProjectEntry()">Add project</button>');
       head?.querySelector('.sf-add-project')?.classList.toggle('hidden', !['BD', 'ADMIN'].includes(appState.role));
+      if (head) {
+        let ep = head.querySelector('.sf-edit-project');
+        if (!ep) { head.insertAdjacentHTML('beforeend', '<span class="sf-edit-project"></span>'); ep = head.querySelector('.sf-edit-project'); }
+        const html = !pages.length ? ''
+          : pages.length === 1 ? `<button type="button" class="sf-btn sf-btn-sm" data-edit-page="${pages[0].page}" title="Open ${esc(pages[0].name)} for this project">Edit project</button>`
+          : `<details class="sf-edit-menu sf-edit-menu-btn"><summary class="sf-btn sf-btn-sm">Edit project</summary><div>${pages.map(p => `<button type="button" data-edit-page="${p.page}">On ${esc(p.name)}</button>`).join('')}</div></details>`;
+        if (ep.innerHTML !== html) ep.innerHTML = html;
+      }
     }
     window.openProjectEntry = function () {
       if (!guard(['BD'], 'add a project')) return;
@@ -7838,7 +7858,7 @@
     // =========================================================================
     (function () {
       const STEP_PAGES = [1, 2, 3, 4, 6, 7, 8];
-      const NEXT_PAGE = { 1: 2, 2: 3, 3: 4, 4: 6, 6: 7, 7: 8, 8: 9 };
+      const NEXT_PAGE = { 1: 9, 2: 9, 3: 9, 4: 9, 6: 9, 7: 9, 8: 9 };
       const current = {};
       let on = true;
       try { on = localStorage.getItem('sf.stepMode') !== '0'; } catch {}
@@ -8098,6 +8118,34 @@
       // Keep the chips in step when the page clears or fills the field itself
       window.refreshAll = (orig => function () { const out = orig.apply(this, arguments); drawChips(); if (!menu.hidden) drawList(); return out; })(window.refreshAll);
       drawChips();
+    })();
+</script>
+  <script>    // =========================================================================
+    // MR11 first. The MR11 Master Schedule is home; the department pages are not a tab row
+    // any more. People reach their department's page from MR11 (Edit on a line, Edit project,
+    // or Add project for BD), and a slim bar there leads back to MR11.
+    // =========================================================================
+    (function () {
+      const bar = $('step-bar');
+      if (!bar) return;
+      const crumbs = document.createElement('div');
+      crumbs.className = 'sf-crumbs';
+      bar.prepend(crumbs);
+      const DEPT_PAGES = [1, 2, 3, 4, 6, 7, 8];
+      function render() {
+        const t = appState.activeTab;
+        const name = (PAGES[t] && PAGES[t].name) || '';
+        const html = t === 9
+          ? `<span class="sf-crumb-page">MR11 Master Schedule</span><span class="sf-crumb-hint">Start here. To change something, use <b>Edit</b> on a line or <b>Edit project</b>; it opens your department's page.</span>`
+          : `<button type="button" class="sf-btn sf-btn-sm" data-back-mr11>← Back to MR11</button><span class="sf-crumb-sep" aria-hidden="true">/</span><span class="sf-crumb-page">${esc(name)}</span>${DEPT_PAGES.includes(t) ? `<span class="sf-crumb-hint">Editing ${esc(appState.projectName || 'the project')}</span>` : ''}`;
+        if (crumbs.innerHTML !== html) crumbs.innerHTML = html;
+      }
+      document.addEventListener('click', e => {
+        if (e.target.closest && e.target.closest('[data-back-mr11]')) switchTab(9);
+        const ep = e.target.closest && e.target.closest('[data-edit-page]');
+        if (ep) { ep.closest('details')?.removeAttribute('open'); switchTab(Number(ep.dataset.editPage)); }
+      });
+      window.refreshAll = (orig => function () { const out = orig.apply(this, arguments); if (appState.ready) render(); return out; })(window.refreshAll);
     })();
 </script>
   <script>    // =========================================================================

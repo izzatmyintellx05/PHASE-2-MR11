@@ -717,6 +717,18 @@
     .sf-picker-check { color: var(--verd); font-weight: 700; }
     .sf-picker-stage { font-size: 11.5px; color: var(--ink-3); }
 
+
+    /* ---- MR11 first: no department tab row; a slim bar says where you are and leads back ---- */
+    .sf-steps { display: none !important; }
+    .sf-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-height: 40px; }
+    .sf-crumb-page { font-weight: 700; font-size: 15px; color: var(--ink); }
+    .sf-crumb-sep { color: var(--ink-3); }
+    .sf-crumb-hint { font-size: 12.5px; color: var(--ink-3); }
+    .sf-crumb-hint b { color: var(--ink-2); }
+    .sf-edit-project { margin-left: 6px; display: inline-flex; }
+    .sf-edit-menu-btn > summary { margin-top: 0; padding: 0 12px; height: 32px; border-radius: 6px; border: 1px solid var(--joint); color: var(--ink); background: var(--face); font-size: 12.5px; }
+    .sf-edit-menu-btn > summary:hover { background: var(--panel); border-color: var(--joint); color: var(--ink); }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
     }

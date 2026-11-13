@@ -6,7 +6,7 @@
     // =========================================================================
     (function () {
       const STEP_PAGES = [1, 2, 3, 4, 6, 7, 8];
-      const NEXT_PAGE = { 1: 2, 2: 3, 3: 4, 4: 6, 6: 7, 7: 8, 8: 9 };
+      const NEXT_PAGE = { 1: 9, 2: 9, 3: 9, 4: 9, 6: 9, 7: 9, 8: 9 };
       const current = {};
       let on = true;
       try { on = localStorage.getItem('sf.stepMode') !== '0'; } catch {}

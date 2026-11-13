@@ -175,6 +175,14 @@
       const head = document.querySelector('#mr11-card .sf-ledger-title')?.parentElement;
       if (head && !head.querySelector('.sf-add-project')) head.insertAdjacentHTML('beforeend', '<button type="button" class="sf-btn sf-btn-sm sf-primary sf-add-project" onclick="openProjectEntry()">Add project</button>');
       head?.querySelector('.sf-add-project')?.classList.toggle('hidden', !['BD', 'ADMIN'].includes(appState.role));
+      if (head) {
+        let ep = head.querySelector('.sf-edit-project');
+        if (!ep) { head.insertAdjacentHTML('beforeend', '<span class="sf-edit-project"></span>'); ep = head.querySelector('.sf-edit-project'); }
+        const html = !pages.length ? ''
+          : pages.length === 1 ? `<button type="button" class="sf-btn sf-btn-sm" data-edit-page="${pages[0].page}" title="Open ${esc(pages[0].name)} for this project">Edit project</button>`
+          : `<details class="sf-edit-menu sf-edit-menu-btn"><summary class="sf-btn sf-btn-sm">Edit project</summary><div>${pages.map(p => `<button type="button" data-edit-page="${p.page}">On ${esc(p.name)}</button>`).join('')}</div></details>`;
+        if (ep.innerHTML !== html) ep.innerHTML = html;
+      }
     }
     window.openProjectEntry = function () {
       if (!guard(['BD'], 'add a project')) return;
