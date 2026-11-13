@@ -108,6 +108,14 @@ This uses the same services as Phase 1.
 
 The tables are created automatically on the first request.
 
+### The live Phase 2 site
+
+- Public address: **https://phase2-iota-five.vercel.app** (share this one). The team address phase2-mfe4.vercel.app is behind Vercel's own sign-in, so people outside the Vercel team are asked to request access there.
+- Vercel project **phase2** (team MFE), Root Directory `shellflow-web`, connected to the GitHub repository PHASE-2-MR11: every push to `main` deploys the live site.
+- Database: its own Neon database **shellflow-phase2** (Singapore), connected through Vercel Storage, which supplies `DATABASE_URL`. It is separate from the Phase 1 database.
+- With a database connected on Vercel and no `JWT_SECRET`, the session key is a one-way hash of the database secret.
+- `DEMO_QUICK_LOGIN_PUBLIC_UNTIL` opens quick login for every department until that date (at most 60 days ahead). Until then anyone with the link can sign in as Administrator; before it ends, make real accounts with passwords in Admin Permissions.
+
 ## Host it anywhere else with Docker
 
 ```bash
