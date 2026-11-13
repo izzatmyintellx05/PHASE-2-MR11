@@ -7574,7 +7574,11 @@
 
       function placeTools() {
         const full = document.fullscreenElement === card;
-        const onPage = full || !$('step-panel-9')?.classList.contains('hidden');
+        // Only on the MR11 page, and only once signed in (never over the sign-in screen)
+        const signin = $('signin-screen');
+        const signedOut = !!signin && !signin.classList.contains('hidden');
+        const onMr11 = appState.activeTab === 9 && !$('step-panel-9')?.classList.contains('hidden');
+        const onPage = !signedOut && (full || onMr11);
         const home = full ? card : document.body;
         if (side.parentNode !== home) home.appendChild(side);
         side.hidden = !onPage;
@@ -7596,6 +7600,10 @@
         if (open) setTimeout(() => $('mr11-search')?.focus({ preventScroll: true }), 230);
       });
       document.addEventListener('fullscreenchange', placeTools);
+      // Signing in or out shows or hides the sign-in screen without a page change
+      const signin = $('signin-screen');
+      if (signin) new MutationObserver(placeTools).observe(signin, { attributes: true, attributeFilter: ['class'] });
+      ['step-panel-9'].forEach(id => { const el = $(id); if (el) new MutationObserver(placeTools).observe(el, { attributes: true, attributeFilter: ['class'] }); });
       window.switchTab = (orig => function () { const out = orig.apply(this, arguments); placeTools(); return out; })(window.switchTab);
       window.refreshAll = (orig => function () { const out = orig.apply(this, arguments); placeTools(); return out; })(window.refreshAll);
       placeTools();
