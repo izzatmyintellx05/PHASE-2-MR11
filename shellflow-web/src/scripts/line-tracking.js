@@ -64,7 +64,7 @@
     window.mr11Lines = function () { return splitLines.apply(this, arguments).map(trackLine); };
     window.processedOf = (orig => r => (r && r._ownProcessed !== undefined ? r._ownProcessed : orig(r)))(window.processedOf);
     window.actualReceivedOf = (orig => r => (r && r._ownPaid !== undefined ? (r._ownPaid ? (r._value || 0) * (r.advancePct || 0) / 100 : 0) : orig(r)))(window.actualReceivedOf);
-    const liveLineRows = () => splitLines(allMr11Rows().filter(r => r.isLive));
+    const liveLineRows = () => splitLines(allMr11Rows().filter(r => r.isLive)).filter(r => !window.sfLineInScope || window.sfLineInScope(r));
 
     // ---- The tracker on each department's page ----
     function lineLabel(r, i) {
@@ -108,7 +108,7 @@
     function renderLineReadiness() {
       const box = $('lt-lineReadiness');
       if (!box) return;
-      const rows = mr11Lines(allMr11Rows().filter(r => r.isLive));
+      const rows = mr11Lines(allMr11Rows().filter(r => r.isLive)).filter(r => !window.sfLineInScope || window.sfLineInScope(r));
       const tick = (ok, yes, no) => `<span class="sf-cond" data-met="${ok}">${esc(ok ? yes : no)}</span>`;
       box.innerHTML = `<div class="border-b border-slate-100 pb-3"><h3 class="text-sm font-bold text-slate-900">Readiness by MR11 line</h3>
           <p class="text-xs text-slate-500">Each line moves on its own: paid, designed, produced and shipped. A line is ready to dispatch once its advance is in, its design is complete and its stock is produced.</p></div>

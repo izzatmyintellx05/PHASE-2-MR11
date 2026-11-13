@@ -558,25 +558,6 @@
       });
     }
 
-    // ---- The project pills in the header open the field they show, on the BD page ----
-    (function () {
-      const FIELD = { Project: 'bd-project-name', Building: 'bd-building-name', 'Country / PIC': 'bd-country-name' };
-      document.querySelectorAll('.sf-ribbon .sf-kv').forEach(kv => {
-        const label = kv.querySelector('dt')?.textContent.trim();
-        kv.setAttribute('role', 'button');
-        kv.tabIndex = 0;
-        kv.setAttribute('aria-label', `${label}: ${kv.querySelector('dd')?.textContent.trim()}. Open it on the BD page`);
-        const open = () => {
-          if (typeof switchTab !== 'function') return;
-          switchTab(1);
-          const target = FIELD[label] ? $(FIELD[label]) : document.querySelector('#bd-lines [data-field="stream"]');
-          if (target) { target.scrollIntoView({ block: 'center' }); target.focus({ preventScroll: true }); }
-        };
-        kv.addEventListener('click', open);
-        kv.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
-      });
-    })();
-
     // ---- While scrolling: the pinned menu slims down, and a button leads back to the top ----
     (function () {
       const top = document.createElement('button');

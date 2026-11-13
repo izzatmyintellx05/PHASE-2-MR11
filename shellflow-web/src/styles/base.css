@@ -684,6 +684,16 @@
     .sf-paydraft-match[data-tone="warn"] { background: #FFFBEB; color: #92400E; }
     .sf-paydraft-actions { display: inline-flex; gap: 8px; }
 
+
+    /* ---- Header filters: Project, Streams and Blocks are dropdowns; Building and Country / PIC are information ---- */
+    .sf-ribbon .sf-kv.sf-kv-pick { position: relative; }
+    .sf-ribbon .sf-kv-select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 14px; }
+    .sf-ribbon .sf-kv-select option { color: #1C1D1A; background: #FFFFFF; }
+    .sf-ribbon .sf-kv.sf-kv-static { cursor: default; background: transparent; border-color: transparent; padding-left: 4px; }
+    .sf-ribbon .sf-kv.sf-kv-static::after { display: none; }
+    .sf-ribbon .sf-kv.is-narrowed { border-color: var(--accent); background: rgba(242, 107, 29, 0.14); }
+    .sf-ribbon .sf-kv:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
     }
