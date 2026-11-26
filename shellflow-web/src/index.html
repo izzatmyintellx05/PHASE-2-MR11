@@ -239,17 +239,23 @@
                 <input type="text" id="bd-short-name" value="ST2" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500 outline-none">
               </div>
               <div>
-                <label class="sf-bd-label">Location</label>
-                <input type="text" id="bd-location" value="Kuala Lumpur" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500 outline-none">
+                <!-- State: saved under the bd-location field and the row's "location" key, so older projects keep their value -->
+                <label for="bd-location" class="sf-bd-label">State</label>
+                <input type="text" id="bd-location" value="Kuala Lumpur" list="bd-state-list" placeholder="Select or enter state" autocomplete="off" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500 outline-none">
               </div>
               <div>
-                <label class="sf-bd-label">Status</label>
+                <label for="bd-status" class="sf-bd-label">Status</label>
                 <select id="bd-status" onchange="propagateBDData()" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none">
+                  <option value="Quoted">Quoted</option>
+                  <option value="Identified">Identified</option>
                   <option value="Confirmed" selected>Confirmed</option>
-                  <option value="Contract Issued">Contract Issued</option>
                   <option value="On Hold">On Hold</option>
-                  <option value="Completed">Completed</option>
                 </select>
+                <datalist id="bd-state-list">
+                  <option value="Johor"></option><option value="Kedah"></option><option value="Kelantan"></option><option value="Kuala Lumpur"></option><option value="Labuan"></option><option value="Melaka"></option><option value="Negeri Sembilan"></option><option value="Pahang"></option><option value="Penang"></option><option value="Perak"></option><option value="Perlis"></option><option value="Putrajaya"></option><option value="Sabah"></option><option value="Sarawak"></option><option value="Selangor"></option><option value="Terengganu"></option>
+                  <option value="Andhra Pradesh"></option><option value="Delhi"></option><option value="Gujarat"></option><option value="Karnataka"></option><option value="Kerala"></option><option value="Maharashtra"></option><option value="Tamil Nadu"></option><option value="Telangana"></option><option value="Uttar Pradesh"></option><option value="West Bengal"></option>
+                  <option value="Metro Manila"></option><option value="Singapore"></option>
+                </datalist>
               </div>
               <div class="grid grid-cols-2 gap-2">
                 <div>
@@ -311,34 +317,37 @@
             </div>
           </div>
 
-          <!-- Section 2: streams, one MR11 line each -->
-          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4 sf-bd-card">
+          <!-- Section 2: stream details. The MR11 lines (stream + formwork + product type), the
+               selling price and LME, the payment terms and the monthly forecast, in one card -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-5 sf-bd-card sf-bd-stream">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <h3 class="sf-bd-title" data-no="2">Streams and MR11 lines</h3>
-                <p class="sf-bd-hint">One line per stream. The lines add up to the NCA.</p>
+                <h3 class="sf-bd-title" data-no="2">Stream and commercial details</h3>
+                <p class="sf-bd-hint">Each line is one stream with one formwork and product type, and has its own price, payment terms and monthly forecast.</p>
               </div>
             </div>
+
+            <section class="sf-bd-part" aria-label="MR11 lines">
+              <div class="sf-bd-sub">
+                  <div><h4 class="sf-bd-subtitle">MR11 lines</h4><p class="sf-bd-hint">The lines add up to the NCA.</p></div>
+
+                </div>
             <div id="bd-lines" class="space-y-3"></div>
             <p id="bd-colour-hint" class="hidden"></p>
             <div id="bd-warnings" class="space-y-1 text-[11px]"></div>
-          </div>
+            </section>
 
-          <!-- Card 2: Dynamic Pricing & LME Formula Engine -->
-          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4 sf-bd-card">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-<h3 class="sf-bd-title" data-no="3">Selling price and LME</h3>
-                <p class="sf-bd-hint">Final price = selling price + LME + extras + freight.</p>
-              </div>
+            <div class="sf-bd-parts">
+              <section class="sf-bd-part" aria-label="Selling price and LME">
+                <div class="sf-bd-sub">
+                  <div><h4 class="sf-bd-subtitle">Project price and LME</h4><p class="sf-bd-hint">Final price = selling price + LME + extras + freight.</p></div>
               <select id="bd-incoterms" aria-label="Incoterms" class="px-2.5 py-1 bg-slate-100 border border-slate-300 rounded text-xs font-semibold text-slate-800">
                 <option value="CIF">Incoterms: CIF</option>
                 <option value="FOB">Incoterms: FOB</option>
                 <option value="EXW">Incoterms: EXW</option>
               </select>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 text-xs sf-bd-fields">
               <div>
                 <label class="sf-bd-label">NCA (m², approved)</label>
                 <input type="number" id="bd-nca-area" value="850" readonly class="w-full px-3 py-2 bg-slate-100 border border-slate-300 rounded-lg font-mono font-bold text-slate-900" title="Changes only through an approved NCA revision">
@@ -390,18 +399,15 @@
                 <input type="number" id="bd-freeze-adj" value="2.15" step="0.01" oninput="recalculateCommercial()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-slate-800">
               </div>
             </div>
-          </div>
+              </section>
 
-          <!-- Card: Payment Terms (each contract sets its own advance %) -->
-          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4 sf-bd-card">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-<h3 class="sf-bd-title" data-no="4">Payment terms</h3>
-                <p class="sf-bd-hint">Up to 3 milestones, for example 20% advance and 80% CAD. They must total 100%.</p>
-              </div>
+              <div class="space-y-5">
+                <section class="sf-bd-part" aria-label="Payment terms">
+                  <div class="sf-bd-sub">
+                  <div><h4 class="sf-bd-subtitle">Project payment terms</h4><p class="sf-bd-hint">Used by lines with no terms of their own. Up to 3 milestones, total 100%.</p></div>
               <span id="bd-terms-total" class="text-xs font-mono font-bold text-emerald-700">100%</span>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                </div>
+            <div class="grid grid-cols-1 gap-2 text-xs sf-bd-terms">
               <div class="flex gap-1.5">
                 <input type="number" id="pt-pct-0" value="20" oninput="recalculateCommercial()" class="w-1/2 px-2.5 py-2 border border-slate-300 rounded-lg font-mono font-bold" aria-label="Milestone 1 percent">
                 <select id="pt-type-0" aria-label="Milestone 1 payment type" onchange="recalculateCommercial()" class="w-1/2 px-1.5 py-2 bg-white border border-slate-300 rounded-lg font-semibold"><option selected>Advance</option><option>CAD</option><option>LC</option><option>TT</option></select>
@@ -415,33 +421,13 @@
                 <select id="pt-type-2" aria-label="Milestone 3 payment type" onchange="recalculateCommercial()" class="w-1/2 px-1.5 py-2 bg-white border border-slate-300 rounded-lg font-semibold"><option>Advance</option><option>CAD</option><option selected>LC</option><option>TT</option></select>
               </div>
             </div>
-          </div>
+                </section>
 
-          <!-- Card: NCA Versioning & Change Gate -->
-          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4 sf-bd-card">
-            <div class="border-b border-slate-100 pb-3">
-<div class="flex items-start justify-between gap-3"><div><h3 class="sf-bd-title" data-no="5">NCA versions</h3>
-                <p class="sf-bd-hint">A new NCA quantity counts once an administrator approves it.</p></div><span id="bd-nca-pill" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 shrink-0 self-start sm:self-center">NCA v1 Active</span></div>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs">
-              <input type="text" id="nca-ref" placeholder="Reference" class="px-2.5 py-2 border border-slate-300 rounded-lg font-mono">
-              <input type="date" id="nca-date" aria-label="NCA date" value="2026-11-18" class="px-2.5 py-2 border border-slate-300 rounded-lg">
-              <input type="number" id="nca-qty" placeholder="New qty (m²)" class="px-2.5 py-2 border border-slate-300 rounded-lg font-mono">
-              <input type="text" id="nca-reason" placeholder="Reason for change" class="px-2.5 py-2 border border-slate-300 rounded-lg">
-              <button onclick="submitNcaRevision()" class="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold transition">Submit Revision</button>
-            </div>
-            <div id="nca-history" class="overflow-x-auto"></div>
-          </div>
-
-          <!-- Card 3: Forecast Month Choice & Dynamic Monthly Placeholders -->
-          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4 sf-bd-card">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
-              <div>
-                <h3 class="sf-bd-title" data-no="6">Monthly forecast</h3>
-                <p class="sf-bd-hint">Spread the NCA over 1 to 6 months. The months must add up to the NCA.</p>
-              </div>
+                <section class="sf-bd-part" aria-label="Monthly forecast">
+                  <div class="sf-bd-sub">
+                  <div><h4 class="sf-bd-subtitle">Project forecast</h4><p class="sf-bd-hint">The lines' months added up. Set each line's months above; the number here is the default for lines with no forecast of their own.</p></div>
               <div class="flex items-center gap-2">
-                <label for="bd-forecast-months" class="sf-bd-label" style="margin:0">Months</label>
+                <label for="bd-forecast-months" class="sf-bd-label" style="margin:0">Default months</label>
                 <select id="bd-forecast-months" onchange="renderForecastInputs()" class="px-3 py-1.5 bg-sky-50 border border-sky-300 rounded-lg text-xs font-bold text-sky-900 focus:ring-2 focus:ring-sky-500 outline-none">
                   <option value="1">1 Month</option>
                   <option value="2">2 Months</option>
@@ -451,10 +437,9 @@
                   <option value="6">6 Months</option>
                 </select>
               </div>
-            </div>
-
+                </div>
             <!-- Dynamic Month Placeholders Grid -->
-            <div id="bd-forecast-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div id="bd-forecast-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
             <label class="block text-[11px] font-bold text-slate-600">Month 1 (Nov 2026) Forecast (m²)</label>
             <input type="number" step="1" value="283.33" oninput="validateForecastSum()" class="fc-month-input w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg font-mono text-xs font-bold text-slate-900">
@@ -476,6 +461,25 @@
               <span>Forecasted Sum across <strong id="fc-month-count">3</strong> month(s): <strong id="fc-sum-m2" class="font-mono">850.00 m²</strong></span>
               <span id="fc-match-badge" class="font-bold text-emerald-700">✓ Matches Approved NCA Area (850.00 m²)</span>
             </div>
+                </section>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card: NCA Versioning & Change Gate -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4 sf-bd-card">
+            <div class="border-b border-slate-100 pb-3">
+<div class="flex items-start justify-between gap-3"><div><h3 class="sf-bd-title" data-no="3">NCA versions</h3>
+                <p class="sf-bd-hint">A new NCA quantity counts once an administrator approves it.</p></div><span id="bd-nca-pill" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 shrink-0 self-start sm:self-center">NCA v1 Active</span></div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs">
+              <input type="text" id="nca-ref" placeholder="Reference" class="px-2.5 py-2 border border-slate-300 rounded-lg font-mono">
+              <input type="date" id="nca-date" aria-label="NCA date" value="2026-11-18" class="px-2.5 py-2 border border-slate-300 rounded-lg">
+              <input type="number" id="nca-qty" placeholder="New qty (m²)" class="px-2.5 py-2 border border-slate-300 rounded-lg font-mono">
+              <input type="text" id="nca-reason" placeholder="Reason for change" class="px-2.5 py-2 border border-slate-300 rounded-lg">
+              <button onclick="submitNcaRevision()" class="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold transition">Submit Revision</button>
+            </div>
+            <div id="nca-history" class="overflow-x-auto"></div>
           </div>
 
         
@@ -1337,7 +1341,7 @@
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div>
             <div class="flex items-center gap-2.5"><h2 class="sf-ledger-title">MR11 master operations ledger</h2><span id="mr11-count" class="sf-ledger-count"></span></div>
-            <p class="text-xs text-slate-500">Every project, one line per stream. Text colour = product type, fill = formwork type.</p>
+            <p class="text-xs text-slate-500">Every project, one line per stream, formwork and product type. Text colour = product type, fill = formwork type.</p>
           </div>
           <div class="flex items-center gap-2 text-xs">
             <button id="mr11-edit-btn" onclick="toggleEditMode()" class="px-2.5 py-1 rounded border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 font-semibold">Editing: off</button>

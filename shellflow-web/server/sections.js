@@ -90,10 +90,21 @@ const VALIDATORS = {
       if (!isText(l.stream, 60) || !isText(l.blocks, 300) || !isText(l.formwork, 80) || !isText(l.product, 80) || !isText(l.terms, 80)) fail('MR11 line text is not valid');
       // A line's own selling price in USD per m²; none means the project's price
       if (l.price !== undefined && l.price !== null && (!isNum(l.price) || l.price < 0 || l.price > 1000000)) fail('An MR11 line price is not valid');
+      // A line's own monthly forecast: up to 6 months of m²
+      if (l.months !== undefined && (!Array.isArray(l.months) || l.months.length > 6 || l.months.some(m => !isNum(m) || m < 0 || m > 10000000))) fail('An MR11 line forecast is not valid');
+      // A line's chosen forecast months: each a calendar month ("2027-03") with its m², a month once per line
+      if (l.forecast !== undefined) {
+        if (!Array.isArray(l.forecast) || l.forecast.length > 12) fail('An MR11 line forecast is not valid');
+        l.forecast.forEach(f => {
+          if (!f || typeof f !== 'object' || !/^\d{4}-(0[1-9]|1[0-2])$/.test(String(f.month)) || !isNum(f.value) || f.value < 0 || f.value > 10000000) fail('An MR11 line forecast is not valid');
+        });
+        if (new Set(l.forecast.map(f => f.month)).size !== l.forecast.length) fail('A month can only be used once in a line forecast');
+      }
     });
-    // One MR11 line per stream in a project
-    const streams = lines.map(l => String(l.stream || '').replace(/[^0-9.]/g, '') || '1');
-    if (new Set(streams).size !== streams.length) fail('Each stream can only have one MR11 line');
+    // One MR11 line per stream, formwork type and product type in a project
+    const norm = v => String(v || '').trim().toLowerCase();
+    const keys = lines.map(l => [String(l.stream || '').replace(/[^0-9.]/g, '') || '1', norm(l.formwork), norm(l.product)].join('|'));
+    if (new Set(keys).size !== keys.length) fail('Two MR11 lines have the same stream, formwork type and product type');
   },
   lineFinance: d => checkLineTrack(d, 'lineFinance'),
   lineDesign: d => checkLineTrack(d, 'lineDesign'),

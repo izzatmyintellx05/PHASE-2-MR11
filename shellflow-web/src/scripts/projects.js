@@ -40,10 +40,12 @@
         return out;
       })(window.mr11Lines);
 
-      // One MR11 line per stream: a project's lines on the same stream show as one line
-      // (m² and money added up, blocks listed together). Lines saved that way before the rule
-      // are shown combined; the first line keeps its own figures and department entries.
-      const streamKey = r => String((r._line && r._line.stream) || r.stream || '').replace(/[^0-9.]/g, '') || '1';
+      // One MR11 line per stream, formwork type and product type: a project's lines that share all
+      // three show as one line (m² and money added up, blocks listed together). The same stream
+      // with another formwork or product type is its own line. The first line keeps its own
+      // figures and department entries.
+      const norm = v => String(v || '').trim().toLowerCase();
+      const streamKey = r => [String((r._line && r._line.stream) || r.stream || '').replace(/[^0-9.]/g, '') || '1', norm(r._line && r._line.formwork), norm(r._line && r._line.product)].join('|');
       const SUM = ['ncaQty', 'designFinal', 'totalForecastM2', 'producedM2', 'shippedM2', 'pendingM2', '_share', '_value', '_ownProcessed'];
       window.mr11OneLinePerStream = function (rows) {
         const out = [];

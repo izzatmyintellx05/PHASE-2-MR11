@@ -957,3 +957,98 @@
 .sf-bd-title { width: 100%; }
 .sf-bd-title .sf-collapse-btn { order: 2; margin-left: auto; }
 .sf-bd-card div:has(> .sf-bd-title) { flex: 1; min-width: 0; }
+
+/* Business Development, Stream details: one card, four parts in an aligned grid.
+   The parts sit side by side only when the card itself is wide enough. */
+.sf-bd-stream { container: sfstream / inline-size; }
+.sf-bd-part { border-top: 1px solid var(--line, #e2e8f0); padding-top: 16px; }
+.sf-bd-stream > .sf-bd-part:first-of-type { border-top: 0; padding-top: 0; }
+.sf-bd-sub { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 8px 12px; margin-bottom: 12px; }
+.sf-bd-subtitle { font-size: 13px; font-weight: 700; color: var(--ink); }
+.sf-bd-sub .sf-bd-hint { margin-top: 1px; padding-left: 0 !important; font-size: 12px; }
+.sf-bd-sub select { min-height: 32px !important; }
+.sf-bd-parts { display: grid; grid-template-columns: 1fr; gap: 20px; }
+.sf-bd-parts > * { min-width: 0; }
+.sf-bd-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 12px 14px !important; }
+.sf-bd-fields > div { display: flex; flex-direction: column; justify-content: flex-end; }
+.sf-bd-terms { display: grid; grid-template-columns: 1fr !important; gap: 8px !important; }
+.sf-bd-terms > div { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 8px; }
+.sf-bd-terms > div > * { width: auto !important; }
+.sf-bd-stream #bd-forecast-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 8px !important; }
+.sf-bd-stream #bd-forecast-grid > div { padding: 8px 10px; }
+@container sfstream (min-width: 560px) {
+  .sf-bd-fields { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+  .sf-bd-terms { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+  .sf-bd-terms > div { grid-template-columns: 64px minmax(0, 1fr); }
+  .sf-bd-stream #bd-forecast-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) !important; }
+}
+@container sfstream (min-width: 900px) {
+  .sf-bd-parts { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 0 28px; }
+  .sf-bd-parts > :last-child { border-left: 1px solid var(--line, #e2e8f0); padding-left: 28px; }
+  .sf-bd-terms { grid-template-columns: 1fr !important; }
+  .sf-bd-terms > div { grid-template-columns: 84px minmax(0, 1fr); }
+  .sf-bd-stream #bd-forecast-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+}
+/* The MR11 lines table fits the card: fixed columns, no sideways scroll */
+.sf-bd-stream .sf-lines-table { table-layout: fixed; }
+.sf-bd-stream .sf-lines-table thead th:nth-child(1) { width: 36px; }
+.sf-bd-stream .sf-lines-table thead th:nth-child(2) { width: 100px; }
+.sf-bd-stream .sf-lines-table thead th:nth-child(6) { width: 84px; }
+.sf-bd-stream .sf-lines-table thead th:nth-child(7) { width: 72px; }
+.sf-bd-stream .sf-lines-table input, .sf-bd-stream .sf-lines-table select { min-width: 0 !important; max-width: 100%; height: 34px; text-overflow: ellipsis; }
+.sf-bd-stream .sf-lines-table input[data-field="m2"] { width: 100%; }
+.sf-line-more { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto; gap: 12px; align-items: start; padding: 10px 12px; border-radius: 10px; background: var(--paper-2, #f8fafc); }
+.sf-line-more > * { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.sf-line-k { font-size: 11px; font-weight: 600; color: var(--ink-3, #64748b); }
+.sf-line-n, .sf-line-more .block { font-size: 10.5px; color: var(--ink-3, #64748b); margin: 0 !important; }
+.sf-line-v { padding-top: 7px; font-family: ui-monospace, monospace; font-size: 12.5px; font-weight: 700; color: var(--ink); white-space: nowrap; text-align: right; }
+@container sfstream (max-width: 520px) {
+  .sf-line-more { grid-template-columns: 1fr 1fr; }
+  .sf-line-more > :last-child { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; }
+  .sf-line-v { padding-top: 0; }
+}
+
+/* MR11 lines as sub-cards: one stream + formwork + product each, with its own price, terms and forecast */
+.sf-lc-list { display: grid; gap: 12px; }
+.sf-lc { border: 1px solid var(--line, #e2e8f0); border-radius: 12px; background: var(--paper, #fff); padding: 12px 14px 14px; display: grid; gap: 12px; }
+.sf-lc-h { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.sf-lc-no { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+.sf-lc-no .sf-fill-dot { margin: 0; }
+.sf-lc-sum { flex: 1; min-width: 0; font-size: 11.5px; color: var(--ink-3, #64748b); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sf-lc-f { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.sf-lc-f input, .sf-lc-f select { height: 36px; font-size: 12.5px; min-width: 0; text-overflow: ellipsis; }
+.sf-lc-grid { display: grid; gap: 10px 12px; }
+.sf-lc-scope { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.sf-lc-money { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); padding-top: 12px; border-top: 1px dashed var(--line, #e2e8f0); }
+.sf-lc-money > :last-child { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: baseline; }
+.sf-lc-fc { padding-top: 12px; border-top: 1px dashed var(--line, #e2e8f0); display: grid; gap: 8px; }
+.sf-lc-fc-h { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; }
+.sf-lc-months { display: grid; grid-template-columns: repeat(auto-fill, minmax(82px, 1fr)); gap: 8px; }
+.sf-lc-months .sf-line-k { font-weight: 500; }
+.sf-lc-bad { color: #b45309 !important; font-weight: 700; }
+.sf-lc-total { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; padding: 10px 14px; border-radius: 10px; background: var(--paper-2, #f1f5f9); font-size: 12px; font-weight: 600; color: var(--ink-2, #475569); }
+.sf-lc-total strong { color: var(--ink); }
+.sf-fc-total { background: var(--paper-2, #f1f5f9) !important; cursor: default; }
+@container sfstream (min-width: 560px) {
+  .sf-lc-scope { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .sf-lc-scope > :nth-child(1), .sf-lc-scope > :nth-child(2), .sf-lc-scope > :nth-child(5) { grid-column: span 2; }
+  .sf-lc-scope > :nth-child(3), .sf-lc-scope > :nth-child(4) { grid-column: span 3; }
+  .sf-lc-scope > :nth-child(5) { order: 1; }
+  .sf-lc-scope > :nth-child(3), .sf-lc-scope > :nth-child(4) { order: 2; }
+  .sf-lc-money { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) auto; }
+  .sf-lc-money > :last-child { grid-column: auto; flex-direction: column; align-items: flex-end; }
+}
+
+/* A line's forecast: the number of months, then one row per month: month picker, m², share */
+.sf-lc-fc-h { align-items: center; }
+.sf-lc-count { display: inline-flex; align-items: center; gap: 6px; margin-right: auto; font-size: 11px; font-weight: 600; color: var(--ink-3, #64748b); }
+.sf-lc-count select { height: 30px; padding: 0 6px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 12px; background: #fff; }
+.sf-lc-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px 12px; }
+.sf-lc-slot { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) 40px; gap: 6px; align-items: center; }
+.sf-lc-slot select, .sf-lc-slot input { height: 34px; min-width: 0; padding: 0 8px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 12.5px; background: #fff; }
+.sf-lc-slot input { text-align: right; font-family: ui-monospace, monospace; }
+.sf-lc-pct { font-size: 11px; color: var(--ink-3, #64748b); text-align: right; font-variant-numeric: tabular-nums; }
+.sf-lc-dupe select { border-color: #d97706; background: #fffbeb; }
+.sf-fc-totals { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin-bottom: 10px; }
+.sf-fc-chip { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 10px; background: var(--paper-2, #f1f5f9); font-size: 11px; color: var(--ink-3, #64748b); }
+.sf-fc-chip strong { font-family: ui-monospace, monospace; font-size: 13px; color: var(--ink); }

@@ -186,6 +186,8 @@
   function applySection(name, data) {
     if (FORM_PATTERNS[name]) {
       Object.entries(data.values || {}).forEach(([id, value]) => {
+        // Saved projects may hold an older status (Contract Issued, Completed): show it as the new one
+        if (id === 'bd-status' && window.projectStatusOf) value = window.projectStatusOf(value);
         const el = $id(id);
         if (el && document.activeElement !== el) el.value = value;
       });

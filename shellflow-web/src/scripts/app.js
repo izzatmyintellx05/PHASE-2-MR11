@@ -23,6 +23,19 @@
     ];
     const PANEL_STAGES = ['DESIGNED', 'PROCESSED', 'PRODUCED', 'DISPATCHED', 'DELIVERED'];
     const MR11_EDITABLE = ['country', 'pic', 'status', 'po', 'nca', 'incoterms'];
+    // Project status (BD, Project details). Older values map onto the new list.
+    const PROJECT_STATUSES = ['Quoted', 'Identified', 'Confirmed', 'On Hold'];
+    const OLD_STATUS = { 'contract issued': 'Confirmed', completed: 'Confirmed' };
+    function projectStatusOf(v) {
+      const t = String(v || '').trim();
+      return PROJECT_STATUSES.find(s => s.toLowerCase() === t.toLowerCase()) || OLD_STATUS[t.toLowerCase()] || t;
+    }
+    window.projectStatusOf = projectStatusOf;
+    const STATUS_BADGE = { Quoted: 'bg-sky-100 text-sky-800', Identified: 'bg-violet-100 text-violet-800', Confirmed: 'bg-emerald-100 text-emerald-800', 'On Hold': 'bg-amber-100 text-amber-900' };
+    function statusBadge(v) {
+      const cls = /Alert/.test(v) ? 'bg-rose-100 text-rose-800' : STATUS_BADGE[v] || 'bg-slate-100 text-slate-700';
+      return `<span class="px-2 py-0.5 rounded text-[10px] font-bold ${cls}">${esc(v)}</span>`;
+    }
     const MR11_FIELD_LABELS = { country: 'Countries', pic: 'PIC', status: 'Status', po: 'PO', nca: 'NCA', incoterms: 'Incoterms' };
 
     function buildPanels() {
@@ -220,7 +233,7 @@
         projectNo: 'SG-26-0305',
         country: 'Singapore (SG)',
         pic: 'Sarah Chen',
-        status: 'Contract Issued',
+        status: 'Identified',
         product: 'Modification',
         po: 'Pending PO',
         nca: 'NCA-2026-305',
@@ -273,8 +286,8 @@
     });
     const REF_EXTRAS = {
       'MY-26-0104': { designFinal: 1240, advancePct: 20, freightRef: 'PIL-55120', shellApproved: true, processedM2: 1240, shortName: 'GC4', stream: '1', location: 'Selangor', lmeType: 'Variable', shellStatus: 'Approved', designStatus: 'Completed', paymentDate: '2026-09-22', processedDate: '2026-10-20', producedDate: '2026-11-14', dispatchDate: '2026-11-12', etd: '', atd: '', seriesLedger: [{ series: 'S1', processed: 700, area: 700, date: '2026-10-05', closing: '2026-10-05 17:00' }, { series: 'S2', processed: 540, area: 540, date: '2026-10-20', closing: '' }], approvals: [{ status: 'Approved', revision: 1, approved: '2026-10-15', submitted: '2026-10-08', seen: '2026-10-15' }], monthStages: { '2026-11': { design: 0, processed: 0, produced: 400, dispatched: 300 } } },
-      'PH-26-0219': { designFinal: null, advancePct: 30, freightRef: '', shellApproved: true, processedM2: 600, shortName: 'AP3', stream: '2', location: 'Manila', lmeType: 'Fixed', shellStatus: 'Reapprove', designStatus: 'Ongoing', paymentDate: '2026-10-06', processedDate: '2026-11-11', producedDate: '2026-11-16', dispatchDate: '', etd: '2026-12-08', atd: '', seriesLedger: [{ series: 'S1', processed: 600, area: 950, date: '2026-11-11', closing: '' }], approvals: [{ status: 'Approved', revision: 0, approved: '2026-10-20', submitted: '2026-10-12', seen: '2026-10-20' }, { status: 'Reapprove', revision: 1, approved: '', submitted: '2026-11-03', seen: '2026-11-05' }], monthStages: { '2026-11': { design: 0, processed: 300, produced: 300, dispatched: 0 } } },
-      'IN-26-0412': { designFinal: 300, advancePct: 100, freightRef: '', shellApproved: true, processedM2: 300, shortName: 'HG4', stream: '1', location: 'Hyderabad', lmeType: 'Fixed', shellStatus: 'Approved', designStatus: 'Completed', paymentDate: '2026-10-02', processedDate: '2026-11-12', producedDate: '', dispatchDate: '', etd: '', atd: '', seriesLedger: [{ series: 'S1', processed: 300, area: 300, date: '2026-11-12', closing: '2026-11-12 16:30' }], approvals: [{ status: 'Approved', revision: 0, approved: '2026-10-30', submitted: '2026-10-22', seen: '2026-10-30' }], monthStages: { '2026-11': { design: 300, processed: 300, produced: 0, dispatched: 0 } } },
+      'PH-26-0219': { designFinal: null, advancePct: 30, freightRef: '', shellApproved: true, processedM2: 600, shortName: 'AP3', stream: '2', location: 'Metro Manila', lmeType: 'Fixed', shellStatus: 'Reapprove', designStatus: 'Ongoing', paymentDate: '2026-10-06', processedDate: '2026-11-11', producedDate: '2026-11-16', dispatchDate: '', etd: '2026-12-08', atd: '', seriesLedger: [{ series: 'S1', processed: 600, area: 950, date: '2026-11-11', closing: '' }], approvals: [{ status: 'Approved', revision: 0, approved: '2026-10-20', submitted: '2026-10-12', seen: '2026-10-20' }, { status: 'Reapprove', revision: 1, approved: '', submitted: '2026-11-03', seen: '2026-11-05' }], monthStages: { '2026-11': { design: 0, processed: 300, produced: 300, dispatched: 0 } } },
+      'IN-26-0412': { designFinal: 300, advancePct: 100, freightRef: '', shellApproved: true, processedM2: 300, shortName: 'HG4', stream: '1', location: 'Telangana', lmeType: 'Fixed', shellStatus: 'Approved', designStatus: 'Completed', paymentDate: '2026-10-02', processedDate: '2026-11-12', producedDate: '', dispatchDate: '', etd: '', atd: '', seriesLedger: [{ series: 'S1', processed: 300, area: 300, date: '2026-11-12', closing: '2026-11-12 16:30' }], approvals: [{ status: 'Approved', revision: 0, approved: '2026-10-30', submitted: '2026-10-22', seen: '2026-10-30' }], monthStages: { '2026-11': { design: 300, processed: 300, produced: 0, dispatched: 0 } } },
       'SG-26-0305': { designFinal: 620, advancePct: 20, freightRef: '', shellApproved: true, paymentOverdue: true, processedM2: 200, shortName: 'MV1', stream: '1', location: 'Singapore', lmeType: 'Variable', shellStatus: 'Approved', designStatus: 'Completed', paymentDate: '', processedDate: '2026-11-13', producedDate: '', dispatchDate: '', etd: '', atd: '', seriesLedger: [{ series: 'S1', processed: 200, area: 620, date: '2026-11-13', closing: '' }], approvals: [{ status: 'Approved', revision: 0, approved: '2026-10-20', submitted: '2026-10-14', seen: '2026-10-20' }], monthStages: { '2026-11': { design: 620, processed: 200, produced: 0, dispatched: 0 } } }
     };
     referenceMR11Projects.forEach(r => Object.assign(r, { key: r.projectNo }, REF_EXTRAS[r.projectNo]));
@@ -751,7 +764,7 @@
       appState.formworkType = document.getElementById('bd-formwork-type').value;
       appState.productType = document.getElementById('bd-product-type').value;
       appState.projectNo = $('bd-project-no').value.trim();
-      appState.projectStatus = $('bd-status').value;
+      appState.projectStatus = projectStatusOf($('bd-status').value);
       appState.poNo = $('bd-po-no').value.trim();
       appState.ncaNo = $('bd-nca-no').value.trim();
 
@@ -1754,6 +1767,12 @@
         title: `Edit ${MR11_FIELD_LABELS[field]}`, desc: isAdmin() ? 'As an administrator your edit applies at once and is logged.' : 'Your change waits for an administrator. The cell shows it as waiting.',
         label: `${rowLabel(key)}: new value`, confirm: isAdmin() ? 'Apply Edit' : 'Send for Approval', value: row[field],
         onOk: value => {
+          // Status takes one of the four project statuses
+          if (field === 'status') {
+            const s = PROJECT_STATUSES.find(x => x.toLowerCase() === String(value).trim().toLowerCase());
+            if (!s) { notify(`Status must be ${PROJECT_STATUSES.join(', ')}.`, 'error'); return; }
+            value = s;
+          }
           const raw = key === 'LIVE' ? getLiveRow1Record() : referenceMR11Projects.find(r => r.key === key);
           if (isAdmin()) appState.approvals.filter(a => a.row === key && a.field === field && a.status === 'APPROVED').forEach(a => { a.status = 'REPLACED'; });
           const entry = { id: ++appState.nextId, type: 'EDIT', row: key, field, value, base: raw[field], before: row[field], by: ROLES[appState.role], when: nowStamp(), status: isAdmin() ? 'APPROVED' : 'PENDING' };
@@ -2363,9 +2382,9 @@
         col('project', 'Short Name', r => td(esc(r.shortName))),
         col('project', 'Stream', r => td(esc(rowStreamNo(r)), 'text-center')),
         col('project', 'Countries', r => mr11EditCell(r, 'country', esc(r.country))),
-        col('project', 'Location', r => td(esc(r.location))),
+        col('project', 'State', r => td(esc(r.location))),
         col('project', 'PIC', r => mr11EditCell(r, 'pic', esc(r.pic))),
-        col('project', 'Status', r => mr11EditCell(r, 'status', `<span class="px-2 py-0.5 rounded text-[10px] font-bold ${/Alert/.test(r.status) ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}">${esc(r.status)}</span>`)),
+        col('project', 'Status', r => mr11EditCell(r, 'status', statusBadge(r.status))),
         col('project', 'Products', r => td(esc(r.product), 'font-bold')),
         col('project', 'PO', r => mr11EditCell(r, 'po', esc(r.po))),
         col('project', 'NCA', r => mr11EditCell(r, 'nca', esc(r.nca))),
@@ -2405,7 +2424,7 @@
         col('yard', 'Pending Delivery (m²)', r => td(physical(r, r.pendingM2.toFixed(2)), 'text-right font-bold'))
       ];
     }
-    const MR11_FILTERS = [['customerProject', 'Project'], ['country', 'Country'], ['location', 'Location'], ['pic', 'PIC'], ['status', 'Status'], ['product', 'Product Type'], ['formworkSystem', 'Formwork Type'], ['_stream', 'Stream'], ['shellStatus', 'Shell Plan Status'], ['_design', 'Design Status'], ['_payment', 'Payment Status'], ['paymentTerm', 'Payment Term'], ['lmeType', 'LME Type'], ['_dispatch', 'Dispatch Stage']];
+    const MR11_FILTERS = [['customerProject', 'Project'], ['country', 'Country'], ['location', 'State'], ['pic', 'PIC'], ['status', 'Status'], ['product', 'Product Type'], ['formworkSystem', 'Formwork Type'], ['_stream', 'Stream'], ['shellStatus', 'Shell Plan Status'], ['_design', 'Design Status'], ['_payment', 'Payment Status'], ['paymentTerm', 'Payment Term'], ['lmeType', 'LME Type'], ['_dispatch', 'Dispatch Stage']];
     function mr11FilterValue(r, field) {
       if (field === '_stream') return `Stream ${rowStreamNo(r)}`;
       if (field === '_payment') return /CLEARED/.test(r.advStatus) ? 'Advance Received' : 'Awaiting Advance';
@@ -2916,7 +2935,7 @@
       // One row per MR11 line, each with its own figures
       const rows = typeof mr11Lines === 'function' ? mr11Lines(allMr11Rows()) : allMr11Rows();
       const defs = {
-        BD: [['Customer & Project Name', r => r.customerProject.trim()], ['Project No', lineNoOf], ['Project Shortname', r => r.shortName], ['Stream', rowStreamNo], ['Countries', r => r.country], ['Location', r => r.location], ['PIC', r => r.pic], ['Status', r => r.status], ['Product Type', r => r.product], ['Formwork Type', r => r.formworkSystem]],
+        BD: [['Customer & Project Name', r => r.customerProject.trim()], ['Project No', lineNoOf], ['Project Shortname', r => r.shortName], ['Stream', rowStreamNo], ['Countries', r => r.country], ['State', r => r.location], ['PIC', r => r.pic], ['Status', r => r.status], ['Product Type', r => r.product], ['Formwork Type', r => r.formworkSystem]],
         FINANCE: [['Customer & Project Name', r => r.customerProject.trim()], ['Project No', lineNoOf], ['Stream', rowStreamNo], ['Payment Term', r => r.paymentTerm], ['Advance Received / Payment Status', r => r.advStatus], ['Actual Received', r => formatUSD(r.actualReceived)], ['Payment Date', r => r.paymentDate || '']],
         DESIGN: [['Project No', lineNoOf], ['Project Name', r => r.customerProject.trim()], ['Stream', rowStreamNo], ['Shell Plan Status - Pending Consultant Drawings', r => r.shellStatus], ['Shell Plan Approved Date', r => r.shellDate], ['Formwork Design Status', r => r.designStatus], ['Actual Formwork Order Completion Date', r => r.designDate], ['Total Quantity Ordered m2', r => r.designFinal ?? '']],
         PLANNING: [['Contract No.', lineNoOf], ['Project Shortname', r => r.shortName], ['Project Name', r => r.customerProject.trim()], ['Stream', rowStreamNo], ['Cumulative Processed (Project)', r => processedOf(r)], ['Processed Date', r => r.processedDate || '']],
