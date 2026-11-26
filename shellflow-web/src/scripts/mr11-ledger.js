@@ -8,7 +8,7 @@
     // in app.js; the columns themselves still come from mr11Columns().
     // =========================================================================
     const LEDGER = {
-      panel: loadPref('mr11.panelOpen', true),
+      panel: loadPref('mr11.panelOpen', false),
       rates: loadPref('mr11.ratesOpen', false),
       freeze: loadPref('mr11.freeze', true),
       density: loadPref('mr11.density', 'comfortable'),
@@ -242,6 +242,9 @@
         ${section('highlight', 'Highlight columns', LEDGER.highlights.length ? `<em class="sf-pp-badge">${LEDGER.highlights.length}</em>` : '', highlight)}
         ${section('filters', 'Filters', active ? `<em class="sf-pp-badge">${active}</em>` : '', filters, active ? '<button type="button" class="sf-pp-link is-danger" data-mr11="fclear">Clear</button>' : '')}`;
     }
+    // The View panel and the MR11 tools drawer take turns: opening one closes the other
+    window.mr11PanelOpen = () => !!LEDGER.panel;
+    window.mr11ClosePanel = () => { if (!LEDGER.panel) return; LEDGER.panel = false; savePref('mr11.panelOpen', false); renderMR11PipelineTab(); };
     function filterMr11Values(input) {
       const q = input.value.trim().toLowerCase();
       input.parentElement.querySelectorAll('.sf-pp-values li').forEach(li => { li.hidden = !!q && !li.dataset.valueText.includes(q); });
@@ -360,7 +363,7 @@
       if (menu && t.tagName !== 'SUMMARY') menu.removeAttribute('open');
       const rerender = () => renderMR11PipelineTab();
       switch (act) {
-        case 'panel': LEDGER.panel = !LEDGER.panel; savePref('mr11.panelOpen', LEDGER.panel); rerender(); break;
+        case 'panel': LEDGER.panel = !LEDGER.panel; savePref('mr11.panelOpen', LEDGER.panel); if (LEDGER.panel) window.mr11CloseTools?.(); rerender(); break;
         case 'rates': LEDGER.rates = !LEDGER.rates; savePref('mr11.ratesOpen', LEDGER.rates); renderMarket(); rerender(); break;
         case 'freeze': LEDGER.freeze = !LEDGER.freeze; savePref('mr11.freeze', LEDGER.freeze); rerender(); break;
         case 'density': LEDGER.density = LEDGER.density === 'compact' ? 'comfortable' : 'compact'; savePref('mr11.density', LEDGER.density); rerender(); break;

@@ -57,66 +57,88 @@
     }
 
     // ---------------- Gate conditions: the tie holes ----------------
-    function check(label, test) {
+    // A check shows its label when met, and what is still wrong when not
+    function check(label, test, miss) {
       let met = false;
       try { met = !!test(); } catch { met = false; }
-      return { label, met };
+      let missing = '';
+      if (!met && miss) { try { missing = typeof miss === 'function' ? miss() : miss; } catch { missing = ''; } }
+      return { label, met, miss: missing || '' };
     }
+    const count = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+    const gap = (have, want, what) => {
+      const d = Math.round((have - want) * 100) / 100;
+      return `${what} ${fmtNum(Math.abs(d), Number.isInteger(d) ? 0 : 2)} m² ${d < 0 ? 'short of' : 'over'} the NCA`;
+    };
     function stepConditions(tab, alerts) {
       const val = id => ($(id) ? $(id).value : '');
       switch (tab) {
         case 1: return [
-          check('Project details complete', () => [appState.projectName, appState.buildingName, appState.countryName, appState.picName, appState.projectNo].every(v => String(v || '').trim())),
-          check('An NCA version is approved', () => latestNca()),
-          check('Selling price calculated', () => appState.finalUnitRate > 0 && Number.isFinite(appState.totalContractValue)),
-          check('Monthly forecast matches the NCA', () => Math.abs(forecastInputs().reduce((a, b) => a + b, 0) - appState.ncaArea) < 0.01),
-          check('MR11 lines add up to the NCA', () => Math.abs(liveLinesTotal() - appState.ncaArea) < 0.01)
+          check('Project details complete', () => [appState.projectName, appState.buildingName, appState.countryName, appState.picName, appState.projectNo].every(v => String(v || '').trim()),
+            () => `Missing: ${[['project name', appState.projectName], ['building', appState.buildingName], ['country', appState.countryName], ['PIC', appState.picName], ['project no.', appState.projectNo]].filter(([, v]) => !String(v || '').trim()).map(([n]) => n).join(', ')}`),
+          check('An NCA version is approved', () => latestNca(), 'No NCA version approved yet'),
+          check('Selling price calculated', () => appState.finalUnitRate > 0 && Number.isFinite(appState.totalContractValue), 'Selling price not worked out yet'),
+          check('Monthly forecast matches the NCA', () => Math.abs(forecastInputs().reduce((a, b) => a + b, 0) - appState.ncaArea) < 0.01,
+            () => gap(forecastInputs().reduce((a, b) => a + b, 0), appState.ncaArea, 'Monthly forecast is')),
+          check('MR11 lines add up to the NCA', () => Math.abs(liveLinesTotal() - appState.ncaArea) < 0.01,
+            () => gap(liveLinesTotal(), appState.ncaArea, 'MR11 lines are'))
         ];
         case 2: return [
-          check('Payment terms add up to 100%', () => Math.abs(termsList().reduce((a, t) => a + t.pct, 0) - 100) < 0.01),
-          check('Advance payment received', () => appState.advanceCleared),
-          check('Advance date recorded', () => appState.advanceCleared && isDate(appState.advanceDate)),
-          check('Every bank line matched', () => !appState.bankLines.some(l => l.status === 'OPEN'))
+          check('Payment terms add up to 100%', () => Math.abs(termsList().reduce((a, t) => a + t.pct, 0) - 100) < 0.01,
+            () => `Payment terms add up to ${fmtNum(termsList().reduce((a, t) => a + t.pct, 0), 0)}%, not 100%`),
+          check('Advance payment received', () => appState.advanceCleared, 'Advance payment not received yet'),
+          check('Advance date recorded', () => appState.advanceCleared && isDate(appState.advanceDate), 'Advance date not recorded'),
+          check('Every bank line matched', () => !appState.bankLines.some(l => l.status === 'OPEN'),
+            () => `${count(appState.bankLines.filter(l => l.status === 'OPEN').length, 'bank line', 'bank lines')} not matched`)
         ];
         case 3: return [
-          check('Shell plan approved', () => val('sp-act-date')),
-          check('Design complete', () => designIsComplete()),
-          check('Design final m² entered', () => (parseFloat(val('des-final-m2')) || 0) > 0),
-          check('Accessories inside their SLA', () => !appState.items.some(i => !itemDone(i) && slaOf(i).over))
+          check('Shell plan approved', () => val('sp-act-date'), 'Shell plan not approved yet'),
+          check('Design complete', () => designIsComplete(), 'Design not complete yet'),
+          check('Design final m² entered', () => (parseFloat(val('des-final-m2')) || 0) > 0, 'Design final m² not entered'),
+          check('Accessories inside their SLA', () => !appState.items.some(i => !itemDone(i) && slaOf(i).over),
+            () => `${count(appState.items.filter(i => !itemDone(i) && slaOf(i).over).length, 'accessory', 'accessories')} past the SLA`)
         ];
         case 4: return [
-          check('Production series released', () => appState.planningSeries.some(s => s.status === 'Released')),
-          check('Panels produced', () => panelM2AtOrPast('PRODUCED') > 0),
-          check('Yard evidence attached', () => appState.yardEvidence.length > 0),
-          check('Plant load inside capacity', () => appState.existingPlantLoad + appState.ncaArea <= appState.plantCapacityCap)
+          check('Production series released', () => appState.planningSeries.some(s => s.status === 'Released'), 'No production series released yet'),
+          check('Panels produced', () => panelM2AtOrPast('PRODUCED') > 0, 'No panels produced yet'),
+          check('Yard evidence attached', () => appState.yardEvidence.length > 0, 'No yard evidence attached'),
+          check('Plant load inside capacity', () => appState.existingPlantLoad + appState.ncaArea <= appState.plantCapacityCap,
+            () => `Plant load ${fmtNum(appState.existingPlantLoad + appState.ncaArea - appState.plantCapacityCap)} m² over capacity`)
         ];
         case 6: {
           const g = gateFor('LIVE');
-          return g.checks.map(c => ({ label: c.na ? `${c.name} (not needed)` : c.name, met: !!c.pass }));
+          return g.checks.map(c => ({ label: c.na ? `${c.name} (not needed)` : c.name, met: !!c.pass, miss: `Not yet: ${c.name}` }));
         }
         case 7: return [
-          check('Freight reference saved', () => appState.freightRef),
-          check('A lorry is booked', () => appState.lorries.some(l => l.row === 'LIVE' && l.status !== 'Cancelled')),
-          check('No lorry is late', () => !appState.lorries.some(l => activeLorry(l) && l.date < DEMO_TODAY)),
-          check('No lorry is overloaded', () => !appState.lorries.some(l => l.m2 > l.cap && l.status !== 'Cancelled'))
+          check('Freight reference saved', () => appState.freightRef, 'No freight reference saved'),
+          check('A lorry is booked', () => appState.lorries.some(l => l.row === 'LIVE' && l.status !== 'Cancelled'), 'No lorry booked yet'),
+          check('No lorry is late', () => !appState.lorries.some(l => activeLorry(l) && l.date < DEMO_TODAY),
+            () => `${count(appState.lorries.filter(l => activeLorry(l) && l.date < DEMO_TODAY).length, 'lorry is', 'lorries are')} late`),
+          check('No lorry is overloaded', () => !appState.lorries.some(l => l.m2 > l.cap && l.status !== 'Cancelled'),
+            () => `${count(appState.lorries.filter(l => l.m2 > l.cap && l.status !== 'Cancelled').length, 'lorry is', 'lorries are')} overloaded`)
         ];
         case 8: return [
-          check('A delivery is recorded', () => appState.siteRegister.length > 0),
-          check('Every delivery has evidence', () => appState.siteRegister.length > 0 && appState.siteRegister.every(x => x.evidence)),
-          check('Departed lorries are received', () => appState.lorries.filter(l => l.row === 'LIVE' && l.status === 'Departed').every(l => appState.siteRegister.some(x => x.lorry === l.id))),
-          check('Site progress within shipped m²', () => appState.siteProgressM2 <= allMr11Rows()[0].shippedM2)
+          check('A delivery is recorded', () => appState.siteRegister.length > 0, 'No delivery recorded yet'),
+          check('Every delivery has evidence', () => appState.siteRegister.length > 0 && appState.siteRegister.every(x => x.evidence),
+            () => (appState.siteRegister.length ? `${count(appState.siteRegister.filter(x => !x.evidence).length, 'delivery has', 'deliveries have')} no evidence` : 'No delivery recorded yet')),
+          check('Departed lorries are received', () => appState.lorries.filter(l => l.row === 'LIVE' && l.status === 'Departed').every(l => appState.siteRegister.some(x => x.lorry === l.id)),
+            () => `${count(appState.lorries.filter(l => l.row === 'LIVE' && l.status === 'Departed' && !appState.siteRegister.some(x => x.lorry === l.id)).length, 'departed lorry', 'departed lorries')} not received`),
+          check('Site progress within shipped m²', () => appState.siteProgressM2 <= allMr11Rows()[0].shippedM2, 'Site progress is more than the shipped m²')
         ];
         case 9: return [
-          check('Every row passes validation', () => allMr11Rows().every(r => validationIssues(r).length === 0)),
-          check('No change waiting for approval', () => !appState.approvals.some(a => a.status === 'PENDING')),
-          check('No high alert open', () => !(alerts || computeAlerts()).some(a => a.severity === 'HIGH' && a.decision !== 'RESOLVED')),
-          check('Synced today', () => String(appState.lastSync).startsWith(DEMO_TODAY))
+          check('Every row passes validation', () => allMr11Rows().every(r => validationIssues(r).length === 0),
+            () => `${count(allMr11Rows().filter(r => validationIssues(r).length).length, 'row needs', 'rows need')} fixing`),
+          check('No change waiting for approval', () => !appState.approvals.some(a => a.status === 'PENDING'),
+            () => `${count(appState.approvals.filter(a => a.status === 'PENDING').length, 'change is', 'changes are')} waiting for approval`),
+          check('No high alert open', () => !(alerts || computeAlerts()).some(a => a.severity === 'HIGH' && a.decision !== 'RESOLVED'),
+            () => `${count((alerts || computeAlerts()).filter(a => a.severity === 'HIGH' && a.decision !== 'RESOLVED').length, 'high alert', 'high alerts')} open`),
+          check('Synced today', () => String(appState.lastSync).startsWith(DEMO_TODAY), 'Not synced today')
         ];
         default: return [];
       }
     }
     const holes = conds => conds.map(c => `<span class="sf-hole${c.met ? ' is-met' : ''}"></span>`).join('');
-    const condList = conds => conds.map(c => `<span class="sf-cond" data-met="${c.met}"><span class="sf-hole${c.met ? ' is-met' : ''}" aria-hidden="true"></span>${esc(c.label)}<span class="sr-only">${c.met ? ': met' : ': not met yet'}</span></span>`).join('');
+    const condList = conds => conds.map(c => `<span class="sf-cond" data-met="${c.met}" title="${esc(c.label)}"><span class="sf-hole${c.met ? ' is-met' : ''}" aria-hidden="true"></span>${esc(c.met || !c.miss ? c.label : c.miss)}<span class="sr-only">${c.met ? ': done' : ': still to do'}</span></span>`).join('');
     const lastMet = {};
     function renderTies(alerts) {
       STEP_TABS.forEach(tab => {

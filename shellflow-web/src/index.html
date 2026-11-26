@@ -198,66 +198,52 @@
     <!-- STEP 1: BD & COMMERCIAL -->
     <!-- ========================================================================= -->
     <section id="step-panel-1" class="step-panel space-y-6">
-      <!-- Operational Guardrail Banner -->
-      <div class="bg-sky-50 border border-sky-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div class="flex items-start sm:items-center gap-3">
-          <div class="p-2 rounded-lg bg-sky-600 text-white shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="file-Spreadsheet" aria-hidden="true" class="lucide lucide-file-Spreadsheet w-5 h-5"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="M8 13h2"></path><path d="M14 13h2"></path><path d="M8 17h2"></path><path d="M14 17h2"></path></svg>
-          </div>
-          <div>
-            <h2 class="text-sm font-bold text-slate-900">Online entry, NCA versions &amp; pricing engine</h2>
-            <p class="text-xs text-slate-600">Changes save here and update MR11.</p>
-          </div>
-        </div>
-        <span id="bd-nca-pill" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 shrink-0 self-start sm:self-center">NCA v1 Active</span>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sf-bd">
         <!-- Left 2 Columns: Commercial Inputs & Forecast -->
         <div class="lg:col-span-2 space-y-6">
           
           <!-- Card 1: Project Identity, Streams, Blocks, Formwork & Product Type -->
-          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-5">
+          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-5 sf-bd-card">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <h3 class="text-sm font-bold text-slate-900">1. Master Project Context &amp; Classification (Flows to Steps 2–7)</h3>
-                <p class="text-xs text-slate-500">Changes here flow to every other page.</p>
+<h3 class="sf-bd-title" data-no="1">Project details</h3>
+                <p class="sf-bd-hint">Name, country and the PO and NCA references. Every other page uses these.</p>
               </div>
               
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div>
-                <label class="block font-semibold text-slate-700 mb-1">Project Name</label>
+                <label class="sf-bd-label">Project name</label>
                 <input type="text" id="bd-project-name" value="Skyline Tower Phase 2" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500 outline-none">
               </div>
               <div class="hidden" aria-hidden="true">
-                <label class="block font-semibold text-slate-700 mb-1">Building Name / Zone</label>
+                <label class="sf-bd-label">Building Name / Zone</label>
                 <input type="text" id="bd-building-name" value="Tower A - Podium &amp; Core" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500 outline-none">
               </div>
               <div>
-                <label class="block font-semibold text-slate-700 mb-1">Country / Market (MR11 Col C)</label>
+                <label class="sf-bd-label">Country</label>
                 <input type="text" id="bd-country-name" value="Malaysia (MY)" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500 outline-none">
               </div>
               <div>
-                <label class="block font-semibold text-slate-700 mb-1">Commercial PIC (MR11 Col D)</label>
+                <label class="sf-bd-label">Commercial PIC</label>
                 <input type="text" id="bd-pic-name" value="Alex Tan" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500 outline-none">
               </div>
               <div>
-                <label class="block font-semibold text-slate-700 mb-1">Project No. (made automatically)</label>
+                <label class="sf-bd-label">Project No. (made automatically)</label>
                 <input type="text" id="bd-project-no" value="260011" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500 outline-none">
                 <p id="bd-project-no-hint" class="text-[11px] text-slate-500 mt-1"></p>
               </div>
               <div>
-                <label class="block font-semibold text-slate-700 mb-1">Short Name</label>
+                <label class="sf-bd-label">Short name</label>
                 <input type="text" id="bd-short-name" value="ST2" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500 outline-none">
               </div>
               <div>
-                <label class="block font-semibold text-slate-700 mb-1">Location</label>
+                <label class="sf-bd-label">Location</label>
                 <input type="text" id="bd-location" value="Kuala Lumpur" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-semibold text-slate-900 focus:ring-2 focus:ring-sky-500 outline-none">
               </div>
               <div>
-                <label class="block font-semibold text-slate-700 mb-1">Status</label>
+                <label class="sf-bd-label">Status</label>
                 <select id="bd-status" onchange="propagateBDData()" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none">
                   <option value="Confirmed" selected>Confirmed</option>
                   <option value="Contract Issued">Contract Issued</option>
@@ -267,21 +253,21 @@
               </div>
               <div class="grid grid-cols-2 gap-2">
                 <div>
-                  <label class="block font-semibold text-slate-700 mb-1">PO No.</label>
+                  <label class="sf-bd-label">PO no.</label>
                   <input type="text" id="bd-po-no" value="PO-SKY-2026-01" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-slate-900 outline-none focus:ring-2 focus:ring-sky-500">
                 </div>
                 <div>
-                  <label class="block font-semibold text-slate-700 mb-1">PO Date</label>
+                  <label class="sf-bd-label">PO date</label>
                   <input type="date" id="bd-po-date" value="2026-10-12" onchange="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 outline-none focus:ring-2 focus:ring-sky-500">
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-2">
                 <div>
-                  <label class="block font-semibold text-slate-700 mb-1">NCA No.</label>
+                  <label class="sf-bd-label">NCA no.</label>
                   <input type="text" id="bd-nca-no" value="NCA-2026-001" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-slate-900 outline-none focus:ring-2 focus:ring-sky-500">
                 </div>
                 <div>
-                  <label class="block font-semibold text-slate-700 mb-1">NCA Date</label>
+                  <label class="sf-bd-label">NCA date</label>
                   <input type="date" id="bd-nca-date" value="2026-10-15" onchange="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 outline-none focus:ring-2 focus:ring-sky-500">
                 </div>
               </div>
@@ -289,17 +275,17 @@
               <!-- Streams, blocks, formwork and product type now come from the MR11 lines below.
                    These hidden fields are filled in from the lines, so Steps 2-7 keep their lists. -->
               <div class="hidden" aria-hidden="true">
-                <label class="block font-semibold text-slate-700 mb-1">Stream Configuration (Comma-separated for downstream dropdowns)</label>
+                <label class="sf-bd-label">Stream Configuration (Comma-separated for downstream dropdowns)</label>
                 <input type="text" id="bd-streams-input" value="Stream 1, Stream 2, Stream 3" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none" placeholder="e.g. Stream 1, Stream 2, Stream 3">
               </div>
               <div class="hidden" aria-hidden="true">
-                <label class="block font-semibold text-slate-700 mb-1">Block Names (Comma-separated for downstream dropdowns)</label>
+                <label class="sf-bd-label">Block Names (Comma-separated for downstream dropdowns)</label>
                 <input type="text" id="bd-blocks-input" value="Block A, Block B, Central Core" oninput="propagateBDData()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none" placeholder="e.g. Block A, Block B, Central Core">
               </div>
 
               <!-- Formwork Type: the main line's (the line with the most m²) -->
               <div class="hidden" aria-hidden="true">
-                <label class="block font-semibold text-slate-700 mb-1">Formwork Type</label>
+                <label class="sf-bd-label">Formwork Type</label>
                 <select id="bd-formwork-type" onchange="propagateBDData()" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none">
                   <option value="QUICK DECK / LIGHTDECK">QUICK DECK / LIGHTDECK</option>
                   <option value="MIVAN/MONOLITIC FORMWORK" selected="">MIVAN/MONOLITIC FORMWORK</option>
@@ -313,7 +299,7 @@
 
               <!-- Product Type: the main line's -->
               <div class="hidden" aria-hidden="true">
-                <label class="block font-semibold text-slate-700 mb-1">Product Type</label>
+                <label class="sf-bd-label">Product Type</label>
                 <select id="bd-product-type" onchange="propagateBDData()" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 outline-none">
                   <option value="MFE New" selected="">MFE New</option>
                   <option value="MFE Used (Refurbished)">MFE Used (Refurbished)</option>
@@ -323,18 +309,27 @@
                 </select>
               </div>
             </div>
-            <!-- MR11 lines: each stream with its blocks and formwork type is its own MR11 line -->
-            <div id="bd-lines" class="space-y-3 border-t border-slate-100 pt-4"></div>
+          </div>
+
+          <!-- Section 2: streams, one MR11 line each -->
+          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4 sf-bd-card">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 class="sf-bd-title" data-no="2">Streams and MR11 lines</h3>
+                <p class="sf-bd-hint">One line per stream. The lines add up to the NCA.</p>
+              </div>
+            </div>
+            <div id="bd-lines" class="space-y-3"></div>
             <p id="bd-colour-hint" class="hidden"></p>
             <div id="bd-warnings" class="space-y-1 text-[11px]"></div>
           </div>
 
           <!-- Card 2: Dynamic Pricing & LME Formula Engine -->
-          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4 sf-bd-card">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <h3 class="text-sm font-bold text-slate-900">2. Selling Price &amp; Dynamic LME Parameters</h3>
-                <p class="text-xs text-slate-500">Final price = selling price + LME + extras + freight.</p>
+<h3 class="sf-bd-title" data-no="3">Selling price and LME</h3>
+                <p class="sf-bd-hint">Final price = selling price + LME + extras + freight.</p>
               </div>
               <select id="bd-incoterms" aria-label="Incoterms" class="px-2.5 py-1 bg-slate-100 border border-slate-300 rounded text-xs font-semibold text-slate-800">
                 <option value="CIF">Incoterms: CIF</option>
@@ -345,11 +340,11 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
               <div>
-                <label class="block font-semibold text-slate-700 mb-1">NCA Qty (m²): Latest Approved Version</label>
+                <label class="sf-bd-label">NCA (m², approved)</label>
                 <input type="number" id="bd-nca-area" value="850" readonly class="w-full px-3 py-2 bg-slate-100 border border-slate-300 rounded-lg font-mono font-bold text-slate-900" title="Changes only through an approved NCA revision">
               </div>
               <div>
-                <label class="block font-semibold text-slate-700 mb-1">Selling Price (per m²) &amp; Currency</label>
+                <label class="sf-bd-label">Selling price per m²</label>
                 <div class="flex gap-1.5">
                   <input type="number" id="bd-base-price" value="145.00" step="0.5" oninput="recalculateCommercial()" class="w-2/3 px-3 py-2 border border-slate-300 rounded-lg font-mono font-bold text-slate-900 focus:ring-2 focus:ring-sky-500">
                   <select id="bd-price-currency" aria-label="Price currency" onchange="recalculateCommercial()" class="w-1/3 px-1.5 py-2 bg-white border border-slate-300 rounded-lg font-semibold text-slate-800">
@@ -362,20 +357,20 @@
                 <p id="bd-price-usd-hint" class="text-[11px] text-slate-500 mt-1"></p>
               </div>
               <div>
-                <label class="block font-semibold text-slate-700 mb-1">Props / WPB / Waler / Acc ($/m²)</label>
+                <label class="sf-bd-label">Props, WPB, waler &amp; accessories ($/m²)</label>
                 <input type="number" id="bd-props-acc" value="12.00" step="0.5" oninput="recalculateCommercial()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono font-bold text-slate-900 focus:ring-2 focus:ring-sky-500">
               </div>
 
               <div>
-                <label class="block text-slate-600 mb-1">Contract LME Rate ($/MT)</label>
+                <label class="sf-bd-label">Contract LME ($/MT)</label>
                 <input type="number" id="bd-lme-base" value="2600" oninput="recalculateCommercial()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-slate-800">
               </div>
               <div>
-                <label class="block text-slate-600 mb-1">LME Cash Price Today ($/MT)</label>
+                <label class="sf-bd-label">LME cash price today ($/MT)</label>
                 <input type="number" id="bd-lme-today" value="3190" oninput="recalculateCommercial()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-slate-800">
               </div>
               <div>
-                <label class="block text-slate-600 mb-1">LME Type</label>
+                <label class="sf-bd-label">LME type</label>
                 <select id="bd-lme-mode" onchange="recalculateCommercial()" class="w-full px-2 py-2 bg-white border border-slate-300 rounded-lg font-semibold text-slate-800">
                   <option value="Variable" selected="">Variable</option>
                   <option value="Fixed">Fixed ($0)</option>
@@ -383,26 +378,26 @@
                 </select>
               </div>
               <div>
-                <label class="block text-slate-600 mb-1">Aluminium Weight Adjusted ($/m²)</label>
+                <label class="sf-bd-label">Aluminium weight adjustment ($/m²)</label>
                 <input type="number" id="bd-aluminium" value="0" step="0.5" oninput="recalculateCommercial()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-slate-800">
               </div>
               <div>
-                <label class="block text-slate-600 mb-1">Freight Adjusted ($/m²)</label>
+                <label class="sf-bd-label">Freight ($/m²)</label>
                 <input type="number" id="bd-surcharge-m2" value="6.545" step="0.005" oninput="recalculateCommercial()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-slate-800">
               </div>
               <div id="bd-freeze-wrap" class="hidden">
-                <label class="block text-slate-600 mb-1">Freeze Adjustment ($/m², fixed on freeze date)</label>
+                <label class="sf-bd-label">Freeze adjustment ($/m², fixed on the freeze date)</label>
                 <input type="number" id="bd-freeze-adj" value="2.15" step="0.01" oninput="recalculateCommercial()" class="w-full px-3 py-2 border border-slate-300 rounded-lg font-mono text-slate-800">
               </div>
             </div>
           </div>
 
           <!-- Card: Payment Terms (each contract sets its own advance %) -->
-          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4 sf-bd-card">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <h3 class="text-sm font-bold text-slate-900">Payment Terms (Up to 3 Milestones)</h3>
-                <p class="text-xs text-slate-500">Each contract sets its own advance %, for example 10%, 20% or 100%. Terms must total 100%.</p>
+<h3 class="sf-bd-title" data-no="4">Payment terms</h3>
+                <p class="sf-bd-hint">Up to 3 milestones, for example 20% advance and 80% CAD. They must total 100%.</p>
               </div>
               <span id="bd-terms-total" class="text-xs font-mono font-bold text-emerald-700">100%</span>
             </div>
@@ -423,10 +418,10 @@
           </div>
 
           <!-- Card: NCA Versioning & Change Gate -->
-          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4 sf-bd-card">
             <div class="border-b border-slate-100 pb-3">
-              <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5"><i data-lucide="lock" class="w-4 h-4 text-amber-600"></i> NCA Versions &amp; Change Gate</h3>
-              <p class="text-xs text-slate-500">Counts once an administrator approves it.</p>
+<div class="flex items-start justify-between gap-3"><div><h3 class="sf-bd-title" data-no="5">NCA versions</h3>
+                <p class="sf-bd-hint">A new NCA quantity counts once an administrator approves it.</p></div><span id="bd-nca-pill" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 shrink-0 self-start sm:self-center">NCA v1 Active</span></div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs">
               <input type="text" id="nca-ref" placeholder="Reference" class="px-2.5 py-2 border border-slate-300 rounded-lg font-mono">
@@ -439,17 +434,14 @@
           </div>
 
           <!-- Card 3: Forecast Month Choice & Dynamic Monthly Placeholders -->
-          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+          <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4 sf-bd-card">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
               <div>
-                <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="calendar-range" aria-hidden="true" class="lucide lucide-calendar-range w-4 h-4 text-sky-600"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M16 2v3"></path><path d="M3 9h18"></path><path d="M8 2v3"></path><path d="M17 13h-6"></path><path d="M13 17H7"></path><path d="M7 13h.01"></path><path d="M17 17h.01"></path></svg>
-                  3. Forecast Month Horizon &amp; Phased Delivery Placeholders
-                </h3>
-                <p class="text-xs text-slate-500">Select the number of forecast months (1–6) to dynamically generate monthly m² entry fields</p>
+                <h3 class="sf-bd-title" data-no="6">Monthly forecast</h3>
+                <p class="sf-bd-hint">Spread the NCA over 1 to 6 months. The months must add up to the NCA.</p>
               </div>
               <div class="flex items-center gap-2">
-                <label class="text-xs font-bold text-slate-700">Forecast Horizon:</label>
+                <label for="bd-forecast-months" class="sf-bd-label" style="margin:0">Months</label>
                 <select id="bd-forecast-months" onchange="renderForecastInputs()" class="px-3 py-1.5 bg-sky-50 border border-sky-300 rounded-lg text-xs font-bold text-sky-900 focus:ring-2 focus:ring-sky-500 outline-none">
                   <option value="1">1 Month</option>
                   <option value="2">2 Months</option>
@@ -486,67 +478,13 @@
             </div>
           </div>
 
-        </div>
-
-        <!-- Right Column: Live Contract Summary & Plant Capacity Ceiling Simulator -->
-        <div class="space-y-6">
-          
-          <!-- Live Pricing Box ($149,795.50 Default) -->
-          <div class="bg-slate-900 text-white rounded-xl p-6 shadow-md space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Live Commercial Valuation</span>
-              
-            </div>
-
-            <div class="space-y-2.5 text-xs">
-              <div class="flex justify-between text-slate-300">
-                <span>Approved NCA Area:</span>
-                <span class="font-mono font-bold text-white" id="summary-area">850.00 m²</span>
-              </div>
-              <div class="flex justify-between text-slate-300">
-                <span>Base Selling Rate:</span>
-                <span class="font-mono" id="summary-base">$145.00 / m²</span>
-              </div>
-              <div class="flex justify-between text-slate-300">
-                <span>Props / WPB / Waler / Acc:</span>
-                <span class="font-mono text-sky-300" id="summary-props">+$12.00 / m²</span>
-              </div>
-              <div class="flex justify-between text-slate-300">
-                <span>Dynamic LME Adjustment:</span>
-                <span class="font-mono text-emerald-400" id="summary-lme">+$12.685 / m²</span>
-              </div>
-              <div class="flex justify-between text-slate-300">
-                <span>Aluminium Weight Adjusted:</span>
-                <span class="font-mono" id="summary-aluminium">+$0.000 / m²</span>
-              </div>
-              <div class="flex justify-between text-slate-300">
-                <span>Freight Adjusted:</span>
-                <span class="font-mono" id="summary-surcharge">+$6.545 / m²</span>
-              </div>
-              <div class="border-t border-slate-800 pt-2.5 flex justify-between items-baseline">
-                <span class="font-bold text-slate-200">Final Selling Price:</span>
-                <span class="font-mono text-base font-bold text-sky-400" id="summary-unit-rate">$176.23 / m²</span>
-              </div>
-            </div>
-
-            <div class="p-4 rounded-xl bg-slate-800/90 border border-slate-700 space-y-1">
-              <div class="text-[11px] text-slate-400">Total Contract Value (Flows to Step 2 Finance):</div>
-              <div class="text-2xl font-extrabold font-mono text-emerald-400" id="summary-total-contract">$149,795.50</div>
-              <div id="summary-terms-preview" class="text-[11px] text-slate-400 pt-1 space-y-0.5"></div>
-            </div>
-
-            <button onclick="switchTab(2)" class="w-full py-2.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer">
-              <span>Transmit Contract to Finance</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="arrow-right" aria-hidden="true" class="lucide lucide-arrow-right w-4 h-4"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
-            </button>
-          </div>
-
+        
           <!-- Plant Capacity Ceiling Simulator (74,200 m² Base vs 110,000 m² Cap) -->
           <div id="bd-capacity-card" class="bg-white rounded-xl border-2 border-emerald-500 shadow-xs p-5 space-y-4 transition-all">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="factory" aria-hidden="true" class="lucide lucide-factory w-4 h-4 text-sky-600"><path d="M12 16h.01"></path><path d="M16 16h.01"></path><path d="M3 19a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.5a.5.5 0 0 0-.769-.422l-4.462 2.844A.5.5 0 0 1 15 10.5v-2a.5.5 0 0 0-.769-.422L9.77 10.922A.5.5 0 0 1 9 10.5V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"></path><path d="M8 16h.01"></path></svg>
-                <h3 class="text-sm font-bold text-slate-900">Plant Capacity Check (Alert, Not a Block)</h3>
+                <h3 class="text-sm font-bold text-slate-900" title="An alert only; it never stops work">Plant capacity</h3>
               </div>
               <span id="cap-pill" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">WITHIN CAP</span>
             </div>
@@ -604,6 +542,62 @@
               </button>
             </div>
           </div>
+        </div>
+
+        <!-- Right Column: Live Contract Summary & Plant Capacity Ceiling Simulator -->
+        <div class="space-y-6 sf-bd-side">
+          
+          <!-- Live Pricing Box ($149,795.50 Default) -->
+          <div class="bg-slate-900 text-white rounded-xl p-6 shadow-md space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Contract value</span>
+              
+            </div>
+
+            <div class="space-y-2.5 text-xs">
+              <div class="flex justify-between text-slate-300">
+                <span>Approved NCA</span>
+                <span class="font-mono font-bold text-white" id="summary-area">850.00 m²</span>
+              </div>
+              <div class="flex justify-between text-slate-300">
+                <span>Selling price</span>
+                <span class="font-mono" id="summary-base">$145.00 / m²</span>
+              </div>
+              <div class="flex justify-between text-slate-300">
+                <span>Props, WPB, waler &amp; acc.</span>
+                <span class="font-mono text-sky-300" id="summary-props">+$12.00 / m²</span>
+              </div>
+              <div class="flex justify-between text-slate-300">
+                <span>LME adjustment</span>
+                <span class="font-mono text-emerald-400" id="summary-lme">+$12.685 / m²</span>
+              </div>
+              <div class="flex justify-between text-slate-300">
+                <span>Aluminium weight</span>
+                <span class="font-mono" id="summary-aluminium">+$0.000 / m²</span>
+              </div>
+              <div class="flex justify-between text-slate-300">
+                <span>Freight</span>
+                <span class="font-mono" id="summary-surcharge">+$6.545 / m²</span>
+              </div>
+              <div class="border-t border-slate-800 pt-2.5 flex justify-between items-baseline">
+                <span class="font-bold text-slate-200">Final price per m²</span>
+                <span class="font-mono text-base font-bold text-sky-400" id="summary-unit-rate">$176.23 / m²</span>
+              </div>
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-800/90 border border-slate-700 space-y-1">
+              <div class="text-[11px] text-slate-400">Total contract value</div>
+              <div class="text-2xl font-extrabold font-mono text-emerald-400" id="summary-total-contract">$149,795.50</div>
+              <div id="summary-terms-preview" class="text-[11px] text-slate-400 pt-1 space-y-0.5"></div>
+            </div>
+
+            <button onclick="switchTab(2)" class="w-full py-2.5 rounded-lg bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer">
+              <span>Send to Finance</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="arrow-right" aria-hidden="true" class="lucide lucide-arrow-right w-4 h-4"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+            </button>
+          </div>
+
+
 
         </div>
       </div>
@@ -1346,8 +1340,8 @@
             <p class="text-xs text-slate-500">Every project, one line per stream. Text colour = product type, fill = formwork type.</p>
           </div>
           <div class="flex items-center gap-2 text-xs">
-            <button id="mr11-edit-btn" onclick="toggleEditMode()" class="px-2.5 py-1 rounded border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 font-semibold">Edit in MR11: Off</button>
-            <span class="px-2.5 py-1 rounded bg-sky-50 border border-sky-200 text-sky-800 font-semibold">LIVE lines = steps 1–7</span>
+            <button id="mr11-edit-btn" onclick="toggleEditMode()" class="px-2.5 py-1 rounded border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 font-semibold">Editing: off</button>
+            <span class="px-2.5 py-1 rounded bg-sky-50 border border-sky-200 text-sky-800 font-semibold" title="Lines marked LIVE come from this project's pages, steps 1 to 7">LIVE = this project</span>
             <button type="button" class="sf-btn sf-btn-sm" data-tools="toggle" id="mr11-tools-btn" aria-controls="mr11-side" aria-pressed="true">Tools</button>
             <button type="button" class="sf-btn sf-btn-sm sf-full-btn" id="mr11-full-btn" onclick="toggleMr11Fullscreen()" title="Show the MR11 table on the whole screen"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg><span>Full screen</span></button>
           </div>
@@ -1672,7 +1666,7 @@
             <table class="w-full text-xs border-collapse">
               <thead class="bg-slate-100 text-slate-700">
                 <tr>
-                  <th class="py-2 px-3 text-left border border-slate-200">Product Category (MR11 Col F)</th>
+                  <th class="py-2 px-3 text-left border border-slate-200">Product Category</th>
                   <th class="py-2 px-3 text-right border border-slate-200">Total m²</th>
                   <th class="py-2 px-3 text-right border border-slate-200">Total USD</th>
                   <th class="py-2 px-3 text-right border border-slate-200">Shipped m²</th>

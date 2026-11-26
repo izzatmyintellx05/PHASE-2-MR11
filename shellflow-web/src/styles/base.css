@@ -915,3 +915,45 @@
 .sf-dt-2h th { position: static; }
 .sf-dt-2h th.sf-dt-stick { position: sticky; left: 0; }
 .sf-dt th.sf-dt-grouph { text-align: center; border-bottom: 1px solid var(--joint); }
+
+/* Fix: the 8 step tabs never squeeze. When the row is narrower than about 8 x 118 px
+   (a laptop with the sidebar and the MR11 tools drawer open), they sit in two rows of four. */
+.sf-nav .sf-wrap { container-type: inline-size; container-name: sfnav; }
+@container sfnav (max-width: 860px) and (min-width: 640px) {
+  body .sf-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: visible; margin: 0; padding: 0; }
+  body .sf-steps .sf-tab { min-width: 0; }
+}
+
+/* Fix: on phones and tablets the tool pages fold into one "More pages" button */
+.sf-more-btn { display: none; }
+@media (max-width: 1023px) {
+  .sf-more-btn { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 40px; margin-top: 8px; padding: 6px 12px; border: 1px solid var(--joint); border-radius: 8px; background: var(--face); color: var(--ink-2); font-size: 13px; font-weight: 600; text-align: left; }
+  .sf-more-btn svg { width: 16px; height: 16px; flex: none; }
+  .sf-more-btn .sf-count { margin-left: 4px; }
+  .sf-more-btn .sf-more-chev { margin-left: auto; display: inline-flex; transition: transform 0.2s; }
+  .sf-more-btn[aria-expanded="true"] .sf-more-chev { transform: rotate(180deg); }
+  body .sf-tools:not(.is-open) { display: none !important; }
+  body .sf-tools.is-open { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; margin: 6px 0 0; padding: 0; overflow: visible; }
+  body .sf-tools.is-open .sf-tool { min-height: 40px; }
+}
+
+/* The department tabs show their names only, without step numbers */
+.sf-steps .sf-tab-no { display: none !important; }
+.sf-steps .sf-tab { justify-content: center; text-align: center; }
+
+/* Business Development: numbered sections in working order, one label style, the value box in view */
+.sf-bd-title { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 700; color: var(--ink); }
+.sf-bd-title[data-no]::before { content: attr(data-no); display: inline-grid; place-items: center; width: 24px; height: 24px; flex: none; border-radius: 999px; background: var(--steel, #1c1d1a); color: #fff; font-size: 12px; font-weight: 700; }
+.sf-bd-hint { margin-top: 2px; font-size: 12.5px; color: var(--ink-3, #64748b); }
+.sf-bd-title[data-no] + .sf-bd-hint { padding-left: 34px; }
+.sf-bd-label { display: block; margin-bottom: 4px; font-size: 12px; font-weight: 600; color: var(--ink-2, #475569); }
+.sf-bd-card { padding: 22px 24px !important; }
+.sf-bd-card input:not([type=checkbox]):not([type=radio]), .sf-bd-card select { min-height: 38px; font-size: 13px; }
+.sf-bd-card .grid { row-gap: 14px; }
+/* Right column: the contract value, which stays in view while you scroll */
+@media (min-width: 1024px) {
+  .sf-bd-side > :first-child { position: sticky; top: 96px; }
+}
+.sf-bd-title { width: 100%; }
+.sf-bd-title .sf-collapse-btn { order: 2; margin-left: auto; }
+.sf-bd-card div:has(> .sf-bd-title) { flex: 1; min-width: 0; }

@@ -650,7 +650,7 @@
         running += parseFloat(val);
         html += `
           <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
-            <label class="block text-[11px] font-bold text-slate-600">Month ${i + 1} (${monthNames[i]}) Forecast (m²)</label>
+            <label class="sf-bd-label">${monthNames[i]} (m²)</label>
             <input type="number" step="1" value="${val}" oninput="validateForecastSum()" class="fc-month-input w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg font-mono text-xs font-bold text-slate-900">
           </div>
         `;
@@ -913,11 +913,11 @@
       if (diff <= 0.05) {
         statusBox.className = 'p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs flex flex-wrap items-center justify-between gap-2 text-emerald-900';
         badge.className = 'font-bold text-emerald-700';
-        badge.textContent = `✓ Matches Approved NCA Area (${appState.ncaArea.toFixed(2)} m²)`;
+        badge.textContent = `✓ Matches the NCA (${fmtNum(appState.ncaArea)} m²)`;
       } else {
         statusBox.className = 'p-3 rounded-lg bg-amber-50 border border-amber-300 text-xs flex flex-wrap items-center justify-between gap-2 text-amber-900';
         badge.className = 'font-bold text-amber-800';
-        badge.textContent = `⚠ Delta of ${(sum - appState.ncaArea).toFixed(2)} m² vs NCA (${appState.ncaArea.toFixed(2)} m²)`;
+        badge.textContent = `⚠ ${fmtNum(Math.abs(sum - appState.ncaArea))} m² ${sum < appState.ncaArea ? 'short of' : 'over'} the NCA (${fmtNum(appState.ncaArea)} m²)`;
       }
       refreshAll();
     }
@@ -1744,7 +1744,7 @@
     // MR11 edits, row deletes, comments and the team notes board
     function toggleEditMode() {
       appState.editMode = !appState.editMode;
-      $('mr11-edit-btn').textContent = `Edit in MR11: ${appState.editMode ? 'On' : 'Off'}`;
+      $('mr11-edit-btn').textContent = `Editing: ${appState.editMode ? 'on' : 'off'}`;
       if (appState.editMode) notify(isAdmin() ? 'Click an outlined cell. Your edits apply at once and are logged.' : 'Click an outlined cell. Your change goes for approval.', 'info');
       renderMR11PipelineTab();
     }
@@ -1815,7 +1815,7 @@
           <div><strong>${esc(rowLabel(a.row))}</strong> • ${what}<div class="text-[11px] text-slate-500">${esc(a.by)} • ${esc(a.when)}${a.rejectReason ? ` • Rejected: ${esc(a.rejectReason)}` : ''}${a.status === 'LAPSED' ? ' • The department changed this value, so the edit lapsed' : ''}</div></div>
           <div class="flex items-center gap-1.5">${pill(a.status, tone[a.status])}${buttons}</div>
         </div>`;
-      }).join('') : '<p class="text-slate-400">No changes waiting. Turn on "Edit in MR11" in Step 8 as a non-admin to send one.</p>';
+      }).join('') : '<p class="text-slate-400">No changes waiting. Turn on "Editing" in Master Schedule as a non-admin to send one.</p>';
       $('updates-list').innerHTML = appState.updates.map(u => `<div class="p-2.5 rounded-lg border border-slate-200 flex justify-between gap-2">
         <div><strong>${esc(u.kind)}</strong> • ${esc(u.row)}: ${esc(u.detail)}<div class="text-[11px] text-slate-500">${esc(u.who)} • ${esc(u.when)} • ${u.ref ? `Source: ${esc(u.sourceType)} ${esc(u.ref)}` : '<span class="text-amber-700 font-semibold">No source</span>'}</div></div>
         <div>${pill(u.source, u.source === 'Mobile' ? 'sky' : 'slate')}</div>

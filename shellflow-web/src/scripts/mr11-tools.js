@@ -6,7 +6,10 @@
       const side = $('mr11-side');
       const card = $('mr11-card');
       if (!side || !card) return;
-      let open = loadPref('mr11.toolsOpen', window.innerWidth >= 1024);
+      let open = loadPref('mr11.toolsOpen', false);
+      // Never both at once: the View panel beside the table wins
+      if (open && window.mr11PanelOpen?.()) { open = false; savePref('mr11.toolsOpen', false); }
+      window.mr11CloseTools = () => { if (!open) return; open = false; savePref('mr11.toolsOpen', false); placeTools(); };
       document.body.appendChild(side);
 
       function placeTools() {
@@ -33,6 +36,7 @@
         if (!e.target.closest || !e.target.closest('[data-tools="toggle"]')) return;
         open = !open;
         savePref('mr11.toolsOpen', open);
+        if (open) window.mr11ClosePanel?.();
         placeTools();
         if (open) setTimeout(() => $('mr11-search')?.focus({ preventScroll: true }), 230);
       });

@@ -25,3 +25,33 @@
       });
       window.refreshAll = (orig => function () { const out = orig.apply(this, arguments); if (appState.ready) render(); return out; })(window.refreshAll);
     })();
+
+    // ---- Phones and tablets: the tool pages (My Work, Alerts, Reports ...) sit behind one
+    // "More pages" button, so a department's own sheet comes straight after the steps ----
+    (function () {
+      const tools = document.querySelector('.sf-tools');
+      if (!tools) return;
+      if (!tools.id) tools.id = 'sf-tools';
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'sf-more-btn';
+      btn.setAttribute('aria-controls', tools.id);
+      btn.setAttribute('aria-expanded', 'false');
+      tools.parentNode.insertBefore(btn, tools);
+      let last = '';
+      function label() {
+        const on = tools.querySelector('.sf-tool.step-btn-active > span:not(.sf-count)');
+        const n = Number(($('sf-mywork-count')?.textContent || '').trim()) || 0;
+        const html = `${icon('layout-grid')}<span>${on ? `More pages · ${esc(on.textContent.trim())}` : 'More pages'}</span>${n ? `<span class="sf-count">${n}</span>` : ''}<span class="sf-more-chev" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>`;
+        if (html === last) return;
+        last = html;
+        btn.innerHTML = html;
+        if (typeof refreshIcons === 'function') refreshIcons();
+      }
+      const setOpen = on => { tools.classList.toggle('is-open', on); btn.setAttribute('aria-expanded', String(on)); };
+      btn.addEventListener('click', () => setOpen(!tools.classList.contains('is-open')));
+      tools.addEventListener('click', e => { if (e.target.closest('.sf-tool')) setOpen(false); });
+      window.switchTab = (orig => function () { const out = orig.apply(this, arguments); label(); return out; })(window.switchTab);
+      window.refreshAll = (orig => function () { const out = orig.apply(this, arguments); label(); return out; })(window.refreshAll);
+      label();
+    })();

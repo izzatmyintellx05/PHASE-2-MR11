@@ -89,13 +89,13 @@
         no.setAttribute('aria-readonly', 'true');
         no.classList.add('bg-slate-50');
         const label = no.closest('div')?.querySelector('label');
-        if (label) label.textContent = 'Project No. (made automatically)';
+        if (label) label.textContent = 'Project no. (made automatically)';
       }
       if (short) {
         short.maxLength = 5;
         short.setAttribute('pattern', '[A-Za-z0-9]{1,5}');
         const label = short.closest('div')?.querySelector('label');
-        if (label) label.textContent = 'Short Name (up to 5 letters or numbers)';
+        if (label) label.textContent = 'Short name (up to 5 letters or numbers)';
         short.addEventListener('input', () => {
           const clean = short.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
           if (clean !== short.value) short.value = clean;
