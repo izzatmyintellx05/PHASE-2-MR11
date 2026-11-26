@@ -130,7 +130,7 @@
         const back = monthsBack(view.month, 5);
         const pm = `pm${view.month.replace('-', '')}`;
         return [
-          { label: 'Project No.', type: 'show', text: true, first: true, value: r => r.projectNo || '' },
+          { label: 'Project No.', type: 'show', text: true, value: r => (window.mr11LineNo ? mr11LineNo(r) : r.projectNo) || '' },
           ...identity('lineProduction', 'planRemarks'),
           { f: 'designQty', label: 'Design Quantity Ordered', type: 'number', def: r => r.designFinal || r.ncaQty, sum: true },
           { f: 'processedM2', label: 'Cumulative Processed (Project)', type: 'number', def: r => processedOf(r), sum: true },

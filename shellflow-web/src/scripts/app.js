@@ -2359,7 +2359,7 @@
         }),
         col('project', 'Customer &amp; Project Name', r => td(esc(r.customerProject), 'font-bold')),
         col('project', 'Stream / Building / Block', r => td(esc(r.buildingStream))),
-        col('project', 'Project No', r => td(esc(r.projectNo))),
+        col('project', 'Project No', r => td(esc(lineNoOf(r)))),
         col('project', 'Short Name', r => td(esc(r.shortName))),
         col('project', 'Stream', r => td(esc(rowStreamNo(r)), 'text-center')),
         col('project', 'Countries', r => mr11EditCell(r, 'country', esc(r.country))),
@@ -2909,16 +2909,18 @@
       return Object.keys(WORKBOOK_DEPTS).filter(k => k === appState.role);
     }
     const columnLetter = n => { let s = ''; n += 1; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
+    // A line's own project number: the project's first five digits and the line's stream
+    function lineNoOf(r) { return typeof window.mr11LineNo === 'function' ? window.mr11LineNo(r) : r.projectNo; }
     function rowStreamNo(r) { return r.isLive ? (/^\d{6,7}$/.test(r.projectNo) ? String(parseInt(r.projectNo.slice(5), 10)) : '1') : r.stream; }
     function buildDeptSheet(dept, part) {
       // One row per MR11 line, each with its own figures
       const rows = typeof mr11Lines === 'function' ? mr11Lines(allMr11Rows()) : allMr11Rows();
       const defs = {
-        BD: [['Customer & Project Name', r => r.customerProject.trim()], ['Project No', r => r.projectNo], ['Project Shortname', r => r.shortName], ['Stream', rowStreamNo], ['Countries', r => r.country], ['Location', r => r.location], ['PIC', r => r.pic], ['Status', r => r.status], ['Product Type', r => r.product], ['Formwork Type', r => r.formworkSystem]],
-        FINANCE: [['Customer & Project Name', r => r.customerProject.trim()], ['Project No', r => r.projectNo], ['Stream', rowStreamNo], ['Payment Term', r => r.paymentTerm], ['Advance Received / Payment Status', r => r.advStatus], ['Actual Received', r => formatUSD(r.actualReceived)], ['Payment Date', r => r.paymentDate || '']],
-        DESIGN: [['Project No', r => r.projectNo], ['Project Name', r => r.customerProject.trim()], ['Stream', rowStreamNo], ['Shell Plan Status - Pending Consultant Drawings', r => r.shellStatus], ['Shell Plan Approved Date', r => r.shellDate], ['Formwork Design Status', r => r.designStatus], ['Actual Formwork Order Completion Date', r => r.designDate], ['Total Quantity Ordered m2', r => r.designFinal ?? '']],
-        PLANNING: [['Contract No.', r => r.projectNo], ['Project Shortname', r => r.shortName], ['Project Name', r => r.customerProject.trim()], ['Stream', rowStreamNo], ['Cumulative Processed (Project)', r => processedOf(r)], ['Processed Date', r => r.processedDate || '']],
-        PRODUCTION: [['Contract No.', r => r.projectNo], ['Project Shortname', r => r.shortName], ['Stream', rowStreamNo], ['Cumulative Produced (Project)', r => r.producedM2], ['Latest Day With Output', r => r.producedDate || '']],
+        BD: [['Customer & Project Name', r => r.customerProject.trim()], ['Project No', lineNoOf], ['Project Shortname', r => r.shortName], ['Stream', rowStreamNo], ['Countries', r => r.country], ['Location', r => r.location], ['PIC', r => r.pic], ['Status', r => r.status], ['Product Type', r => r.product], ['Formwork Type', r => r.formworkSystem]],
+        FINANCE: [['Customer & Project Name', r => r.customerProject.trim()], ['Project No', lineNoOf], ['Stream', rowStreamNo], ['Payment Term', r => r.paymentTerm], ['Advance Received / Payment Status', r => r.advStatus], ['Actual Received', r => formatUSD(r.actualReceived)], ['Payment Date', r => r.paymentDate || '']],
+        DESIGN: [['Project No', lineNoOf], ['Project Name', r => r.customerProject.trim()], ['Stream', rowStreamNo], ['Shell Plan Status - Pending Consultant Drawings', r => r.shellStatus], ['Shell Plan Approved Date', r => r.shellDate], ['Formwork Design Status', r => r.designStatus], ['Actual Formwork Order Completion Date', r => r.designDate], ['Total Quantity Ordered m2', r => r.designFinal ?? '']],
+        PLANNING: [['Contract No.', lineNoOf], ['Project Shortname', r => r.shortName], ['Project Name', r => r.customerProject.trim()], ['Stream', rowStreamNo], ['Cumulative Processed (Project)', r => processedOf(r)], ['Processed Date', r => r.processedDate || '']],
+        PRODUCTION: [['Contract No.', lineNoOf], ['Project Shortname', r => r.shortName], ['Stream', rowStreamNo], ['Cumulative Produced (Project)', r => r.producedM2], ['Latest Day With Output', r => r.producedDate || '']],
         DISPATCH: part === 'OVERSEAS'
           ? [['Project Name', r => r.customerProject.trim()], ['Stream', rowStreamNo], ['ETD', r => r.etd || ''], ['ATD', r => r.atd || ''], ['Formwork Quantity Sailed (m2)', r => sailedOf(r)]]
           : [['Project Name', r => r.customerProject.trim()], ['Stream', rowStreamNo], ['Delivered', r => r.dispatchDate || ''], ['Cumulative Dispatched (Project)', r => r.shippedM2]]

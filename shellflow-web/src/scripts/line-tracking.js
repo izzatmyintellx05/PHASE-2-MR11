@@ -147,7 +147,12 @@
     })(window.refreshAll);
 
     // ---- From MR11 to your own page: each line's Edit button opens the department page that edits it ----
-    const EDIT_PAGES = [{ roles: ['BD'], page: 1, name: 'Business Development' }, ...LINE_TRACKS.map(t => ({ roles: t.roles, page: t.page, name: PAGES[t.page]?.name || t.title, key: t.key }))];
+    // Planning has its own page (step 4); Production's page is for Production
+    const EDIT_PAGES = [
+      { roles: ['BD'], page: 1, name: 'Business Development' },
+      { roles: ['PLANNING'], page: 5, name: 'Planning', key: 'planning' },
+      ...LINE_TRACKS.map(t => ({ roles: t.page === 4 ? t.roles.filter(r => r !== 'PLANNING') : t.roles, page: t.page, name: PAGES[t.page]?.name || t.title, key: t.key }))
+    ].sort((a, b) => (PAGES[a.page]?.step || 0) - (PAGES[b.page]?.step || 0));
     // The pages for the role you are working as; an administrator can open any of them
     const editPagesFor = () => (appState.role === 'ADMIN' ? EDIT_PAGES : EDIT_PAGES.filter(p => p.roles.includes(appState.role)));
     function openLineEditor(lineId, page) {

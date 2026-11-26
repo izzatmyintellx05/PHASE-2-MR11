@@ -6,7 +6,7 @@
     // the others. (The single-file version holds one project.)
     // =========================================================================
     (function () {
-      const ROLE_PAGE = { BD: 1, FINANCE: 2, SHELLPLAN: 3, DESIGN: 3, PLANNING: 4, PRODUCTION: 4, DISPATCH: 7, ADMIN: 1 };
+      const ROLE_PAGE = { BD: 1, FINANCE: 2, SHELLPLAN: 3, DESIGN: 3, PLANNING: 5, PRODUCTION: 4, DISPATCH: 7, ADMIN: 1 };
       const active = () => window.MR11_ACTIVE_PROJECT || 'P1';
       const plain = o => JSON.parse(JSON.stringify(o));
 
