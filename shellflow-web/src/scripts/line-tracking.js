@@ -141,13 +141,13 @@
         const out = orig.apply(this, arguments);
         if (!appState.ready) return out;
         LINE_TRACKS.forEach(t => { if (appState.activeTab === t.page) renderLineTracker(t); });
-        if (appState.activeTab === 6) renderLineReadiness();
+        if (appState.activeTab === 6 || appState.activeTab === 7) renderLineReadiness();
         return out;
       };
     })(window.refreshAll);
 
     // ---- From MR11 to your own page: each line's Edit button opens the department page that edits it ----
-    const EDIT_PAGES = [{ roles: ['BD'], page: 1, name: 'BD & Commercial' }, ...LINE_TRACKS.map(t => ({ roles: t.roles, page: t.page, name: PAGES[t.page]?.name || t.title, key: t.key }))];
+    const EDIT_PAGES = [{ roles: ['BD'], page: 1, name: 'Business Development' }, ...LINE_TRACKS.map(t => ({ roles: t.roles, page: t.page, name: PAGES[t.page]?.name || t.title, key: t.key }))];
     // The pages for the role you are working as; an administrator can open any of them
     const editPagesFor = () => (appState.role === 'ADMIN' ? EDIT_PAGES : EDIT_PAGES.filter(p => p.roles.includes(appState.role)));
     function openLineEditor(lineId, page) {
@@ -191,7 +191,7 @@
       switchTab(1);
       const name = $('bd-project-name');
       if (name) { name.scrollIntoView({ block: 'center' }); name.focus(); }
-      notify('Project entry is in section 1 of BD & Commercial: name, PO, NCA, then one MR11 line per stream.', 'info');
+      notify('Project entry is in section 1 of Business Development: name, PO, NCA, then one MR11 line per stream.', 'info');
     };
     window.renderMR11PipelineTab = (orig => function () { const out = orig.apply(this, arguments); decorateLedger(); return out; })(window.renderMR11PipelineTab);
     document.addEventListener('click', e => {

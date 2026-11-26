@@ -615,7 +615,7 @@
       const gateHeading = $('fin-gate-heading');
       gateHeading.textContent = appState.advanceCleared ? 'Step 3 Design Access: UNLOCKED' : locked ? 'Step 3 Design Access: LOCKED (HARD STOP)' : 'Step 3 Design Access: OPEN (Enforced at Dispatch Gate)';
       $('fin-gate-desc').innerHTML = appState.advanceCleared
-        ? `The ${fmtNum(adv.pct, 0)}% advance (<span id="fin-gate-m1-inline">${formatUSD(adv.amount)}</span>) is confirmed. Technical Design can draft 2D/3D Shell Plans.`
+        ? `The ${fmtNum(adv.pct, 0)}% advance (<span id="fin-gate-m1-inline">${formatUSD(adv.amount)}</span>) is confirmed. Shellplan & Design can draft 2D/3D Shell Plans.`
         : `The ${fmtNum(adv.pct, 0)}% advance (<span id="fin-gate-m1-inline">${formatUSD(adv.amount)}</span>) is not confirmed. It is re-checked when the next bank line lands.`;
       $('fin-gate-box').className = appState.advanceCleared
         ? 'bg-white rounded-xl border-2 border-emerald-500 shadow-xs p-6 text-center space-y-4'
@@ -1971,16 +1971,16 @@
       const auditAOA = [
         ['SHELLFLOW WORKFLOW OPERATIONAL AUDIT LOG'],
         ['Step', 'Department', 'Key Metric / Field', 'Live Value', 'Guardrail Status'],
-        ['Step 1', 'BD & Commercial', 'Project / Building / Streams / Blocks', `${appState.projectName} — ${appState.buildingName} (${appState.streams.join(', ')})`, 'Propagated to Steps 2–8'],
-        ['Step 1', 'BD & Commercial', 'Formwork & Product Type', `${appState.formworkType} | ${appState.productType}`, 'Validated'],
-        ['Step 1', 'BD & Commercial', 'Total Contract Value', formatUSD(appState.totalContractValue), `${appState.ncaArea} m² × ${formatUSD(appState.finalUnitRate)}/m²`],
-        ['Step 1', 'BD & Commercial', 'Plant Capacity Load', `${(appState.existingPlantLoad + appState.ncaArea).toLocaleString()} / ${appState.plantCapacityCap.toLocaleString()} m²`, (appState.existingPlantLoad + appState.ncaArea <= appState.plantCapacityCap) ? 'WITHIN CAPACITY' : 'PRODUCTION_OVER_CAPACITY ALERT'],
-        ['Step 2', 'Finance Gateway', 'Payment Terms', liveRow.paymentTerm, appState.advanceCleared ? 'ADVANCE CLEARED' : 'AWAITING ADVANCE'],
-        ['Step 3', 'Technical Design', 'Shell Plan & Design Completion', `Shell: ${liveRow.shellDate} | Design: ${liveRow.designDate}`, `No 1900-01-29 Bug; ${designWeight()}x DCF Weight`],
-        ['Step 4', 'Production & Yard', 'Produced Area Logged', `${liveRow.producedM2.toFixed(2)} m²`, 'Panel Register & Evidence'],
-        ['Step 5', 'Readiness Gate & 4-Way', '4-Way Recon (Shipped vs Produced)', `Shipped: ${liveRow.shippedM2.toFixed(2)} m² ≤ Produced: ${liveRow.producedM2.toFixed(2)} m²`, '4-Way Check'],
-        ['Step 5', 'Readiness Gate & 4-Way', '5-Point Readiness Gate', `${gateFor('LIVE').checks.filter(c => c.pass).length} / 5 Checks Green`, gateFor('LIVE').released ? 'Admin Release Logged' : 'Gate Active'],
-        ['Step 6', 'Logistics & Shipping', `Lorries (${appState.rules.lorryCapacityM2} m²/lorry)`, `${appState.lorries.filter(activeLorry).length} Planned`, 'Audited ETD Log Active'],
+        ['Step 1', 'Business Development', 'Project / Building / Streams / Blocks', `${appState.projectName} — ${appState.buildingName} (${appState.streams.join(', ')})`, 'Propagated to Steps 2–8'],
+        ['Step 1', 'Business Development', 'Formwork & Product Type', `${appState.formworkType} | ${appState.productType}`, 'Validated'],
+        ['Step 1', 'Business Development', 'Total Contract Value', formatUSD(appState.totalContractValue), `${appState.ncaArea} m² × ${formatUSD(appState.finalUnitRate)}/m²`],
+        ['Step 1', 'Business Development', 'Plant Capacity Load', `${(appState.existingPlantLoad + appState.ncaArea).toLocaleString()} / ${appState.plantCapacityCap.toLocaleString()} m²`, (appState.existingPlantLoad + appState.ncaArea <= appState.plantCapacityCap) ? 'WITHIN CAPACITY' : 'PRODUCTION_OVER_CAPACITY ALERT'],
+        ['Step 2', 'Finance', 'Payment Terms', liveRow.paymentTerm, appState.advanceCleared ? 'ADVANCE CLEARED' : 'AWAITING ADVANCE'],
+        ['Step 3', 'Shellplan & Design', 'Shell Plan & Design Completion', `Shell: ${liveRow.shellDate} | Design: ${liveRow.designDate}`, `No 1900-01-29 Bug; ${designWeight()}x DCF Weight`],
+        ['Step 5', 'Production', 'Produced Area Logged', `${liveRow.producedM2.toFixed(2)} m²`, 'Panel Register & Evidence'],
+        ['Step 6', 'Dispatch Readiness', '4-Way Recon (Shipped vs Produced)', `Shipped: ${liveRow.shippedM2.toFixed(2)} m² ≤ Produced: ${liveRow.producedM2.toFixed(2)} m²`, '4-Way Check'],
+        ['Step 6', 'Dispatch Readiness', '5-Point Readiness Gate', `${gateFor('LIVE').checks.filter(c => c.pass).length} / 5 Checks Green`, gateFor('LIVE').released ? 'Admin Release Logged' : 'Gate Active'],
+        ['Step 6', 'Dispatch', `Lorries (${appState.rules.lorryCapacityM2} m²/lorry)`, `${appState.lorries.filter(activeLorry).length} Planned`, 'Audited ETD Log Active'],
         ['Step 7', 'Site Receiving', 'Site Progress & Incident Cost', `${appState.siteProgressM2} m² / MYR ${appState.incidents.reduce((a, i) => a + i.cost, 0)}`, 'Evidence-Based Site Receipt']
       ];
       const wsAudit = XLSX.utils.aoa_to_sheet(auditAOA);
@@ -3080,8 +3080,8 @@
     // =========================================================================
     // PHASE 1: PAGES BY ROLE, SIGN-IN, SIGN-OUT & CHANGE PASSWORD
     // =========================================================================
-    const COMMON_TABS = [6, 9, 10, 11, 12, 13, 18, 19];
-    const ROLE_TABS = { BD: [1, 17], FINANCE: [2, 17], SHELLPLAN: [3, 17], DESIGN: [3, 17], PLANNING: [4, 17], PRODUCTION: [4, 17], DISPATCH: [7, 8, 17], CEO: [15] };
+    const COMMON_TABS = [9, 10, 11, 12, 13, 18, 19];
+    const ROLE_TABS = { BD: [1, 17], FINANCE: [2, 17], SHELLPLAN: [3, 17], DESIGN: [3, 17], PLANNING: [5, 17], PRODUCTION: [4, 17], DISPATCH: [7, 8, 17], CEO: [15] };
     function tabAllowed(tab, role = appState.role) { return role === 'ADMIN' || COMMON_TABS.includes(tab) || (ROLE_TABS[role] || []).includes(tab); }
     function applyRoleNav() {
       const admin = isAdmin();

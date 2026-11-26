@@ -21,16 +21,16 @@
     const REF_LINES = {
       'MY-26-0104': [
         { id: 'L1', stream: 'Stream 1', blocks: 'Block B1', formwork: 'MIVAN/MONOLITIC FORMWORK', product: 'MFE New', m2: 700 },
-        { id: 'L2', stream: 'Stream 1', blocks: 'Block B2', formwork: 'MIVAN/MONOLITIC FORMWORK', product: 'MFE Used (Refurbished)', m2: 200, price: 118 },
-        { id: 'L3', stream: 'Stream 2', blocks: 'Block B3', formwork: 'QUICK DECK / LIGHTDECK', product: 'MFE New', m2: 300, price: 132, terms: '30% Advance / 70% CAD' }
+        { id: 'L2', stream: 'Stream 2', blocks: 'Block B2', formwork: 'MIVAN/MONOLITIC FORMWORK', product: 'MFE Used (Refurbished)', m2: 200, price: 118 },
+        { id: 'L3', stream: 'Stream 3', blocks: 'Block B3', formwork: 'QUICK DECK / LIGHTDECK', product: 'MFE New', m2: 300, price: 132, terms: '30% Advance / 70% CAD' }
       ],
       'PH-26-0219': [
-        { id: 'L1', stream: 'Stream 2', blocks: 'Core', formwork: 'QUICK DECK / LIGHTDECK', product: 'MFE Used (Refurbished)', m2: 600 },
+        { id: 'L1', stream: 'Stream 1', blocks: 'Core', formwork: 'QUICK DECK / LIGHTDECK', product: 'MFE Used (Refurbished)', m2: 600 },
         { id: 'L2', stream: 'Stream 2', blocks: 'Podium', formwork: 'ROBUST FORMWORK / ROBUSTFORM', product: 'MFE Used (Refurbished)', m2: 350, price: 126, terms: '30% Advance / 70% LC' }
       ],
       'SG-26-0305': [
         { id: 'L1', stream: 'Stream 1', blocks: 'Transfer', formwork: 'PREMIUM FORMWORK', product: 'Modification', m2: 420 },
-        { id: 'L2', stream: 'Stream 1', blocks: 'Podium Deck', formwork: 'ADAPTER FORMWORK / ADAPTERFORM', product: 'Modification', m2: 200 }
+        { id: 'L2', stream: 'Stream 2', blocks: 'Podium Deck', formwork: 'ADAPTER FORMWORK / ADAPTERFORM', product: 'Modification', m2: 200 }
       ],
       'IN-26-0412': [
         { id: 'L1', stream: 'Stream 1', blocks: 'Core', formwork: 'MIVAN/MONOLITIC FORMWORK', product: 'Re-Design Only (Non-physical Despatch)', m2: 300 }
@@ -253,6 +253,7 @@
       const streams = [...used, nextStream];
       const dis = editable ? '' : 'disabled';
       const live = liveMoney();
+      const repeats = [...new Set(appState.mr11Lines.map(l => streamNumber(l.stream)).filter((n, i, all) => all.indexOf(n) !== i))].map(n => `Stream ${n}`);
       const projectTerms = formatTerms(projectTermsOf({ isLive: true }));
       const lineValue = (l, money) => (Number(l.m2) || 0) * money.final;
       const valueTotal = live.rows.reduce((a, x) => a + lineValue(x.l, x.money), 0);
@@ -287,7 +288,8 @@
         <datalist id="bd-lines-blocks">${appState.blocks.map(b => `<option value="${esc(b)}"></option>`).join('')}</datalist>
         <datalist id="bd-lines-streams">${streams.map(st => `<option value="${esc(st)}"></option>`).join('')}</datalist>
         <datalist id="bd-lines-terms">${TERM_PRESETS.map(t => `<option value="${esc(t)}"></option>`).join('')}</datalist>
-        <div class="flex flex-wrap items-center gap-2">${editable ? `<button type="button" data-lines="add" class="sf-btn sf-btn-sm sf-primary">Add a line</button>${!ok ? '<button type="button" data-lines="fit" class="sf-btn sf-btn-sm">Adjust the last line to match the NCA</button>' : ''}` : '<span class="text-[11px] text-slate-500">BD keeps these lines; you can view them.</span>'}
+        ${repeats.length ? `<p class="px-3 py-2 rounded-lg bg-rose-50 text-rose-800 text-xs font-semibold">${esc(repeats.join(', '))} ${repeats.length === 1 ? 'has' : 'have'} more than one line. Each stream has one MR11 line: combine them${editable ? ' with the button below' : ''}.</p>` : ''}
+        <div class="flex flex-wrap items-center gap-2">${editable && repeats.length ? '<button type="button" data-lines="combine" class="sf-btn sf-btn-sm sf-primary">Combine repeated streams</button>' : ''}${editable ? `<button type="button" data-lines="add" class="sf-btn sf-btn-sm sf-primary">Add a line</button>${!ok ? '<button type="button" data-lines="fit" class="sf-btn sf-btn-sm">Adjust the last line to match the NCA</button>' : ''}` : '<span class="text-[11px] text-slate-500">BD keeps these lines; you can view them.</span>'}
           <button type="button" class="sf-btn sf-btn-sm" onclick="switchTab(9)">See the lines in MR11</button></div>`;
     }
     // The project's stream list, block list, formwork type and product type come from its lines.
@@ -330,6 +332,12 @@
         value = text ? formatTerms(parsed) : '';
         el.value = value;
       } else if (field === 'stream' && !el.value.trim()) { el.value = before || ''; return; } else value = el.value.trim();
+      // One line per stream: a stream that already has a line cannot get a second one
+      if (field === 'stream') {
+        const n = streamNumber(value);
+        const taken = appState.mr11Lines.findIndex((l, j) => j !== i && streamNumber(l.stream) === n);
+        if (taken >= 0) { notify(`${value} already has a line (line ${taken + 1}). Each stream has one MR11 line.`, 'error'); el.value = before || ''; return; }
+      }
       if (String(before ?? '') === String(value ?? '')) return;
       const name = { m2: 'NCA m²', price: 'selling price', terms: 'payment terms' }[field] || field;
       const shown = v => (v === null || v === undefined || v === '' ? "the project's" : `"${v}"`);
@@ -342,10 +350,23 @@
       if (act === 'add') {
         const last = appState.mr11Lines[appState.mr11Lines.length - 1] || {};
         const id = `L${Math.max(0, ...appState.mr11Lines.map(l => Number(String(l.id).replace(/\D/g, '')) || 0)) + 1}`;
-        changeBdLines(lines => lines.push({ id, stream: last.stream || appState.streams[0] || 'Stream 1', blocks: '', formwork: last.formwork || appState.formworkType, product: last.product || appState.productType, m2: 0, price: ownPrice(last) ? Number(last.price) : null, terms: ownTerms(last) ? last.terms : '' }), `Added MR11 line ${appState.mr11Lines.length + 1}`);
+        // A new line starts on the next stream number, since each stream has one line
+        const next = `Stream ${Math.max(0, ...appState.mr11Lines.map(l => parseFloat(streamNumber(l.stream)) || 0)) + 1}`;
+        changeBdLines(lines => lines.push({ id, stream: next, blocks: '', formwork: last.formwork || appState.formworkType, product: last.product || appState.productType, m2: 0, price: ownPrice(last) ? Number(last.price) : null, terms: ownTerms(last) ? last.terms : '' }), `Added MR11 line ${appState.mr11Lines.length + 1}`);
       } else if (act === 'remove') {
         const i = Number(b.closest('tr').dataset.line);
         changeBdLines(lines => lines.splice(i, 1), `Removed MR11 line ${i + 1}`);
+      } else if (act === 'combine') {
+        changeBdLines(lines => {
+          const kept = [];
+          lines.forEach(l => {
+            const same = kept.find(k => streamNumber(k.stream) === streamNumber(l.stream));
+            if (!same) { kept.push(l); return; }
+            same.m2 = Math.round(((Number(same.m2) || 0) + (Number(l.m2) || 0)) * 100) / 100;
+            same.blocks = [...new Set([same.blocks, l.blocks].flatMap(b => String(b || '').split(',')).map(b => b.trim()).filter(Boolean))].join(', ');
+          });
+          lines.splice(0, lines.length, ...kept);
+        }, 'Combined MR11 lines on the same stream');
       } else if (act === 'fit') {
         changeBdLines(lines => { const last = lines[lines.length - 1]; last.m2 = Math.max(0, Number((appState.ncaArea - (liveLinesTotal() - (Number(last.m2) || 0))).toFixed(2))); }, 'Adjusted the last MR11 line to match the NCA');
       }

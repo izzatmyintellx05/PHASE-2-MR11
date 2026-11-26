@@ -909,3 +909,9 @@
 
     /* The project filter bar under the header is not shown; every page covers all projects */
     .sf-ribbon { display: none !important; }
+
+/* Workbooks with two header rows (Planning: Dispatch over Pack / Not Pack) */
+.sf-dt-2h thead { position: sticky; top: 0; z-index: 3; background: var(--panel); }
+.sf-dt-2h th { position: static; }
+.sf-dt-2h th.sf-dt-stick { position: sticky; left: 0; }
+.sf-dt th.sf-dt-grouph { text-align: center; border-bottom: 1px solid var(--joint); }

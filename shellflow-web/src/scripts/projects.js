@@ -40,6 +40,35 @@
         return out;
       })(window.mr11Lines);
 
+      // One MR11 line per stream: a project's lines on the same stream show as one line
+      // (m² and money added up, blocks listed together). Lines saved that way before the rule
+      // are shown combined; the first line keeps its own figures and department entries.
+      const streamKey = r => String((r._line && r._line.stream) || r.stream || '').replace(/[^0-9.]/g, '') || '1';
+      const SUM = ['ncaQty', 'designFinal', 'totalForecastM2', 'producedM2', 'shippedM2', 'pendingM2', '_share', '_value', '_ownProcessed'];
+      window.mr11OneLinePerStream = function (rows) {
+        const out = [];
+        const seen = new Map();
+        rows.forEach(r => {
+          if (!r || !r._line) { out.push(r); return; }
+          const k = `${r.isLive ? 'LIVE' : r.key}|${streamKey(r)}`;
+          const first = seen.get(k);
+          if (!first) { const copy = { ...r, _line: { ...r._line } }; seen.set(k, copy); out.push(copy); return; }
+          SUM.forEach(f => { if (typeof r[f] === 'number') first[f] = (Number(first[f]) || 0) + r[f]; });
+          if (Array.isArray(r.monthsM2)) first.monthsM2 = (first.monthsM2 || []).map((v, i) => (Number(v) || 0) + (Number(r.monthsM2[i]) || 0));
+          const blocks = [...new Set([first._line.blocks, r._line.blocks].flatMap(b => String(b || '').split(',')).map(b => b.trim()).filter(Boolean))].join(', ');
+          first._line.blocks = blocks;
+          first._line.m2 = (Number(first._line.m2) || 0) + (Number(r._line.m2) || 0);
+          first._merged = (first._merged || 1) + 1;
+          first.buildingStream = [first._line.stream, blocks].filter(Boolean).join(' / ');
+        });
+        // Line numbers within each project follow the combined list
+        const count = {};
+        out.forEach(r => { if (r && r._line) { const p = r.isLive ? 'LIVE' : r.key; r._lineIndex = count[p] = (count[p] ?? -1) + 1; } });
+        out.forEach(r => { if (r && r._line) r._lineCount = count[r.isLive ? 'LIVE' : r.key] + 1; });
+        return out;
+      };
+      window.mr11Lines = (orig => function () { return window.mr11OneLinePerStream(orig.apply(this, arguments)); })(window.mr11Lines);
+
       // Edit on another project's line: switch to that project and open your department's page there
       function decorateOthers() {
         const others = new Set(Object.keys(window.MR11_OTHERS || {}));

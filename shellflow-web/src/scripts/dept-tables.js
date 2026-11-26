@@ -1,6 +1,6 @@
     // =========================================================================
-    // Production & Yard and Logistics & Shipping work as one sheet each, with the columns of
-    // the department workbooks (production.xlsx, dispatchlocal.xlsx, dispatchoversea.xlsx):
+    // Planning, Production and Dispatch work as one sheet each, with the columns of the
+    // department workbooks (planning.xlsx, production.xlsx, dispatchlocal.xlsx, dispatchoversea.xlsx):
     // every project's MR11 lines, typed into straight away. Each change saves to that
     // project's own record, and MR11 reads it from there. Logistics has two sheets, Local
     // projects and Overseas projects. The forms for the project you are on are folded below.
@@ -11,7 +11,7 @@
       const num = v => (v === null || v === undefined || v === '' ? '' : fmtNum(v));
       const n0 = v => Number(v) || 0;
       const thisMonth = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; };
-      const view = { month: thisMonth(), q: { lineProduction: '', lineDispatch: '' }, mode: 'Local' };
+      const view = { month: thisMonth(), q: { planning: '', lineProduction: '', lineDispatch: '' }, mode: 'Local' };
       try { view.mode = localStorage.getItem('sf.dispatchMode') === 'Overseas' ? 'Overseas' : 'Local'; } catch {}
       // The days of the month shown, as field names d20261201 ..
       const daysOf = month => {
@@ -62,7 +62,7 @@
 
       // ---- The workbook columns ----
       // type: show (worked out), number, date, text, select; first: only on a project's first line
-      function identity(key) {
+      function identity(key, remarks) {
         const other = key === 'lineProduction' ? null : 'lineProduction';
         return [
           { label: 'Project Shortname', type: 'show', text: true, first: true, stick: true, value: r => r.shortName || r.projectNo || '' },
@@ -74,7 +74,7 @@
           { label: 'Product type', type: 'show', text: true, value: r => r._line.product || r.product || '' },
           { label: 'Formwork Type', type: 'show', text: true, value: r => r._line.formwork || r.formworkSystem || '' },
           { label: 'Total Area m2', type: 'show', value: r => r.ncaQty, sum: true },
-          { f: key === 'lineProduction' ? 'prodRemarks' : 'dispRemarks', label: 'Remarks', type: 'text' }
+          { f: remarks || (key === 'lineProduction' ? 'prodRemarks' : 'dispRemarks'), label: 'Remarks', type: 'text' }
         ];
       }
       function productionCols() {
@@ -87,9 +87,7 @@
           ...days.map(d => ({ f: d.f, label: d.label, type: 'number', day: true, sum: true })),
           ...back.map(b => ({ f: `np${b.ym}`, label: `(${b.mon}) Not Produced`, type: 'number', sum: true })),
           { label: 'Total not Produced', type: 'show', value: r => back.reduce((a, b) => a + n0(ownOf(r, 'lineProduction', `np${b.ym}`)), 0), sum: true },
-          { f: 'npReason', label: 'Reason (Not Produced)', type: 'text' },
-          { f: 'processedM2', label: 'Processed m² (Planning)', type: 'number', def: r => processedOf(r), sum: true },
-          { f: 'processedDate', label: 'Processed on', type: 'date', def: r => r.processedDate }
+          { f: 'npReason', label: 'Reason (Not Produced)', type: 'text' }
         ];
       }
       const modeCol = { f: 'shipMode', label: 'Local / Overseas', type: 'select', options: ['Local', 'Overseas'], def: r => modeOf(r) };
@@ -125,9 +123,43 @@
           { label: 'Per M2', type: 'show', value: r => { const s = n0(ownOf(r, 'lineDispatch', 'sailedM2') ?? sailedOf(r)); const c = n0(ownOf(r, 'lineDispatch', 'totalCost')); return s > 0 && c > 0 ? c / s : ''; } },
           modeCol];
       }
+      // planning.xlsx: processed m² by month, pack / stock split, order status and not-processed months
+      const ORDER_STATUS = ["Haven't Start", 'Pending', 'On Hold', 'Completed'];
+      const OUTSTANDING = [['osNew', 'N.Stock'], ['osUsed', 'U.Stock'], ['osSpec', 'Spec'], ['osMakeNew', 'Make New']];
+      function planningCols() {
+        const back = monthsBack(view.month, 5);
+        const pm = `pm${view.month.replace('-', '')}`;
+        return [
+          { label: 'Project No.', type: 'show', text: true, first: true, value: r => r.projectNo || '' },
+          ...identity('lineProduction', 'planRemarks'),
+          { f: 'designQty', label: 'Design Quantity Ordered', type: 'number', def: r => r.designFinal || r.ncaQty, sum: true },
+          { f: 'processedM2', label: 'Cumulative Processed (Project)', type: 'number', def: r => processedOf(r), sum: true },
+          { f: pm, label: 'Current Processed (Month)', type: 'number', sum: true },
+          { f: 'pack', label: 'Pack', group: 'Dispatch', type: 'number', sum: true },
+          { f: 'notPack', label: 'Not Pack', group: 'Dispatch', type: 'number', sum: true },
+          ...OUTSTANDING.map(([f, label]) => ({ f, label, group: 'Outstanding (Integer)', type: 'number', int: true, sum: true })),
+          { label: 'Total Outstanding (Integer)', type: 'show', value: r => OUTSTANDING.reduce((a, [f]) => a + n0(ownOf(r, 'lineProduction', f)), 0), sum: true },
+          { f: 'closingDate', label: 'Closing Date', type: 'date' },
+          { f: 'orderStatus', label: "Order Status (Haven't Start, Pending, On Hold, Completed)", type: 'select', options: ORDER_STATUS },
+          { f: 'pic', label: 'PIC (Dropdown)', type: 'text', suggest: () => planningPics() },
+          { f: 'accRemarks', label: 'Accessories (Remarks)', type: 'text' },
+          { f: 'holeRemarks', label: 'Holing (Remarks)', type: 'text' },
+          ...back.map(b => ({ f: `nproc${b.ym}`, label: `(${b.mon}) Not Processed (cumulative)`, type: 'number', sum: true })),
+          { label: 'Total Not Processed', type: 'show', value: r => back.reduce((a, b) => a + n0(ownOf(r, 'lineProduction', `nproc${b.ym}`)), 0), sum: true },
+          { f: 'nprocReason', label: 'Reason (Not Processed)', type: 'text' }
+        ];
+      }
+      // PIC choices: the Planning people on the user list and every name already picked on the sheet
+      function planningPics() {
+        const users = (appState.users || []).filter(u => (u.roles || []).includes('PLANNING')).map(u => u.name);
+        const used = allLines().map(r => ownOf(r, 'lineProduction', 'pic'));
+        return [...new Set([...users, ...used].filter(Boolean))].sort();
+      }
+
       const TABLES = {
-        lineProduction: { page: 4, roles: ['PLANNING', 'PRODUCTION'], title: 'Production', cols: productionCols },
-        lineDispatch: { page: 7, roles: ['DISPATCH'], title: 'Dispatch', modes: true, cols: () => (view.mode === 'Overseas' ? overseasCols() : localCols()) }
+        planning: { key: 'lineProduction', page: 5, roles: ['PLANNING'], title: 'Planning', cols: planningCols, own: true, more: 'More: panel register, series ledger' },
+        lineProduction: { key: 'lineProduction', page: 4, roles: ['PRODUCTION'], title: 'Production', cols: productionCols, more: 'More: panels and yard photos' },
+        lineDispatch: { key: 'lineDispatch', page: 7, roles: ['DISPATCH'], title: 'Dispatch', modes: true, more: 'More: readiness gate, lorries, shipping form, ETD log', cols: () => (view.mode === 'Overseas' ? overseasCols() : localCols()) }
       };
 
       // ---- The sheet ----
@@ -143,20 +175,22 @@
         const own = ownOf(r, t.key, c.f);
         const def = c.def ? c.def(r) : '';
         const live = r.isLive;
-        const attrs = `data-dt="${t.key}" data-proj="${esc(live ? 'LIVE' : r.key)}" ${live ? `data-id="${esc(lineIdOf(r))}"` : `data-oid="${esc(lineIdOf(r))}"`} data-line="${esc(lineIdOf(r))}" data-f="${c.f}" data-type="${c.type}" aria-label="${esc(c.label)}, ${esc(r.customerProject.trim())} ${esc(r._line.stream || '')} ${esc(r._line.blocks || '')}" ${editable ? '' : 'disabled'}`;
+        const attrs = `data-dt="${t.id}" data-proj="${esc(live ? 'LIVE' : r.key)}" ${live ? `data-id="${esc(lineIdOf(r))}"` : `data-oid="${esc(lineIdOf(r))}"`} data-line="${esc(lineIdOf(r))}" data-f="${c.f}" data-type="${c.type}" aria-label="${esc(c.label)}, ${esc(r.customerProject.trim())} ${esc(r._line.stream || '')} ${esc(r._line.blocks || '')}" ${editable ? '' : 'disabled'}`;
         if (c.type === 'select') {
           const cur = own !== undefined ? own : (def || '');
-          return `<td><select ${attrs} class="sf-dt-in">${cur ? '' : '<option value="">—</option>'}${c.options.map(o => `<option ${o === cur ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select></td>`;
+          const opts = [...(typeof c.options === 'function' ? c.options() : c.options)];
+          if (cur && !opts.includes(cur)) opts.push(cur);
+          return `<td><select ${attrs} class="sf-dt-in">${cur ? '' : '<option value="">—</option>'}${opts.map(o => `<option ${o === cur ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select></td>`;
         }
         const value = own !== undefined ? own : '';
-        if (c.type === 'text') return `<td><input type="text" maxlength="40" value="${esc(value)}" placeholder="${esc(def || '')}" ${attrs} class="sf-dt-in sf-dt-text"></td>`;
+        if (c.type === 'text') return `<td><input type="text" maxlength="40" ${c.suggest ? `list="sf-dl-${t.id}-${c.f}"` : ''} value="${esc(value)}" placeholder="${esc(def || '')}" ${attrs} class="sf-dt-in sf-dt-text"></td>`;
         const place = c.type === 'number' ? num(def) : (def || '');
-        return `<td><input type="${c.type}" ${c.type === 'number' ? 'min="0" step="0.01" inputmode="decimal"' : ''} value="${esc(value)}" placeholder="${esc(place)}" ${attrs} class="sf-dt-in ${c.type === 'number' ? 'sf-dt-numin' : ''} ${c.day ? 'sf-dt-day' : ''}"></td>`;
+        return `<td><input type="${c.type}" ${c.type === 'number' ? (c.int ? 'min="0" step="1" inputmode="numeric" data-int="1"' : 'min="0" step="0.01" inputmode="decimal"') : ''} value="${esc(value)}" placeholder="${esc(place)}" ${attrs} class="sf-dt-in ${c.type === 'number' ? 'sf-dt-numin' : ''} ${c.day ? 'sf-dt-day' : ''}"></td>`;
       }
       function render(t, box) {
         if (view.autoMonth !== false && view.month !== thisMonth()) view.month = thisMonth();
         const editable = can(...t.roles);
-        const q = (view.q[t.key] || '').trim().toLowerCase();
+        const q = (view.q[t.id] || '').trim().toLowerCase();
         let rows = allLines();
         const counts = { Local: rows.filter(r => modeOf(r) === 'Local').length, Overseas: rows.filter(r => modeOf(r) === 'Overseas').length };
         if (t.modes) rows = rows.filter(r => modeOf(r) === view.mode);
@@ -164,7 +198,12 @@
         const cols = t.cols();
         const projects = new Set(rows.map(r => (r.isLive ? 'LIVE' : r.key)));
         const sum = (c, list) => list.reduce((a, r) => a + n0(valueOf(t, c, r)), 0);
-        const head = `<tr>${cols.map(c => `<th class="${[c.stick ? 'sf-dt-stick' : '', c.type === 'number' || (c.type === 'show' && !c.text) ? 'text-right' : '', c.day ? 'sf-dt-dayh' : ''].join(' ')}">${esc(c.label)}</th>`).join('')}</tr>`;
+        const thCls = c => [c.stick ? 'sf-dt-stick' : '', c.type === 'number' || (c.type === 'show' && !c.text) ? 'text-right' : '', c.day ? 'sf-dt-dayh' : ''].join(' ');
+        const grouped = cols.some(c => c.group);
+        // A workbook with grouped columns (Dispatch over Pack / Not Pack) gets its two header rows
+        const head = !grouped ? `<tr>${cols.map(c => `<th class="${thCls(c)}">${esc(c.label)}</th>`).join('')}</tr>`
+          : `<tr>${cols.map((c, i) => (!c.group ? `<th rowspan="2" class="${thCls(c)}">${esc(c.label)}</th>` : cols[i - 1]?.group === c.group ? '' : `<th colspan="${cols.filter(x => x.group === c.group).length}" class="sf-dt-grouph">${esc(c.group)}</th>`)).join('')}</tr>`
+            + `<tr>${cols.filter(c => c.group).map(c => `<th class="${thCls(c)}">${esc(c.label)}</th>`).join('')}</tr>`;
         let lastProject = null;
         const body = rows.map(r => {
           const k = r.isLive ? 'LIVE' : r.key;
@@ -180,26 +219,43 @@
             <div><h3 class="text-sm font-bold text-slate-900">${esc(title)}</h3><p class="text-xs text-slate-500">${projects.size} ${projects.size === 1 ? 'project' : 'projects'} · ${plural(rows.length, 'line')}${editable ? '' : ' · View only'} · Grey = estimate</p></div>
             <div class="flex flex-wrap items-center gap-2">
               <label class="sf-dt-month">Month <input type="month" data-dt-month value="${esc(view.month)}"></label>
-              <input type="search" data-dt-q="${t.key}" value="${esc(view.q[t.key] || '')}" placeholder="Find a project" aria-label="Find a project" class="sf-dt-search">
-              <button type="button" class="sf-btn sf-btn-sm" data-dt-full="${t.key}">Full screen</button></div></div>
-          <div class="sf-dt-wrap"><table class="sf-dt"><thead>${head}</thead><tbody>${body || `<tr><td colspan="${cols.length}" class="text-slate-500 sf-dt-txt">No ${t.modes ? view.mode.toLowerCase() + ' ' : ''}project${q ? ' matches' : ' yet'}.</td></tr>`}</tbody>${foot ? `<tfoot>${foot}</tfoot>` : ''}</table></div>`;
+              <input type="search" data-dt-q="${t.id}" value="${esc(view.q[t.id] || '')}" placeholder="Find a project" aria-label="Find a project" class="sf-dt-search">
+              <button type="button" class="sf-btn sf-btn-sm" data-dt-full="${t.id}">Full screen</button></div></div>
+          <div class="sf-dt-wrap"><table class="sf-dt${grouped ? ' sf-dt-2h' : ''}"><thead>${head}</thead><tbody>${body || `<tr><td colspan="${cols.length}" class="text-slate-500 sf-dt-txt">No ${t.modes ? view.mode.toLowerCase() + ' ' : ''}project${q ? ' matches' : ' yet'}.</td></tr>`}</tbody>${foot ? `<tfoot>${foot}</tfoot>` : ''}</table></div>${cols.filter(c => c.suggest).map(c => `<datalist id="sf-dl-${t.id}-${c.f}">${c.suggest().map(o => `<option value="${esc(o)}"></option>`).join('')}</datalist>`).join('')}`;
         if (keep) { const s = box.querySelector('[data-dt-q]'); s.focus(); s.setSelectionRange(s.value.length, s.value.length); }
         return true;
       }
       // Line tracking draws this sheet in place of the one-project tracker on these two pages
-      window.renderAllProjectTable = (t, box) => (TABLES[t.key] ? render({ key: t.key, ...TABLES[t.key] }, box) : false);
-      const redraw = key => { const box = $(`lt-${key}`); if (box) render({ key, ...TABLES[key] }, box); };
+      window.renderAllProjectTable = (t, box) => (TABLES[t.key] ? render({ id: t.key, ...TABLES[t.key] }, box) : false);
+      const redraw = id => { const box = $(`lt-${id}`); if (box && TABLES[id]) render({ id, ...TABLES[id] }, box); };
+
+      // ---- The dispatch-readiness gate is part of Dispatch now, not a step of its own ----
+      const gate = $('step-panel-6'), dispatchPanel = $('step-panel-7');
+      if (gate && dispatchPanel) {
+        const wrap = document.createElement('div');
+        wrap.className = 'space-y-6';
+        [...gate.children].forEach(el => wrap.appendChild(el));
+        dispatchPanel.appendChild(wrap);
+        gate.remove();
+      }
+      window.switchTab = (orig => n => orig(n === 6 ? 7 : n))(window.switchTab);
 
       // ---- The page: the sheet first, the one-project forms folded underneath ----
-      Object.entries(TABLES).forEach(([key, t]) => {
+      Object.entries(TABLES).forEach(([id, t]) => {
         const panel = $(`step-panel-${t.page}`);
-        const box = $(`lt-${key}`);
+        if (panel && t.own && !$(`lt-${id}`)) {
+          const made = document.createElement('div');
+          made.id = `lt-${id}`;
+          made.className = 'bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-3';
+          panel.prepend(made);
+        }
+        const box = $(`lt-${id}`);
         if (!panel || !box) return;
         box.classList.add('sf-dt-card');
         const rest = [...panel.children].filter(el => el !== box && !el.matches('.sf-stepguide'));
         const more = document.createElement('details');
         more.className = 'sf-dt-more';
-        more.innerHTML = `<summary>${t.page === 4 ? 'More: panels, yard photos, planning' : 'More: lorries, shipping form, ETD log'} (<span data-dt-proj></span>)</summary>`;
+        more.innerHTML = `<summary>${esc(t.more)} (<span data-dt-proj></span>)</summary>`;
         rest.forEach(el => more.appendChild(el));
         panel.append(box, more);
       });
@@ -221,20 +277,21 @@
       document.addEventListener('change', async e => {
         const el = e.target;
         if (!el.dataset || !el.dataset.dt) return;
-        const key = el.dataset.dt, t = TABLES[key];
+        const t = TABLES[el.dataset.dt];
         if (!t || !guard(t.roles, 'change these figures')) { refreshAll(); return; }
+        const key = t.key;
         const { proj, line, f, type } = el.dataset;
         let value;
-        if (type === 'number') { const n = parseFloat(el.value); value = Number.isFinite(n) ? Math.max(0, Math.round(n * 100) / 100) : null; }
+        if (type === 'number') { const n = parseFloat(el.value); value = Number.isFinite(n) ? Math.max(0, el.dataset.int ? Math.round(n) : Math.round(n * 100) / 100) : null; }
         else value = el.value.trim().slice(0, 40) || null;
         const row = allLines().find(r => (r.isLive ? 'LIVE' : r.key) === proj && lineIdOf(r) === line);
         if (!row) return;
         const patch = { [f]: value };
         // A day's or a month's figure adds to the cumulative total (and a day sets the latest date)
-        if (/^(d\d{8}|dm\d{6})$/.test(f)) {
-          const total = key === 'lineProduction' ? 'producedM2' : 'shippedM2';
+        if (/^(d\d{8}|dm\d{6}|pm\d{6})$/.test(f)) {
+          const total = f.startsWith('pm') ? 'processedM2' : key === 'lineProduction' ? 'producedM2' : 'shippedM2';
           const before = n0(ownOf(row, key, f));
-          const base = ownOf(row, key, total) ?? n0(row[total]);
+          const base = ownOf(row, key, total) ?? n0(total === 'processedM2' ? processedOf(row) : row[total]);
           patch[total] = Math.max(0, Math.round((base + n0(value) - before) * 100) / 100);
           if (f[0] === 'd' && f[1] !== 'm') {
             const entry = { ...entryOf(row, key), [f]: value };
@@ -303,6 +360,7 @@
       window.refreshAll = (orig => function () {
         const out = orig.apply(this, arguments);
         document.querySelectorAll('[data-dt-proj]').forEach(s => { s.textContent = appState.projectName || ''; });
+        if (appState.ready) Object.entries(TABLES).forEach(([id, t]) => { if (t.own && appState.activeTab === t.page) redraw(id); });
         return out;
       })(window.refreshAll);
     })();

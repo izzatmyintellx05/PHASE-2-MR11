@@ -5,14 +5,15 @@
     // rest of the page; nothing here stores data of its own.
     // =========================================================================
     const PAGES = {
-      1: { step: 1, name: 'BD & Commercial', purpose: 'Project entry, NCA versions and pricing', icon: 'briefcase' },
-      2: { step: 2, name: 'Finance Gateway', purpose: 'Payment lines and bank-line matching', icon: 'landmark' },
-      3: { step: 3, name: 'Technical Design', purpose: 'Shell plan, design release and accessories', icon: 'drafting-compass' },
-      4: { step: 4, name: 'Production & Yard', purpose: 'Daily panel actuals, series and yard readiness', icon: 'factory' },
-      6: { step: 5, name: 'Readiness Gate & 4-Way', purpose: 'Five-point dispatch gate and the 4-way m² check', icon: 'shield-check' },
-      7: { step: 6, name: 'Logistics & Shipping', purpose: 'Lorry planning, ETD log and shipping', icon: 'truck' },
+      1: { step: 1, name: 'Business Development', purpose: 'Project entry, NCA versions and pricing', icon: 'briefcase' },
+      2: { step: 2, name: 'Finance', purpose: 'Payment lines and bank-line matching', icon: 'landmark' },
+      3: { step: 3, name: 'Shellplan & Design', purpose: 'Shell plan, design release and accessories', icon: 'drafting-compass' },
+      5: { step: 4, name: 'Planning', purpose: 'Panel register, series entry and processed m²', icon: 'calendar-range' },
+      4: { step: 5, name: 'Production', purpose: 'Daily produced m², not-produced reasons and yard readiness', icon: 'factory' },
+      6: { name: 'Dispatch Readiness', purpose: 'Five-point dispatch gate and the 4-way m² check', icon: 'shield-check' },
+      7: { step: 6, name: 'Dispatch', purpose: 'Local and overseas dispatch, readiness gate, lorries and ETD log', icon: 'truck' },
       8: { step: 7, name: 'Site Receiving', purpose: 'Deliveries, site progress and incidents', icon: 'hard-hat' },
-      9: { step: 8, name: 'MR11 Master Schedule', purpose: 'The MR11 master operations ledger: every contract, live from steps 1 to 7', icon: 'sheet' },
+      9: { step: 8, name: 'Master Schedule', purpose: 'The MR11 master operations ledger: every contract, live from steps 1 to 7', icon: 'sheet' },
       18: { name: 'My Work', purpose: 'Everything waiting on you, in one list', icon: 'inbox' },
       10: { name: 'Alerts & Reminders', purpose: 'Rule-based alerts and dated reminders', icon: 'bell-ring' },
       11: { name: 'Approvals & Log', purpose: 'Changes waiting for approval, field updates and the activity log', icon: 'clipboard-check' },
@@ -589,11 +590,13 @@
     }
 
     // ---------------- Page links: every page has its own address ----------------
-    const PAGE_SLUGS = { 1: 'bd-commercial', 2: 'finance', 3: 'design', 4: 'production', 6: 'readiness-gate', 7: 'logistics', 8: 'site', 9: 'mr11', 18: 'my-work', 10: 'alerts', 11: 'approvals', 12: 'reports', 19: 'timeline', 13: 'mobile', 14: 'rules', 15: 'ceo', 16: 'permissions', 17: 'workbooks' };
+    const PAGE_SLUGS = { 1: 'business-development', 2: 'finance', 3: 'design', 5: 'planning', 4: 'production', 7: 'dispatch', 8: 'site', 9: 'mr11', 18: 'my-work', 10: 'alerts', 11: 'approvals', 12: 'reports', 19: 'timeline', 13: 'mobile', 14: 'rules', 15: 'ceo', 16: 'permissions', 17: 'workbooks' };
     function pageFromHash() {
       const slug = location.hash.replace(/^#/, '');
       const hit = Object.entries(PAGE_SLUGS).find(([, s]) => s === slug);
-      return hit ? Number(hit[0]) : null;
+      // Older links still open the right page
+      const OLD = { 'bd-commercial': 1, logistics: 7, 'readiness-gate': 7 };
+      return hit ? Number(hit[0]) : (OLD[slug] || null);
     }
     // The page asked for in the address is read once, before start-up can change the address
     const START_PAGE = pageFromHash();

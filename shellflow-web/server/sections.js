@@ -91,6 +91,9 @@ const VALIDATORS = {
       // A line's own selling price in USD per m²; none means the project's price
       if (l.price !== undefined && l.price !== null && (!isNum(l.price) || l.price < 0 || l.price > 1000000)) fail('An MR11 line price is not valid');
     });
+    // One MR11 line per stream in a project
+    const streams = lines.map(l => String(l.stream || '').replace(/[^0-9.]/g, '') || '1');
+    if (new Set(streams).size !== streams.length) fail('Each stream can only have one MR11 line');
   },
   lineFinance: d => checkLineTrack(d, 'lineFinance'),
   lineDesign: d => checkLineTrack(d, 'lineDesign'),
