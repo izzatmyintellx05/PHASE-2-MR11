@@ -17,12 +17,12 @@
       const daysOf = month => {
         const [y, m] = month.split('-').map(Number);
         const count = new Date(y, m, 0).getDate();
-        return Array.from({ length: count }, (_, i) => ({ f: `d${y}${String(m).padStart(2, '0')}${String(i + 1).padStart(2, '0')}`, label: `${i + 1} ${MON[m - 1]}`, iso: `${month}-${String(i + 1).padStart(2, '0')}` }));
+        return Array.from({ length: count }, (_, i) => ({ f: `d${y}${String(m).padStart(2, '0')}${String(i + 1).padStart(2, '0')}`, label: `${i + 1}-${MON[m - 1]}-${y}`, iso: `${month}-${String(i + 1).padStart(2, '0')}` }));
       };
       // The five months up to the one shown, as field names np202608 ..
       const monthsBack = (month, count) => {
         const [y, m] = month.split('-').map(Number);
-        return Array.from({ length: count }, (_, i) => { const d = new Date(y, m - 1 - (count - 1 - i), 1); return { ym: `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}`, mon: MON[d.getMonth()] }; });
+        return Array.from({ length: count }, (_, i) => { const d = new Date(y, m - 1 - (count - 1 - i), 1); return { ym: `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}`, mon: d.getMonth() === 8 ? 'Sept' : MON[d.getMonth()] }; });
       };
 
       // ---- Whose figure is it: the project you are on keeps its own; the others come from the server ----
@@ -154,6 +154,7 @@
         return `<td><input type="${c.type}" ${c.type === 'number' ? 'min="0" step="0.01" inputmode="decimal"' : ''} value="${esc(value)}" placeholder="${esc(place)}" ${attrs} class="sf-dt-in ${c.type === 'number' ? 'sf-dt-numin' : ''} ${c.day ? 'sf-dt-day' : ''}"></td>`;
       }
       function render(t, box) {
+        if (view.autoMonth !== false && view.month !== thisMonth()) view.month = thisMonth();
         const editable = can(...t.roles);
         const q = (view.q[t.key] || '').trim().toLowerCase();
         let rows = allLines();
@@ -274,8 +275,13 @@
         const m = e.target.closest && e.target.closest('[data-dt-month]');
         if (!m || !/^\d{4}-\d{2}$/.test(m.value)) return;
         view.month = m.value;
+        view.autoMonth = m.value === thisMonth();
         Object.keys(TABLES).forEach(redraw);
       });
+      // The sheet follows the calendar: when a new month starts, its dates replace the old ones
+      setInterval(() => {
+        if (view.autoMonth !== false && view.month !== thisMonth()) { view.month = thisMonth(); Object.keys(TABLES).forEach(redraw); }
+      }, 60000);
       document.addEventListener('click', e => {
         const m = e.target.closest && e.target.closest('[data-dt-mode]');
         if (m) {
