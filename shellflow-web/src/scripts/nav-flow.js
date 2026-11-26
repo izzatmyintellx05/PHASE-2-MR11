@@ -14,7 +14,7 @@
         const t = appState.activeTab;
         const name = (PAGES[t] && PAGES[t].name) || '';
         const html = t === 9
-          ? `<span class="sf-crumb-page">MR11 Master Schedule</span><span class="sf-crumb-hint">Start here. To change something, use <b>Edit</b> on a line or <b>Edit project</b>; it opens your department's page.</span>`
+          ? `<span class="sf-crumb-page">MR11 Master Schedule</span>`
           : `<button type="button" class="sf-btn sf-btn-sm" data-back-mr11>← Back to MR11</button><span class="sf-crumb-sep" aria-hidden="true">/</span><span class="sf-crumb-page">${esc(name)}</span>${DEPT_PAGES.includes(t) ? `<span class="sf-crumb-hint">Editing ${esc(appState.projectName || 'the project')}</span>` : ''}`;
         if (crumbs.innerHTML !== html) crumbs.innerHTML = html;
       }

@@ -5,13 +5,13 @@
     // the workbooks and the readiness view read each line's own figures.
     // =========================================================================
     const LINE_TRACKS = [
-      { key: 'lineFinance', page: 2, roles: ['FINANCE'], title: 'Payments by MR11 line', hint: 'Each line has its own advance from its own price and terms. Tick a line when its advance is in.',
+      { key: 'lineFinance', page: 2, roles: ['FINANCE'], title: 'Payments by MR11 line', hint: 'Tick a line when its advance is in.',
         cols: [
           { f: 'advancePaid', label: 'Advance received', type: 'check', def: r => /CLEARED/.test(r.advStatus) },
           { f: 'paidDate', label: 'Date received', type: 'date', def: r => r.paymentDate }
         ],
         info: r => `${esc(r.paymentTerm)} · advance due ${formatUSD((r._value || 0) * (r.advancePct || 0) / 100)}` },
-      { key: 'lineDesign', page: 3, roles: ['SHELLPLAN', 'DESIGN'], title: 'Design by MR11 line', hint: 'Release design line by line; a line counts as designed when its status is Completed.',
+      { key: 'lineDesign', page: 3, roles: ['SHELLPLAN', 'DESIGN'], title: 'Design by MR11 line', hint: 'Set each line to Completed when designed.',
         cols: [
           { f: 'designStatus', label: 'Design status', type: 'select', options: ['Not started', 'Ongoing', 'Completed'], def: r => r.designStatus },
           { f: 'designM2', label: 'Design m²', type: 'number', def: r => r.designFinal },
@@ -97,13 +97,13 @@
       const rows = liveLineRows();
       const editable = can(...t.roles);
       box.innerHTML = `<div class="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-3">
-          <div><h3 class="text-sm font-bold text-slate-900">${esc(t.title)}</h3><p class="text-xs text-slate-500">${esc(t.hint)} Grey figures are the line's share of the project until someone enters the line's own.</p></div>
+          <div><h3 class="text-sm font-bold text-slate-900">${esc(t.title)}</h3><p class="text-xs text-slate-500">${esc(t.hint)} Grey = estimate.</p></div>
           <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-700">${plural(rows.length, 'line')}</span></div>
         <div class="overflow-x-auto"><table class="w-full text-xs border-collapse sf-table">
           <thead><tr><th>Line</th><th class="text-right">NCA m²</th>${t.info ? '<th>Terms and advance</th>' : ''}${t.cols.map(c => `<th>${esc(c.label)}</th>`).join('')}</tr></thead>
           <tbody>${rows.map((r, i) => `<tr class="align-top"><td>${lineLabel(r, i)}</td><td class="text-right font-semibold">${fmtNum(r.ncaQty)}</td>${t.info ? `<td>${t.info(r)}</td>` : ''}${t.cols.map(c => `<td>${trackerCell(t, c, r, i)}</td>`).join('')}</tr>`).join('')}</tbody>
         </table></div>
-        ${editable ? '' : `<p class="text-[11px] text-slate-500">${esc(t.roles.map(k => ROLES[k]).join(' or '))} keeps these figures; you can view them.</p>`}`;
+        ${editable ? '' : '<p class="text-[11px] text-slate-500">View only</p>'}`;
     }
 
     // ---- Readiness: every line's state in one read-only view ----
@@ -113,7 +113,7 @@
       const rows = mr11Lines(allMr11Rows().filter(r => r.isLive)).filter(r => !window.sfLineInScope || window.sfLineInScope(r));
       const tick = (ok, yes, no) => `<span class="sf-cond" data-met="${ok}">${esc(ok ? yes : no)}</span>`;
       box.innerHTML = `<div class="border-b border-slate-100 pb-3"><h3 class="text-sm font-bold text-slate-900">Readiness by MR11 line</h3>
-          <p class="text-xs text-slate-500">Each line moves on its own: paid, designed, produced and shipped. A line is ready to dispatch once its advance is in, its design is complete and its stock is produced.</p></div>
+          <p class="text-xs text-slate-500">Ready to dispatch = paid, designed and produced.</p></div>
         <div class="overflow-x-auto"><table class="w-full text-xs border-collapse sf-table">
           <thead><tr><th>Line</th><th class="text-right">NCA m²</th><th>Advance</th><th>Design</th><th class="text-right">Produced m²</th><th class="text-right">Shipped m²</th><th>State</th></tr></thead>
           <tbody>${rows.map((r, i) => {

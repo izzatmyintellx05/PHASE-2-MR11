@@ -5,7 +5,8 @@
     // "Show all" brings back the whole page; the choice is remembered in this browser.
     // =========================================================================
     (function () {
-      const STEP_PAGES = [1, 2, 3, 6, 8];
+      // Every step stays on the page (step-by-step mode is off)
+      const STEP_PAGES = [];
       const NEXT_PAGE = { 1: 9, 2: 9, 3: 9, 4: 9, 6: 9, 7: 9, 8: 9 };
       const current = {};
       let on = true;

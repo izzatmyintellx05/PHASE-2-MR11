@@ -263,7 +263,7 @@
       };
       box.innerHTML = `<div class="flex flex-wrap items-start justify-between gap-3">
           <div><h4 class="text-xs font-bold text-slate-900">Streams, blocks, formwork and product: one MR11 line each</h4>
-            <p class="text-xs text-slate-500">Each stream with its blocks and formwork type is its own line in MR11, as in the BD workbook, with its own m², selling price and payment terms. Leave the price or the terms blank to use the project's (section 2). The lines' m² must add up to the NCA. Steps 2–7 take their stream and block lists from these lines.</p></div>
+            <p class="text-xs text-slate-500">One line per stream. Lines must add up to the NCA. Blank price or terms = the project's.</p></div>
           <span class="px-2 py-0.5 rounded text-[11px] font-bold ${ok ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'}">${ok ? `Lines match the NCA (${fmtNum(nca)} m²)` : `Lines add up to ${fmtNum(total)} m², the NCA is ${fmtNum(nca)} m²`}</span>
         </div>
         <div class="overflow-x-auto"><table class="w-full text-xs border-collapse sf-lines-table">

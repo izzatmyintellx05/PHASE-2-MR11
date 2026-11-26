@@ -187,7 +187,7 @@ function checkLineTrack(d, key) {
   Object.entries(lines).forEach(([id, entry]) => {
     if (!SAFE_KEY.test(id)) fail('An MR11 line is not valid');
     Object.entries(object(entry)).forEach(([field, x]) => {
-      const ok = x === null || typeof x === 'boolean' || (isNum(x) && x >= 0 && x <= 10000000) || (typeof x === 'string' && x.length <= 40);
+      const ok = x === null || typeof x === 'boolean' || (isNum(x) && x >= 0 && x <= 100000000000) || (typeof x === 'string' && x.length <= 40);
       if (!/^[a-zA-Z][a-zA-Z0-9]{0,29}$/.test(field) || !ok) fail('A line figure is not valid');
     });
   });

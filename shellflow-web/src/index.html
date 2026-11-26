@@ -66,7 +66,7 @@
           <div class="grid grid-cols-3 gap-2"><button type="button" onclick="quickLogin('ADMIN')" class="sf-quick-login">Administrator</button><button type="button" onclick="quickLogin('CEO')" class="sf-quick-login">CEO</button><button type="button" onclick="quickLogin('BD')" class="sf-quick-login">BD</button><button type="button" onclick="quickLogin('FINANCE')" class="sf-quick-login">Finance</button><button type="button" onclick="quickLogin('SHELLPLAN')" class="sf-quick-login">Shell Plan</button><button type="button" onclick="quickLogin('DESIGN')" class="sf-quick-login">Design</button><button type="button" onclick="quickLogin('PLANNING')" class="sf-quick-login">Planning</button><button type="button" onclick="quickLogin('PRODUCTION')" class="sf-quick-login">Production</button><button type="button" onclick="quickLogin('DISPATCH')" class="sf-quick-login">Dispatch</button></div>
         </div>
         <p id="signin-quick-note" class="<!--@if hosted-->hidden <!--@endif-->text-[11px] text-slate-500 text-center">Demo only: signs in as that department without a password.</p><!--@if single-->
-        <p class="text-[11px] text-slate-500 pt-1 border-t border-slate-100">Prototype only: use any email on the Admin Permissions tab with the password demo1234. Passwords stay in this page's memory.</p><!--@endif-->
+        <p class="text-[11px] text-slate-500 pt-1 border-t border-slate-100">Demo: any user email, password demo1234.</p><!--@endif-->
       </div>
     </div>
   </div>
@@ -206,7 +206,7 @@
           </div>
           <div>
             <h2 class="text-sm font-bold text-slate-900">Online entry, NCA versions &amp; pricing engine</h2>
-            <p class="text-xs text-slate-600">Excel upload retired: every change is validated, logged and saved here, and MR11 rebuilds itself. Numeric inputs prevent <code class="bg-sky-100 px-1 rounded text-sky-900">#VALUE!</code> errors. Project, Building, Stream &amp; Block names flow downstream.</p>
+            <p class="text-xs text-slate-600">Changes save here and update MR11.</p>
           </div>
         </div>
         <span id="bd-nca-pill" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 shrink-0 self-start sm:self-center">NCA v1 Active</span>
@@ -221,7 +221,7 @@
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 class="text-sm font-bold text-slate-900">1. Master Project Context &amp; Classification (Flows to Steps 2–7)</h3>
-                <p class="text-xs text-slate-500">Edit any field below to immediately propagate to Finance, Design, Production &amp; Yard, Logistics &amp; Site</p>
+                <p class="text-xs text-slate-500">Changes here flow to every other page.</p>
               </div>
               
             </div>
@@ -334,7 +334,7 @@
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 class="text-sm font-bold text-slate-900">2. Selling Price &amp; Dynamic LME Parameters</h3>
-                <p class="text-xs text-slate-500">Final Price (USD/m²) = Selling Price + LME Adjustment + Props/WPB/Waler/Acc + Aluminium Weight + Freight. LME Adjustment: <code class="font-mono">(LME_Today - LME_Rate) / 1000 * 21.5</code></p>
+                <p class="text-xs text-slate-500">Final price = selling price + LME + extras + freight.</p>
               </div>
               <select id="bd-incoterms" aria-label="Incoterms" class="px-2.5 py-1 bg-slate-100 border border-slate-300 rounded text-xs font-semibold text-slate-800">
                 <option value="CIF">Incoterms: CIF</option>
@@ -426,7 +426,7 @@
           <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
             <div class="border-b border-slate-100 pb-3">
               <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5"><i data-lucide="lock" class="w-4 h-4 text-amber-600"></i> NCA Versions &amp; Change Gate</h3>
-              <p class="text-xs text-slate-500">A revision counts only after an administrator approves it. Approval alerts Design, Planning, Production &amp; Dispatch for 14 days.</p>
+              <p class="text-xs text-slate-500">Counts once an administrator approves it.</p>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs">
               <input type="text" id="nca-ref" placeholder="Reference" class="px-2.5 py-2 border border-slate-300 rounded-lg font-mono">
@@ -552,7 +552,7 @@
             </div>
 
             <p class="text-xs text-slate-600 leading-relaxed">
-              Monthly plant capacity is <strong>110,000 m²</strong> (not complexity-weighted). Going over raises a high <code class="font-mono">PRODUCTION_OVER_CAPACITY</code> alert for BD and Planning; it does not block the order.
+              Plant capacity: <strong>110,000 m²</strong> a month. Going over raises an alert.
             </p>
 
             <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-2 text-xs">
@@ -620,7 +620,7 @@
           </div>
           <div>
             <h2 class="text-sm font-bold text-slate-900">Payment lines &amp; bank-line matching</h2>
-            <p class="text-xs text-slate-600">Milestones come from the BD payment terms and total the contract value (<strong class="font-mono" id="fin-banner-total">$149,795.50</strong>). The advance % is read from each contract. A held project is re-checked when the next bank line lands.</p>
+            <p class="text-xs text-slate-600">Contract value: <strong class="font-mono" id="fin-banner-total">$149,795.50</strong></p>
           </div>
         </div>
         <span id="fin-top-pill" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 shrink-0">Advance Cleared</span>
@@ -654,7 +654,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
               <div>
                 <h3 class="text-sm font-bold text-slate-900">Payment Lines (Synced with BD Terms &amp; Total)</h3>
-                <p class="text-xs text-slate-500">Confirming a bank line fills in Actual Received, Payment Date and Status, and MR11 rebuilds</p>
+                <p class="text-xs text-slate-500">Confirm a line to record the payment.</p>
               </div>
               <div class="text-right">
                 <span class="text-[10px] uppercase font-bold text-slate-400 block">BD Contract Total</span>
@@ -683,7 +683,7 @@
             <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
               <div>
                 <h3 class="text-sm font-bold text-slate-900">Confirm a payment</h3>
-                <p class="text-xs text-slate-500">Paste anything the bank sent. The site finds the amount, date and reference and suggests the payment it belongs to (amount within tolerance +60, project named +30, payment type +10; 60 or more is suggested, 90 or more from the mailbox can confirm itself).</p>
+                <p class="text-xs text-slate-500">Paste the bank's message. The amount, date and matching payment are filled in for you.</p>
               </div>
               <span id="fin-auto-pill" class="text-xs font-mono bg-slate-100 px-2.5 py-1 rounded text-slate-700">Auto-confirm: OFF</span>
             </div>
@@ -742,7 +742,7 @@
           </div>
           <div>
             <h3 class="text-base font-extrabold text-rose-200">HARD STOP: TECHNICAL DESIGN ACCESS LOCKED BY FINANCE GATEWAY</h3>
-            <p class="text-xs text-rose-100 mt-0.5"><span id="design-stop-text">The advance payment</span> has not been confirmed in Step 2. Drafting is held until Finance confirms receipt. How strictly this applies awaits a management ruling; it can be switched in Rules.</p>
+            <p class="text-xs text-rose-100 mt-0.5"><span id="design-stop-text">The advance payment</span> isn't confirmed yet. Drafting waits for Finance.</p>
           </div>
         </div>
         <button onclick="setAdvancePaymentCleared(true)" class="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs shrink-0 cursor-pointer">
@@ -776,7 +776,7 @@
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
               <h3 class="text-base font-bold text-slate-900">1. Shell Plan Submission (2D/3D General Arrangement)</h3>
-              <p class="text-xs text-slate-500">Approved date must be on or after submission date. Each resubmission adds a revision. Prevents the 1900-01-29 date error.</p>
+              <p class="text-xs text-slate-500">Each resubmission adds a revision.</p>
             </div>
             <span id="sp-clock-pill" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">Shell-plan clock: 14 days</span>
           </div>
@@ -838,7 +838,7 @@
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
               <h3 class="text-base font-bold text-slate-900">2. Design Release &amp; Design Complexity Factor (DCF)</h3>
-              <p class="text-xs text-slate-500">Completion on or after start. A completion date is required before status can be Completed. Duration calculates itself.</p>
+              <p class="text-xs text-slate-500">Set a completion date before marking it Completed.</p>
             </div>
             <div class="flex items-center gap-2">
               <button onclick="simulateInvalidDesignDate()" class="px-2.5 py-1 rounded border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-semibold transition cursor-pointer">Test 1900-01-29 Date Error</button>
@@ -902,7 +902,7 @@
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
               <h3 class="text-base font-bold text-slate-900">3. Accessories &amp; Holing Tracking (One SLA Clock per Item)</h3>
-              <p class="text-xs text-slate-500">Quantity, status and completion time for each item. Items drive gate checks 3 and 4. The clock length is set in Rules; its start event is still to be agreed.</p>
+              <p class="text-xs text-slate-500">Quantity and status for each item.</p>
             </div>
             <span id="items-sla-pill" class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">SLA 48h</span>
           </div>
@@ -920,7 +920,7 @@
         <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
           <div class="border-b border-slate-100 pb-3">
             <h3 class="text-base font-bold text-slate-900">4. Design-Load &amp; Plant Capacity View</h3>
-            <p class="text-xs text-slate-500">Two separate limits. Complex DCF is weighted for design only; plant capacity is unweighted. Going over either raises an alert.</p>
+            <p class="text-xs text-slate-500">Going over either limit raises an alert.</p>
           </div>
           <div id="capacity-table" class="overflow-x-auto"></div>
         </div>
@@ -990,7 +990,7 @@
             <button onclick="logFactoryBatch()" class="w-full py-3 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs shadow-md transition cursor-pointer">
               + Save Panel Actuals
             </button>
-            <p class="text-[11px] text-slate-400">Replaces the 31-column monthly matrix and WhatsApp actuals. Also available on the Mobile App tab.</p>
+            <p class="text-[11px] text-slate-400">Also on the Mobile App tab.</p>
           </div>
         </div>
 
@@ -1014,7 +1014,7 @@
             <h3 class="text-sm font-bold text-slate-900">Yard Staging: 'No Evidence, No Change'</h3>
             <span id="yard-photo-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Attached</span>
           </div>
-          <p class="text-xs text-slate-500">Photos of packed bundles, or an email, PO or document link. Up to 5 files of 5 MB each. An entry without evidence cannot be marked ready.</p>
+          <p class="text-xs text-slate-500">Add a photo or reference before marking it ready. Up to 5 files, 5 MB each.</p>
           <div class="grid grid-cols-2 gap-2 text-xs">
             <select id="yard-source" aria-label="Evidence type" class="px-2.5 py-2 bg-white border border-slate-300 rounded-lg"><option>Photo</option><option>Email</option><option>PO</option><option>Document Link</option></select>
             <input type="text" id="yard-ref" placeholder="Reference (email subject, PO no., link)" class="px-2.5 py-2 border border-slate-300 rounded-lg">
@@ -1027,7 +1027,7 @@
           <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
             <div>
               <h3 class="text-sm font-bold text-slate-900">Panel Register</h3>
-              <p class="text-xs text-slate-500">DESIGNED → PROCESSED → PRODUCED → DISPATCHED → DELIVERED. Unknown codes are refused. Panel m² rolls up by block and into the row's produced figure.</p>
+              <p class="text-xs text-slate-500">Designed → Processed → Produced → Dispatched → Delivered.</p>
             </div>
             <div class="grid grid-cols-3 sm:grid-cols-7 gap-2 text-xs">
               <input type="text" id="pb-prefix" value="W-" aria-label="Code prefix" class="px-2 py-2 border border-slate-300 rounded-lg font-mono">
@@ -1087,7 +1087,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
             <h2 class="text-base font-bold text-slate-900">Five-point dispatch-readiness gate &amp; 4-way m² check</h2>
-            <p class="text-xs text-slate-500">A lorry can be booked only when all five checks are green. Checks read live from the other steps. Use "Simulate fail" to show a failure on the live row.</p>
+            <p class="text-xs text-slate-500">Lorries can be booked once all five checks are green.</p>
           </div>
           <div class="flex items-center gap-2">
             <span id="gate6-overall-badge" class="px-3 py-1.5 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800"></span>
@@ -1112,7 +1112,7 @@
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
         <div>
           <h3 class="text-sm font-bold text-slate-900">4-Way m² Reconciliation</h3>
-          <p class="text-xs text-slate-500">Latest approved NCA vs Design Final vs Produced vs Shipped. Over <span id="recon-tol-label">2.0</span>% raises a <code class="font-mono">RECON_VARIANCE</code> alert. It is not one of the five gate checks and does not block shipment. Shipped counts once loads go out.</p>
+          <p class="text-xs text-slate-500">NCA vs design vs produced vs shipped. A gap over <span id="recon-tol-label">2.0</span>% raises an alert.</p>
         </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-white rounded-xl border border-slate-200 p-4 space-y-1">
@@ -1337,7 +1337,7 @@
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div>
             <div class="flex items-center gap-2.5"><h2 class="sf-ledger-title">MR11 master operations ledger</h2><span id="mr11-count" class="sf-ledger-count"></span></div>
-            <p class="text-xs text-slate-500">Production, dispatch milestones and fulfilment for every contract, with one line for each stream with its blocks and formwork type, as in Phase 1. LIVE lines come straight from steps 1 to 7. Font colour shows the product type and fill colour the formwork type, as in the MR11 workbook. Each line has its own NCA m&sup2; from BD; forecast, produced and shipped m&sup2; are split by each line's share of the project.</p>
+            <p class="text-xs text-slate-500">Every project, one line per stream. Text colour = product type, fill = formwork type.</p>
           </div>
           <div class="flex items-center gap-2 text-xs">
             <button id="mr11-edit-btn" onclick="toggleEditMode()" class="px-2.5 py-1 rounded border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 font-semibold">Edit in MR11: Off</button>
@@ -1588,7 +1588,7 @@
               <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">Excel Is Output Only</span>
             </div>
             <p class="text-xs text-indigo-200 mt-0.5">
-              Every department now enters online and MR11 rebuilds itself. Row 1 is bound live to Tabs 1–7. <strong>Export MR11 (.xlsx)</strong> downloads a 3-sheet workbook (`MR11 2026`, `Summary &amp; Gate Matrix`, `Workflow Audit`).
+              MR11 updates itself from every page.
             </p>
           </div>
         </div>
@@ -1606,7 +1606,7 @@
           <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <div>
               <h3 class="text-sm font-bold text-slate-900">MR11 Production Readiness Gate Matrix (4-State Summary)</h3>
-              <p class="text-xs text-slate-500">Automatically classifies active pipeline m² &amp; USD based on Step 2 Payment &amp; Step 3 Design status</p>
+              <p class="text-xs text-slate-500">Pipeline m² and USD by payment and design status.</p>
             </div>
             <span id="mr11-active-readiness-pill" class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">Got Payment &amp; Design, Can Produce</span>
           </div>
@@ -1735,7 +1735,7 @@
         <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div>
             <h2 class="text-base font-bold text-slate-900">Alerting Engine</h2>
-            <p class="text-xs text-slate-500">Worked out live from the data, and an alert clears itself when its cause is fixed. They appear inside the platform; email or Teams needs a flow from MFE IT.</p>
+            <p class="text-xs text-slate-500">Alerts clear themselves once fixed.</p>
           </div>
           <div class="flex items-center gap-2 text-xs">
             <select id="alert-filter-sev" onchange="renderAlerts()" aria-label="Severity filter" class="px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg font-semibold"><option value="">All levels</option><option>HIGH</option><option>MEDIUM</option><option>LOW</option></select>
@@ -1748,7 +1748,7 @@
         <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div>
             <h2 class="text-base font-bold text-slate-900">Date Reminders for Every Department</h2>
-            <p class="text-xs text-slate-500">Automatic clocks: shell plan to approval, design to production, production to sailing, accessories SLA, design completion and lorry dates. Add your own as well.</p>
+            <p class="text-xs text-slate-500">Due dates worked out for you. Add your own too.</p>
           </div>
           <select id="reminder-filter" onchange="renderReminders()" aria-label="Department filter" class="px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold"></select>
         </div>
@@ -1769,7 +1769,7 @@
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
         <div class="border-b border-slate-100 pb-3">
           <h2 class="text-base font-bold text-slate-900">Approvals</h2>
-          <p class="text-xs text-slate-500">MR11 edits and row deletes by non-admins wait here. Administrators approve, reject with a reason, or undo an approved edit. Switch "Viewing as" in the header to try each side.</p>
+          <p class="text-xs text-slate-500">Changes waiting for an administrator.</p>
         </div>
         <div id="approvals-list" class="space-y-2 text-xs"></div>
       </div>
@@ -1800,7 +1800,7 @@
         <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
           <div>
             <h2 class="text-base font-bold text-slate-900">Weekly Report</h2>
-            <p class="text-xs text-slate-500">Saved every Monday and available on demand. Sheets: summary, pipeline, cash at risk, incidents, reconciliation, alerts, dispatch gate, lorry forecast and design capacity. Sent through the report webhook; the platform does not send email itself.</p>
+            <p class="text-xs text-slate-500">Saved every Monday, or make one now.</p>
           </div>
           <button onclick="generateReport('On demand')" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold">Generate Report Now</button>
         </div>
@@ -1843,7 +1843,7 @@
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
         <div class="border-b border-slate-100 pb-3">
           <h2 class="text-base font-bold text-slate-900">Rules (Admin)</h2>
-          <p class="text-xs text-slate-500">Administrators set capacities, tolerances, SLA hours, clocks, gate checks, evidence rules and report recipients. Items marked "to confirm" are defaults still waiting for an MFE decision.</p>
+          <p class="text-xs text-slate-500">Limits, checks and clocks. "To confirm" means not yet decided.</p>
         </div>
         <div id="rules-form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs"></div>
       </div>
@@ -1863,7 +1863,7 @@
       <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
         <div class="border-b border-slate-100 pb-3">
           <h2 class="text-base font-bold text-slate-900">Admin Permissions</h2>
-          <p class="text-xs text-slate-500"><!--@if hosted-->Control who can sign in and what they can open. Every change applies straight away, and the server enforces it. The main administrator is protected, so nobody can be locked out.<!--@else-->Create users, set their roles and departments, or delete them. The main administrator is protected. Role changes take full effect the next time the person signs in. The CEO role cannot be given here; IT adds it.<!--@endif--></p>
+          <p class="text-xs text-slate-500"><!--@if hosted-->Who can sign in and what they can open.<!--@else-->Who can sign in and what they can open.<!--@endif--></p>
         </div>
         <div id="admin-form" class="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs">
           <input type="text" id="admin-new-name" placeholder="Full name" class="px-2.5 py-2 border border-slate-300 rounded-lg">

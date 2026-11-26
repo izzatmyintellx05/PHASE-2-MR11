@@ -67,7 +67,7 @@
       dialog.className = 'fixed inset-0 bg-slate-900/60 z-50 hidden items-center justify-center p-4';
       dialog.innerHTML = `<div class="bg-white rounded-xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-4" role="dialog" aria-modal="true" aria-labelledby="project-modal-title">
           <h2 id="project-modal-title" class="text-base font-bold text-slate-900">Add a project</h2>
-          <p class="text-xs text-slate-500">The project you are on now is kept. The new project starts clean; you fill in its details on the BD page.</p>
+          <p class="text-xs text-slate-500">Your other projects are kept.</p>
           <label class="block text-xs font-semibold text-slate-700">Project name<input id="pm-name" type="text" maxlength="120" class="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg" placeholder="e.g. Tower B Phase 1"></label>
           <label class="block text-xs font-semibold text-slate-700">Contract NCA m²<input id="pm-nca" type="number" min="1" step="0.01" class="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg" placeholder="e.g. 1200"></label>
           <p id="pm-error" class="text-xs text-rose-700"></p>

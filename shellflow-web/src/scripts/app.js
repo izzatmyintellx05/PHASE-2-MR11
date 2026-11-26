@@ -2504,7 +2504,7 @@
         <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4 space-y-2 text-xs">
           <div class="flex items-center justify-between"><h3 class="text-sm font-bold text-slate-900">Exchange Rates (1 USD)</h3>${badge}</div>
           <div class="flex flex-wrap gap-2">${Object.entries(USD_RATES).filter(([c]) => c !== 'USD').map(([c, v]) => `<div class="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200"><span class="text-slate-500">${c}</span> <strong class="font-mono">${v.toFixed(2)}</strong></div>`).join('')}</div>
-          <p class="text-[11px] text-slate-500">Live system source: Bank Negara Malaysia, refreshed hourly. Selling prices in other currencies convert to USD with these rates.</p>
+          <p class="text-[11px] text-slate-500">Bank Negara Malaysia, hourly.</p>
         </div>
         <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4 space-y-2 text-xs">
           <div class="flex items-center justify-between"><h3 class="text-sm font-bold text-slate-900">LME Aluminium (USD/MT)</h3><div class="flex items-center gap-1.5">${badge}<button onclick="refreshLmeSample()" class="px-2 py-0.5 rounded border border-slate-300 text-[11px] font-semibold hover:bg-slate-50">Refresh Price</button></div></div>
@@ -2513,7 +2513,7 @@
             <div class="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200"><span class="text-slate-500">3-Month</span> <strong class="font-mono">${fmtNum(cash + 15, 0)}</strong></div>
             <div class="px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200"><span class="text-slate-500">Change</span> <strong class="font-mono ${change >= 0 ? 'text-emerald-700' : 'text-rose-600'}">${change >= 0 ? '+' : ''}${fmtNum(change, 0)}</strong></div>
           </div>
-          <p class="text-[11px] text-slate-500">Live system source: Westmetall LME table, refreshed hourly. LME Adjusted and Final Selling Price re-price with it on every read.</p>
+          <p class="text-[11px] text-slate-500">Westmetall LME, hourly.</p>
         </div>`;
     }
     function refreshLmeSample() {
@@ -2759,7 +2759,7 @@
       });
       root.innerHTML = `
         <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-4 flex flex-wrap items-center justify-between gap-3">
-          <div><h2 class="text-base font-bold text-slate-900">CEO Executive Intelligence Overview</h2><p class="text-xs text-slate-500">Worked out from the latest MR11. It reads MR11 without approved edits in the built system. History before Nov 26 is sample data.</p></div>
+          <div><h2 class="text-base font-bold text-slate-900">CEO Executive Intelligence Overview</h2><p class="text-xs text-slate-500">From the latest MR11.</p></div>
           <div class="flex flex-wrap items-center gap-2 text-xs">
             <select onchange="setCeoRegion(this.value)" aria-label="Region" class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg font-semibold"><option value="">All regions</option>${Object.entries(CEO_REGIONS).map(([k, n]) => `<option value="${k}" ${appState.ceoRegion === k ? 'selected' : ''}>${n}</option>`).join('')}</select>
             <select onchange="setCeoMonth(this.value)" aria-label="Month" class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg font-semibold"><option value="">All months</option>${MONTH_KEYS.map((k, i) => `<option value="${k}" ${month === k ? 'selected' : ''}>${MONTH_LABELS[i]}</option>`).join('')}</select>
@@ -2829,7 +2829,7 @@
     function renderAdminUsers() {
       const root = $('admin-users');
       if (!isAdmin()) {
-        root.innerHTML = '<p class="text-sm text-slate-600">Admin Permissions opens for administrators only. Switch "Viewing as" to Administrator to try it.</p>';
+        root.innerHTML = '<p class="text-sm text-slate-600">Administrators only.</p>';
         $('admin-form').classList.add('hidden');
         return;
       }

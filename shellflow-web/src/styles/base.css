@@ -744,8 +744,7 @@
     .sf-picker-stage { font-size: 11.5px; color: var(--ink-3); }
 
 
-    /* ---- MR11 first: no department tab row; a slim bar says where you are and leads back ---- */
-    .sf-steps { display: none !important; }
+    /* ---- A slim bar says where you are and leads back to MR11; the step tabs stay in view ---- */
     .sf-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-height: 40px; }
     .sf-crumb-page { font-weight: 700; font-size: 15px; color: var(--ink); }
     .sf-crumb-sep { color: var(--ink-3); }
@@ -893,3 +892,20 @@
     .sf-dt-more > summary { cursor: pointer; padding: 14px 20px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
     .sf-dt-more[open] > summary { border-bottom: 1px solid var(--joint); }
     .sf-dt-more > :not(summary) { margin: 16px; }
+    .sf-dt-modes { align-self: flex-start; }
+    .sf-dt-modes button { height: 34px; padding: 0 14px; font-size: 13px; }
+    .sf-dt-count { margin-left: 6px; padding: 0 6px; border-radius: 10px; background: var(--panel); color: var(--ink-2); font-size: 11px; }
+    .sf-dt-modes button[aria-pressed="true"] .sf-dt-count { background: var(--steel-raised); color: var(--steel-ink); }
+    .sf-dt-month { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); }
+    .sf-dt-month input { height: 30px; padding: 0 8px; border: 1px solid var(--joint); border-radius: var(--radius); font-size: 12px; background: var(--face); }
+    .sf-dt td.sf-dt-txt { padding: 6px 10px; color: var(--ink-2); max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
+    .sf-dt td.sf-dt-wide { max-width: 260px; }
+    .sf-dt th { white-space: normal; min-width: 70px; vertical-align: bottom; line-height: 1.25; }
+    .sf-dt th.sf-dt-dayh { min-width: 58px; text-align: right; }
+    .sf-dt-in.sf-dt-day { min-width: 58px; padding: 0 6px; }
+    .sf-dt-row.sf-dt-first td { border-top: 1px solid var(--joint); }
+    .sf-dt-row.sf-dt-first td.sf-dt-stick { font-weight: 700; color: var(--ink); }
+    .sf-dt .sf-dt-stick { min-width: 110px; }
+
+    /* The project filter bar under the header is not shown; every page covers all projects */
+    .sf-ribbon { display: none !important; }

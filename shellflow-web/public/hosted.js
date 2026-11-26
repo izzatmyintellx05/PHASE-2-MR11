@@ -124,12 +124,13 @@
   // One line figure of another project: shown at once, saved to that project's own record
   window.mr11TrackOf = (id, key) => ((OTHER_TRACK[id] || {})[key] || {}).data?.[key] || {};
   window.mr11SaveOtherTrack = async (id, key, lineId, field, value) => {
+    const fields = field && typeof field === 'object' ? field : { [field]: value };
     if (!TRACK_KEYS.includes(key) || id === PROJECT) return false;
     const full = id === 'P1' ? key : `${key}@${id}`;
     const patch = data => {
       const lines = { ...((data || {})[key] || {}) };
       const entry = { ...(lines[lineId] || {}) };
-      if (value === null) delete entry[field]; else entry[field] = value;
+      Object.entries(fields).forEach(([f, v]) => { if (v === null) delete entry[f]; else entry[f] = v; });
       lines[lineId] = entry;
       return { [key]: lines };
     };
