@@ -1106,7 +1106,7 @@
           <span id="header-user" class="sf-user hidden 2xl:inline"></span>
           <button type="button" onclick="openPasswordModal()" id="header-key-btn" class="sf-hbtn" title="Change password" aria-label="Change password"><i data-lucide="key-round" class="w-4 h-4"></i></button>
           <button type="button" onclick="signOut()" class="sf-hbtn" title="Sign out" aria-label="Sign out"><i data-lucide="log-out" class="w-4 h-4"></i></button>
-          <div class="sf-chip hidden 2xl:flex"><span>Finance gate</span><strong id="header-finance-pill">CLEARED (20%)</strong></div>
+          <div class="sf-chip hidden 2xl:flex"><span>Finance</span><strong id="header-finance-pill">CLEARED (20%)</strong></div>
           <div id="header-capacity-badge" class="sf-load hidden lg:flex">
             <span>Plant load <strong id="header-plant-load">75,050 / 110,000 m²</strong></span>
             <span class="sf-loadbar" aria-hidden="true"><i id="header-load-fill" style="width: 68%"></i></span>
@@ -1718,7 +1718,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="lock" aria-hidden="true" class="lucide lucide-lock w-6 h-6"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
           </div>
           <div>
-            <h3 class="text-base font-extrabold text-rose-200">HARD STOP: TECHNICAL DESIGN ACCESS LOCKED BY FINANCE GATEWAY</h3>
+            <h3 class="text-base font-extrabold text-rose-200">HARD STOP: SHELLPLAN &amp; DESIGN ACCESS LOCKED BY FINANCE</h3>
             <p class="text-xs text-rose-100 mt-0.5"><span id="design-stop-text">The advance payment</span> isn't confirmed yet. Drafting waits for Finance.</p>
           </div>
         </div>
@@ -5229,14 +5229,14 @@
       try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
     }
     const MR11_GROUPS = {
-      project: { label: 'PROJECT & CONTRACT IDENTIFICATION (STEP 1 BD)', cls: 'bg-slate-800', depts: ['BD'], locked: true },
-      finance: { label: 'FINANCE GATE (STEP 2)', short: 'Finance', cls: 'bg-indigo-900', depts: ['FINANCE'] },
-      design: { label: 'TECH DESIGN (STEP 3)', short: 'Shell Plan & Design', cls: 'bg-sky-900', depts: ['DESIGN', 'SHELLPLAN'] },
-      pricing: { label: 'DYNAMIC LME & SELLING PRICE ENGINE (STEP 1)', short: 'Pricing & LME', cls: 'bg-emerald-900', depts: ['BD'] },
+      project: { label: 'PROJECT & CONTRACT IDENTIFICATION (STEP 1 BUSINESS DEVELOPMENT)', cls: 'bg-slate-800', depts: ['BD'], locked: true },
+      finance: { label: 'FINANCE (STEP 2)', short: 'Finance', cls: 'bg-indigo-900', depts: ['FINANCE'] },
+      design: { label: 'SHELLPLAN & DESIGN (STEP 3)', short: 'Shellplan & Design', cls: 'bg-sky-900', depts: ['DESIGN', 'SHELLPLAN'] },
+      pricing: { label: 'DYNAMIC LME & SELLING PRICE ENGINE (STEP 1 BUSINESS DEVELOPMENT)', short: 'Pricing & LME', cls: 'bg-emerald-900', depts: ['BD'] },
       months: { label: "MONTHLY m² (ACTUAL / F'CAST)", short: 'Monthly m²', cls: 'bg-amber-800', depts: ['BD'] },
       system: { label: 'SYSTEM', short: 'Formwork System', cls: 'bg-slate-800', depts: ['BD'] },
       revenue: { label: 'MONTHLY REVENUE VALUATION (USD)', short: 'Monthly Revenue', cls: 'bg-teal-900', depts: ['FINANCE'] },
-      yard: { label: 'PRODUCTION, LOGISTICS & SITE RECON (STEPS 4–7)', short: 'Production, Logistics & Site', cls: 'bg-purple-900', depts: ['PLANNING', 'PRODUCTION', 'DISPATCH'] }
+      yard: { label: 'PLANNING, PRODUCTION, DISPATCH & SITE RECEIVING (STEPS 4–7)', short: 'Planning, Production, Dispatch & Site', cls: 'bg-purple-900', depts: ['PLANNING', 'PRODUCTION', 'DISPATCH'] }
     };
     const monthKind = i => (MONTH_KEYS[i] < DEMO_TODAY.slice(0, 7) ? 'ACTUAL' : "F'CAST");
     // Dark green: completed and the date has passed. Yellow: completed, date ahead. Red: not completed.
@@ -5810,7 +5810,7 @@
     // PHASE 1: DEPARTMENT WORKBOOK VIEWER, PLANNING LEDGER & PRODUCTION REGISTRY
     // =========================================================================
     const WORKBOOK_DEPTS = { BD: 'Business Development', FINANCE: 'Finance', DESIGN: 'Shell Plan & Design', PLANNING: 'Planning', PRODUCTION: 'Production', DISPATCH: 'Dispatch' };
-    const ENTRY_STEP = { BD: 'Step 1', FINANCE: 'Step 2', DESIGN: 'Step 3', PLANNING: 'Step 4', PRODUCTION: 'Step 4', DISPATCH: 'Step 6' };
+    const ENTRY_STEP = { BD: 'Step 1', FINANCE: 'Step 2', DESIGN: 'Step 3', PLANNING: 'Step 4', PRODUCTION: 'Step 5', DISPATCH: 'Step 6' };
     function allowedWorkbookDepts() {
       if (appState.role === 'ADMIN') return Object.keys(WORKBOOK_DEPTS);
       if (appState.role === 'SHELLPLAN') return ['DESIGN'];

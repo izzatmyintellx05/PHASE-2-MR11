@@ -2321,14 +2321,14 @@
       try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
     }
     const MR11_GROUPS = {
-      project: { label: 'PROJECT & CONTRACT IDENTIFICATION (STEP 1 BD)', cls: 'bg-slate-800', depts: ['BD'], locked: true },
-      finance: { label: 'FINANCE GATE (STEP 2)', short: 'Finance', cls: 'bg-indigo-900', depts: ['FINANCE'] },
-      design: { label: 'TECH DESIGN (STEP 3)', short: 'Shell Plan & Design', cls: 'bg-sky-900', depts: ['DESIGN', 'SHELLPLAN'] },
-      pricing: { label: 'DYNAMIC LME & SELLING PRICE ENGINE (STEP 1)', short: 'Pricing & LME', cls: 'bg-emerald-900', depts: ['BD'] },
+      project: { label: 'PROJECT & CONTRACT IDENTIFICATION (STEP 1 BUSINESS DEVELOPMENT)', cls: 'bg-slate-800', depts: ['BD'], locked: true },
+      finance: { label: 'FINANCE (STEP 2)', short: 'Finance', cls: 'bg-indigo-900', depts: ['FINANCE'] },
+      design: { label: 'SHELLPLAN & DESIGN (STEP 3)', short: 'Shellplan & Design', cls: 'bg-sky-900', depts: ['DESIGN', 'SHELLPLAN'] },
+      pricing: { label: 'DYNAMIC LME & SELLING PRICE ENGINE (STEP 1 BUSINESS DEVELOPMENT)', short: 'Pricing & LME', cls: 'bg-emerald-900', depts: ['BD'] },
       months: { label: "MONTHLY m² (ACTUAL / F'CAST)", short: 'Monthly m²', cls: 'bg-amber-800', depts: ['BD'] },
       system: { label: 'SYSTEM', short: 'Formwork System', cls: 'bg-slate-800', depts: ['BD'] },
       revenue: { label: 'MONTHLY REVENUE VALUATION (USD)', short: 'Monthly Revenue', cls: 'bg-teal-900', depts: ['FINANCE'] },
-      yard: { label: 'PRODUCTION, LOGISTICS & SITE RECON (STEPS 4–7)', short: 'Production, Logistics & Site', cls: 'bg-purple-900', depts: ['PLANNING', 'PRODUCTION', 'DISPATCH'] }
+      yard: { label: 'PLANNING, PRODUCTION, DISPATCH & SITE RECEIVING (STEPS 4–7)', short: 'Planning, Production, Dispatch & Site', cls: 'bg-purple-900', depts: ['PLANNING', 'PRODUCTION', 'DISPATCH'] }
     };
     const monthKind = i => (MONTH_KEYS[i] < DEMO_TODAY.slice(0, 7) ? 'ACTUAL' : "F'CAST");
     // Dark green: completed and the date has passed. Yellow: completed, date ahead. Red: not completed.
@@ -2902,7 +2902,7 @@
     // PHASE 1: DEPARTMENT WORKBOOK VIEWER, PLANNING LEDGER & PRODUCTION REGISTRY
     // =========================================================================
     const WORKBOOK_DEPTS = { BD: 'Business Development', FINANCE: 'Finance', DESIGN: 'Shell Plan & Design', PLANNING: 'Planning', PRODUCTION: 'Production', DISPATCH: 'Dispatch' };
-    const ENTRY_STEP = { BD: 'Step 1', FINANCE: 'Step 2', DESIGN: 'Step 3', PLANNING: 'Step 4', PRODUCTION: 'Step 4', DISPATCH: 'Step 6' };
+    const ENTRY_STEP = { BD: 'Step 1', FINANCE: 'Step 2', DESIGN: 'Step 3', PLANNING: 'Step 4', PRODUCTION: 'Step 5', DISPATCH: 'Step 6' };
     function allowedWorkbookDepts() {
       if (appState.role === 'ADMIN') return Object.keys(WORKBOOK_DEPTS);
       if (appState.role === 'SHELLPLAN') return ['DESIGN'];
