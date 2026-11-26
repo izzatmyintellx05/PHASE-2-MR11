@@ -72,6 +72,10 @@
   window.MR11_OTHERS = {};
   const fullName = n => (SCOPED.has(n) && PROJECT !== 'P1' ? `${n}@${PROJECT}` : n);
   const seen = {};
+  // Other projects' production and dispatch figures, so the Production and Logistics tables can
+  // show and edit every project at once
+  const TRACK_KEYS = ['lineProduction', 'lineDispatch'];
+  const OTHER_TRACK = {};
   // From the server's names to this page's: this project's copy, the shared sections, and
   // the other projects' summaries (which MR11 lists)
   function localize(all) {
@@ -87,7 +91,11 @@
         return;
       }
       if (base === 'projects') { window.MR11_PROJECTS = (sec.data && sec.data.projects) || []; versions.projects = sec.version; return; }
-      if (SCOPED.has(base)) { if (id === PROJECT) mine[base] = sec; return; }
+      if (SCOPED.has(base)) {
+        if (id === PROJECT) mine[base] = sec;
+        else if (TRACK_KEYS.includes(base)) (OTHER_TRACK[id] = OTHER_TRACK[id] || {})[base] = { data: sec.data || {}, version: sec.version };
+        return;
+      }
       if (!m) mine[key] = sec;
     });
     if (others && typeof window.mr11InjectOthers === 'function') window.mr11InjectOthers();
@@ -113,6 +121,40 @@
     notify(`New project "${name}" started. Fill in its details here; the other projects are kept.`, 'success');
   }
   window.mr11SaveNow = () => saveNow();
+  // One line figure of another project: shown at once, saved to that project's own record
+  window.mr11TrackOf = (id, key) => ((OTHER_TRACK[id] || {})[key] || {}).data?.[key] || {};
+  window.mr11SaveOtherTrack = async (id, key, lineId, field, value) => {
+    if (!TRACK_KEYS.includes(key) || id === PROJECT) return false;
+    const full = id === 'P1' ? key : `${key}@${id}`;
+    const patch = data => {
+      const lines = { ...((data || {})[key] || {}) };
+      const entry = { ...(lines[lineId] || {}) };
+      if (value === null) delete entry[field]; else entry[field] = value;
+      lines[lineId] = entry;
+      return { [key]: lines };
+    };
+    const slot = (OTHER_TRACK[id] = OTHER_TRACK[id] || {});
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const cur = slot[key] || { data: {}, version: 0 };
+      const data = patch(cur.data);
+      slot[key] = { data, version: cur.version };
+      try {
+        const res = await api('/state', { method: 'PUT', body: { changes: { [full]: { data, baseVersion: cur.version || 0 } } } });
+        const back = (res.sections || {})[full];
+        if (back) { slot[key] = { data: back.data || {}, version: back.version }; seen[full] = back.version; }
+        if (res.saved.includes(full)) return true;
+        if (res.denied.length) { notify('Your role cannot change that, so it was not saved.', 'error'); return false; }
+        if (res.invalid.length) { notify(res.invalid[0].error, 'error'); return false; }
+        // Someone else saved that project just now: put this one change on their copy and try again
+      } catch (err) {
+        slot[key] = cur;
+        handleApiError(err, 'Your change could not be saved. Please check your connection.');
+        return false;
+      }
+    }
+    notify('Someone else is changing that project right now. Please try again.', 'error');
+    return false;
+  };
   window.mr11SwitchProject = async (id, after) => {
     clearTimeout(saveTimer);
     await saveNow();

@@ -860,3 +860,36 @@
     .sf-print .sf-print-kpis dt { font-size: 10px; color: #444; }
     .sf-print .sf-print-kpis dd { font-size: 18px; font-weight: 300; margin-top: 2px; }
     .sf-print-foot { margin-top: 18px; padding-top: 6px; border-top: 1px solid #ccc; font-size: 9.5px; color: #555; display: flex; justify-content: space-between; }
+
+    /* Production and Logistics: every project in one sheet, as the Phase 1 department workbooks */
+    .sf-dt-card { display: flex; flex-direction: column; gap: 10px; }
+    .sf-dt-card:fullscreen { background: var(--face); padding: 20px; overflow: auto; }
+    .sf-dt-card:fullscreen .sf-dt-wrap { max-height: none; flex: 1; }
+    .sf-dt-search { height: 30px; width: 200px; max-width: 100%; padding: 0 10px; border: 1px solid var(--joint); border-radius: var(--radius); font-size: 12px; background: var(--face); }
+    .sf-seg button[aria-pressed="true"] { background: var(--steel); color: var(--steel-ink); }
+    .sf-dt-wrap { overflow: auto; max-height: 70vh; border: 1px solid var(--joint); border-radius: var(--radius); }
+    .sf-dt { border-collapse: separate; border-spacing: 0; font-size: 12px; min-width: 100%; }
+    .sf-dt th { position: sticky; top: 0; z-index: 2; background: var(--panel); color: var(--ink-2); font-weight: 600; text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--joint); white-space: nowrap; }
+    .sf-dt td { padding: 0; border-bottom: 1px solid var(--joint-soft); border-right: 1px solid var(--joint-soft); white-space: nowrap; background: var(--face); }
+    .sf-dt td.sf-dt-num, .sf-dt td.sf-dt-stick, .sf-dt td.sf-dt-fw, .sf-dt-group td, .sf-dt-total td { padding: 6px 10px; }
+    .sf-dt .sf-dt-num { text-align: right; font-variant-numeric: tabular-nums; }
+    .sf-dt .sf-dt-stick { position: sticky; left: 0; z-index: 1; min-width: 180px; border-right: 1px solid var(--joint); }
+    .sf-dt th.sf-dt-stick { z-index: 3; }
+    .sf-dt .sf-dt-fw { color: var(--ink-3); font-size: 11px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
+    .sf-dt-group td { background: var(--ground); font-weight: 600; border-top: 1px solid var(--joint); }
+    .sf-dt-group .sf-dt-stick strong { display: block; color: var(--ink); }
+    .sf-dt-group .sf-dt-stick span { display: block; font-weight: 400; font-size: 11px; color: var(--ink-3); }
+    .sf-dt-row .sf-dt-stick { padding-left: 22px; color: var(--ink-2); }
+    .sf-dt-total td { position: sticky; bottom: 0; background: var(--panel); font-weight: 700; border-top: 1px solid var(--joint); }
+    .sf-dt-in { width: 100%; min-width: 110px; height: 32px; padding: 0 10px; border: 0; background: transparent; font: inherit; color: var(--ink); }
+    .sf-dt-numin { text-align: right; min-width: 96px; }
+    .sf-dt-text { min-width: 140px; }
+    .sf-dt-in::placeholder { color: #9A9B94; }
+    .sf-dt-in:hover:not(:disabled) { background: var(--panel); }
+    .sf-dt-in:focus { outline: 2px solid var(--accent); outline-offset: -2px; background: var(--face); }
+    .sf-dt-in:disabled { color: var(--ink-2); cursor: default; }
+    .sf-dt-in.is-saving { background: var(--ochre-tint); }
+    .sf-dt-more { background: var(--face); border: 1px solid var(--joint); border-radius: 12px; }
+    .sf-dt-more > summary { cursor: pointer; padding: 14px 20px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
+    .sf-dt-more[open] > summary { border-bottom: 1px solid var(--joint); }
+    .sf-dt-more > :not(summary) { margin: 16px; }

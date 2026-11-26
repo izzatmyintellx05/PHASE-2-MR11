@@ -92,6 +92,8 @@
     function renderLineTracker(t) {
       const box = $(`lt-${t.key}`);
       if (!box || box.contains(document.activeElement)) return;
+      // Production and Logistics show every project in one table (dept-tables.js)
+      if (window.renderAllProjectTable && window.renderAllProjectTable(t, box)) return;
       const rows = liveLineRows();
       const editable = can(...t.roles);
       box.innerHTML = `<div class="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-3">
